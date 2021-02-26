@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="redis入门">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis入门">
+<meta property="og:url" content="https://cnrfwang.top/posts/eca8b4a8/index.html">
+<meta property="og:site_name" content="三才生的个人笔记">
+<meta property="og:description" content="redis入门">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113311.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113409.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113419.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113426.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113517.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113555.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113600.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113620.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113634.png">
+<meta property="article:published_time" content="2021-01-01T23:47:44.000Z">
+<meta property="article:modified_time" content="2021-02-26T07:07:32.004Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113311.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/eca8b4a8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>redis入门 | 三才生的个人笔记</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+<a target="_blank" rel="noopener external nofollow noreferrer" href="https://your-url" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">三才生的个人笔记</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三才生的个人笔记</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">8</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">8</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">14</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/eca8b4a8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="三才生的个人笔记">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生的个人笔记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          redis入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-01 23:47:44" itemprop="dateCreated datePublished" datetime="2021-01-01T23:47:44Z">2021-01-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">redis入门</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="1-redis相关介绍"><a href="#1-redis相关介绍" class="headerlink" title="1.redis相关介绍"></a>1.redis相关介绍</h4><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/">redis中文网</a></p>
+<h5 id="1-1-redis的介绍"><a href="#1-1-redis的介绍" class="headerlink" title="1.1 redis的介绍"></a>1.1 redis的介绍</h5><p>Redis 是一个开源（BSD许可）的，内存中的数据结构存储系统，它可以用作数据库、缓存和消息中间件。 它支持多种类型的数据结构，如 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#strings">字符串（strings）</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#hashes">散列（hashes）</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#lists">列表（lists）</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#sets">集合（sets）</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#sorted-sets">有序集合（sorted sets）</a> 与范围查询， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#bitmaps">bitmaps</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/data-types-intro.html#hyperloglogs">hyperloglogs</a> 和 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/geoadd.html">地理空间（geospatial）</a> 索引半径查询。 Redis 内置了 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/replication.html">复制（replication）</a>，<a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/eval.html">LUA脚本（Lua scripting）</a>， <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/lru-cache.html">LRU驱动事件（LRU eviction）</a>，<a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/transactions.html">事务（transactions）</a> 和不同级别的 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/persistence.html">磁盘持久化（persistence）</a>， 并通过 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/sentinel.html">Redis哨兵（Sentinel）</a>和自动 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/cluster-tutorial.html">分区（Cluster）</a>提供高可用性（high availability）。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113311.png" alt="image-20210211203040301"></p>
+<h5 id="1-2-redis和memcached的区别"><a href="#1-2-redis和memcached的区别" class="headerlink" title="1.2  .redis和memcached的区别"></a>1.2  .redis和memcached的区别</h5><p>redis和memcached相比本质是解耦，用大数据说法是计算向数据移动</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113409.png" alt="image-20210218095611832"></p>
+<h5 id="1-3-liunx下常见的redis命令"><a href="#1-3-liunx下常见的redis命令" class="headerlink" title="1.3 . liunx下常见的redis命令"></a>1.3 . liunx下常见的redis命令</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#连接redis</span><br><span class="line">redis-cli</span><br><span class="line">#连接redis是6379端口的8号库 指定库(不同库数据不可见)</span><br><span class="line">redis-cli -p 6379 -n 8</span><br><span class="line">#连接redis后使用help进行查询</span><br><span class="line">help </span><br></pre></td></tr></table></figure>
+
+<h4 id="2-redis相关数据的操作常见命令"><a href="#2-redis相关数据的操作常见命令" class="headerlink" title="2.redis相关数据的操作常见命令"></a>2.redis相关数据的操作常见命令</h4><p>在redis客户端中使用help命令进行相关查询相关命令</p>
+<h5 id="2-1-Strings类型"><a href="#2-1-Strings类型" class="headerlink" title="2.1 Strings类型"></a>2.1 Strings类型</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://redis.io/commands#string">Strings 数据操作相关文档</a></p>
+<h6 id="2-1-1-查看string类型帮助命令"><a href="#2-1-1-查看string类型帮助命令" class="headerlink" title="2.1.1 查看string类型帮助命令"></a>2.1.1 查看string类型帮助命令</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">help @string</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113419.png" alt="image-20210219155031906"></p>
+<h6 id="2-1-2-string数据类型及相关的应用场景"><a href="#2-1-2-string数据类型及相关的应用场景" class="headerlink" title="2.1.2  string数据类型及相关的应用场景"></a>2.1.2  string数据类型及相关的应用场景</h6><ol>
+<li><p>字符串</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#set设置key的value</span><br><span class="line">set k1 ooxx nx  （带nx，xx可用在分布式锁中）</span><br><span class="line">set k1 ooxx xx</span><br><span class="line">#mset批量设置</span><br><span class="line">mset k3 k3mest k4 k4mest</span><br><span class="line">#get获取key的value</span><br><span class="line">get k1</span><br><span class="line">#mget批量获取</span><br><span class="line">mget k3 k4</span><br><span class="line">#APPEND在字符串后面追加</span><br><span class="line">append k1 &quot; world&quot;</span><br><span class="line">#GETRANGE获取指定范围数据</span><br><span class="line">getrange k1 5 10</span><br><span class="line">#strlen获取字符串长度</span><br><span class="line">strlen k1</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113426.png" alt="image-20210219155108071"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113517.png" alt="image-20210219160021217"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113555.png" alt="image-20210219160343269"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113600.png" alt="image-20210219160751857"></p>
+</li>
+<li><p>数值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">incr  将value的整数型+1</span><br><span class="line">incrby 将value的整数型加指定数</span><br><span class="line">decr </span><br><span class="line">descby</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>  <strong>应用场景</strong> ： 抢购，秒杀，详情页，点赞，评论规避并发下，对数据库的事务操作完全由redis内存操作代替，避免因数据库事务导致响应时间超时，<strong>但在银行等金融涉及金额不要放在redis中进行相关计算</strong></p>
+<ol start="3">
+<li><p>bitmap</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setbit  &#x2F;&#x2F;设置bit数值</span><br><span class="line">bitcount  </span><br><span class="line">bitpos</span><br><span class="line">bitop</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>应用场景</strong> ：</p>
+<pre><code>1. 统计用户登陆天数
+
+    方案：用户id为key，设计长度为9bit的数据即可存储用户当年所有登陆天数数据，当天登陆为1，即可统计指定时间段的相关数据
+
+2. 统计当天所有用户登陆情况
+
+    方案：日期为Key，设计一个合适长度的数据存储，每一位对应一位客户，登陆则为1，统计时直接进行二进制与运算，则可以去重，统计那些用户登陆
+</code></pre>
+<h5 id="2-2-Lists类型"><a href="#2-2-Lists类型" class="headerlink" title="2.2  Lists类型"></a>2.2  Lists类型</h5><h6 id="2-2-1-Lists常见命令"><a href="#2-2-1-Lists常见命令" class="headerlink" title="2.2.1 Lists常见命令"></a>2.2.1 Lists常见命令</h6><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://redis.io/commands#list">Lists数据相关操作命令</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#lpush 存放顺序为f e d c b a</span><br><span class="line">lpush k1 a b c d e f</span><br><span class="line">#rpush 存放顺序为a b c d e f</span><br><span class="line">rpush k2 a b c d e f</span><br><span class="line">#取数据 lpop</span><br><span class="line">lpop k1 </span><br><span class="line">#lrange按照范围取</span><br><span class="line">lrange k1 0 -1（取全部）</span><br><span class="line">#lindex</span><br><span class="line">#lset</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113620.png" alt="image-20210219205233457"></p>
+<h6 id="2-2-2应用场景"><a href="#2-2-2应用场景" class="headerlink" title="2.2.2应用场景"></a>2.2.2应用场景</h6><ol>
+<li>使用lpush模拟栈，后进先出</li>
+<li>使用rpush模拟队列，先进先出（买票排队问题）</li>
+<li>lindex模拟数组，直接根据下标取相关数据</li>
+<li>blpop模拟阻塞单播队列（blpop会让对应key有则弹出value，没有会阻塞等待key有值，并且只会弹出一次，当多个客户端同时对一个key使用blpop则可以实现阻塞单播）</li>
+</ol>
+<h5 id="2-3-hashes类型"><a href="#2-3-hashes类型" class="headerlink" title="2.3 hashes类型"></a>2.3 hashes类型</h5><p>类似java中的hashmap（key，hashmap（key，value））。这里面第一个key是hashes的key，hashmap（key，value）才是value</p>
+<h6 id="2-3-1-hashes常见命令"><a href="#2-3-1-hashes常见命令" class="headerlink" title="2.3.1 hashes常见命令"></a>2.3.1 hashes常见命令</h6><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://redis.io/commands#hash">hashes常见的命令</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hdel</span><br><span class="line">hget</span><br><span class="line">hset</span><br><span class="line">hlen</span><br><span class="line">hincrbyfloat</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-3-2-应用场景："><a href="#2-3-2-应用场景：" class="headerlink" title="2.3.2 应用场景："></a>2.3.2 应用场景：</h6><ol>
+<li>对员工薪水进行统计</li>
+</ol>
+<h5 id="2-4-sets数据类型"><a href="#2-4-sets数据类型" class="headerlink" title="2.4 sets数据类型"></a>2.4 sets数据类型</h5><p>Redis Set 是 String 的无序排列。<code>SADD</code> 指令把新的元素添加到 set 中。对 set 也可做一些其他的操作，比如测试一个给定的元素是否存在，对不同 set 取交集，并集或差，等等。</p>
+<h6 id="2-4-1常见命令"><a href="#2-4-1常见命令" class="headerlink" title="2.4.1常见命令"></a>2.4.1常见命令</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sadd &#x2F;&#x2F;添加元素</span><br><span class="line">sadd myset 1 2 3</span><br><span class="line">smembers &#x2F;&#x2F;读取集合元素</span><br><span class="line">smembers myset</span><br><span class="line">sismember &#x2F;&#x2F;判断元素存在</span><br><span class="line">sismember myset 3 &#x2F;&#x2F;存在返回1，不存在为0</span><br><span class="line"> SINTER  &#x2F;&#x2F;获取多个集合的交集</span><br><span class="line"> SUNIONSTORE  &#x2F;&#x2F;多个集合取并集</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-4-2-应用场景"><a href="#2-4-2-应用场景" class="headerlink" title="2.4.2 应用场景"></a>2.4.2 应用场景</h6><ol>
+<li><p>公平抽奖(随机事件) ：  SRANDMEMBER key count（用户作为value）</p>
+<p> ​                        正数：取出一个去重的结果集（不能超过已有集）</p>
+<p> ​                        负数：取出一个带重复的结果集，一定满足你要的数量如果：</p>
+<p> ​                        0，不返回</p>
+</li>
+</ol>
+<h5 id="2-5-sorted-sets数据类型"><a href="#2-5-sorted-sets数据类型" class="headerlink" title="2.5 sorted sets数据类型"></a>2.5 sorted sets数据类型</h5><h6 id="2-5-1-常见命令"><a href="#2-5-1-常见命令" class="headerlink" title="2.5.1 常见命令"></a>2.5.1 常见命令</h6><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://redis.io/commands#sorted_set">sorted sets常见命令</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">zadd</span><br><span class="line">zmenmber</span><br><span class="line">zinter</span><br><span class="line">zscore &#x2F;&#x2F;按照什么排序</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-5-2-排序底层实现"><a href="#2-5-2-排序底层实现" class="headerlink" title="2.5.2 排序底层实现"></a>2.5.2 排序底层实现</h6><p>通过Skip list（跳跃表）实现增删查改</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113634.png" alt="image-20210220102659707"></p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\dcfaa904\" rel="bookmark">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d09e787\" rel="bookmark">redis的消息订阅，pipeline，事务</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\5e07a887\" rel="bookmark">安装redis出现的问题</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\725846d4\" rel="bookmark">centos安装redis</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/eca8b4a8/" title="redis入门">https://cnrfwang.top/posts/eca8b4a8/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/Redis/" rel="tag"><i class="fa fa-tag"></i> Redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/posts/725846d4/" rel="next" title="centos安装redis">
+      centos安装redis <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-redis%E7%9B%B8%E5%85%B3%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">1.redis相关介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-redis%E7%9A%84%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 redis的介绍</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-redis%E5%92%8Cmemcached%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.2.</span> <span class="nav-text">1.2  .redis和memcached的区别</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-liunx%E4%B8%8B%E5%B8%B8%E8%A7%81%E7%9A%84redis%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 . liunx下常见的redis命令</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-redis%E7%9B%B8%E5%85%B3%E6%95%B0%E6%8D%AE%E7%9A%84%E6%93%8D%E4%BD%9C%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">2.redis相关数据的操作常见命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-Strings%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Strings类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-1-1-%E6%9F%A5%E7%9C%8Bstring%E7%B1%BB%E5%9E%8B%E5%B8%AE%E5%8A%A9%E5%91%BD%E4%BB%A4"><span class="nav-number">2.1.1.</span> <span class="nav-text">2.1.1 查看string类型帮助命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-1-2-string%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%8F%8A%E7%9B%B8%E5%85%B3%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.1.2.</span> <span class="nav-text">2.1.2  string数据类型及相关的应用场景</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-Lists%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.2.</span> <span class="nav-text">2.2  Lists类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-2-1-Lists%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 Lists常见命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-2-2%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2应用场景</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-hashes%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 hashes类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-3-1-hashes%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4"><span class="nav-number">2.3.1.</span> <span class="nav-text">2.3.1 hashes常见命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-3-2-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">2.3.2.</span> <span class="nav-text">2.3.2 应用场景：</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-4-sets%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 sets数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-4-1%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4"><span class="nav-number">2.4.1.</span> <span class="nav-text">2.4.1常见命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-4-2-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">2.4.2.</span> <span class="nav-text">2.4.2 应用场景</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-5-sorted-sets%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 sorted sets数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-5-1-%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4"><span class="nav-number">2.5.1.</span> <span class="nav-text">2.5.1 常见命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-5-2-%E6%8E%92%E5%BA%8F%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.5.2.</span> <span class="nav-text">2.5.2 排序底层实现</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">三才生的个人笔记</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+          </li>
+        
+          <li>
+            <a href="/posts/558e0cc4/" title="win10添加新建文件md方式以及设置md模版" target="_blank">win10添加新建文件md方式以及设置md模版</a>
+          </li>
+        
+          <li>
+            <a href="/posts/be9758cd/" title="Hexo+NexT博客归档/标签/分类页美化" target="_blank">Hexo+NexT博客归档/标签/分类页美化</a>
+          </li>
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="redis集群" target="_blank">redis集群</a>
+          </li>
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="redis持久化" target="_blank">redis持久化</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">46k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">42 分钟</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
