@@ -1,6 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</title>
+    <url>/posts/dcfaa904/</url>
+    <content><![CDATA[<h5 id="1-Redis-的击穿，穿透，雪崩"><a href="#1-Redis-的击穿，穿透，雪崩" class="headerlink" title="1. Redis 的击穿，穿透，雪崩"></a>1. Redis 的击穿，穿透，雪崩</h5><h6 id="1-1-Redis-击穿"><a href="#1-1-Redis-击穿" class="headerlink" title="1.1 Redis 击穿"></a>1.1 Redis 击穿</h6><p><strong>产生原因</strong>：在高并发的情况下，在某一时间点，<strong>在高频获取的key在此时过期，大量请求直接请求到服务器上</strong>，导致缓存击穿</p>
+<p><strong>解决方案：</strong></p>
+<ul>
+<li><p>可以将<strong>热点数据设置为永远不过期</strong>；</p>
+</li>
+<li><p>基于 <strong>redis</strong> or <strong>zookeeper</strong> 实现互斥锁，等待第一个请求构建完缓存之后，再释放锁，进而其它请求才能通过该 key 访问数据。</p>
+<blockquote>
+<p>redis的分布式锁主要是通过  setnx 命令，设置锁的过期时间，只有返回是ok的才能去数据库中获取数据</p>
+<p><strong>产生问题</strong>：在db端超时导致锁过期 </p>
+<p><strong>解决方案</strong>： 通过<strong>zookeeper</strong> 实现分布式锁</p>
+</blockquote>
+</li>
+</ul>
+<h6 id="1-2-Redis穿透"><a href="#1-2-Redis穿透" class="headerlink" title="1.2 Redis穿透"></a>1.2 Redis穿透</h6><p>  一般是出现这种情况是因为恶意频繁查询才会对系统造成很大的问题: <strong>key缓存并且数据库不存在</strong>，所以<strong>每次查询都会查询数据库从而导致数据库崩溃</strong>。</p>
+<p><strong>解决方案：</strong>使用布隆过滤器</p>
+<blockquote>
+<p>布隆过滤器缺点：只能增加不能删除</p>
+<p>可使用布谷鸟过滤器 ，设置空key</p>
+</blockquote>
+<h6 id="1-3-Redis雪崩"><a href="#1-3-Redis雪崩" class="headerlink" title="1.3 Redis雪崩"></a>1.3 Redis雪崩</h6><p>雪崩指的是<strong>多个key</strong>查询并且出现<strong>高并发</strong>，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。</p>
+<p><strong>解决方案：</strong></p>
+<ul>
+<li><p> 时点性无关:<strong>均匀的设计过期时间</strong></p>
+</li>
+<li><p>时点性有关:<strong>强依赖击穿的方案</strong></p>
+<p>​                    也可在<strong>程序设计的时候在业务层进行时点进行请求延时操作</strong></p>
+<p>​                    当知道<strong>时点之后的数据也可以进行预加载工作</strong></p>
+</li>
+<li><p>事前：redis 高可用，主从+哨兵，redis cluster，避免全盘崩溃。</p>
+</li>
+<li><p> 事中：本地 ehcache 缓存 + hystrix 限流&amp;降级，避免 MySQL 被打死。</p>
+</li>
+<li><p>事后：redis 持久化，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。</p>
+<blockquote>
+<p>时点性有关指<strong>某一个时间段某些key必须要过期使用新数据</strong></p>
+</blockquote>
+</li>
+</ul>
+<h5 id="2-Redis-的分布式锁实现"><a href="#2-Redis-的分布式锁实现" class="headerlink" title="2. Redis  的分布式锁实现"></a>2. Redis  的分布式锁实现</h5><p>最好是使用zookeeper实现分布式锁</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">原理需要三个关键元素</span><br><span class="line">1. setnx</span><br><span class="line">2.过期时间</span><br><span class="line">3.多线程（守护进程），延长过期</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-1-Redis加锁实现"><a href="#2-1-Redis加锁实现" class="headerlink" title="2.1 Redis加锁实现"></a>2.1 Redis加锁实现</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOCK_SUCCESS = <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_IF_NOT_EXIST = <span class="string">&quot;NX&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_WITH_EXPIRE_TIME = <span class="string">&quot;PX&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 尝试获取分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expireTime 超期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否获取成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">tryGetDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId, <span class="keyword">int</span> expireTime)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (LOCK_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-2-redis-解锁代码"><a href="#2-2-redis-解锁代码" class="headerlink" title="2.2 redis 解锁代码"></a>2.2 redis 解锁代码</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Long RELEASE_SUCCESS = <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否释放成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">releaseDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String script = <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (RELEASE_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="Redis的弊端"><a href="#Redis的弊端" class="headerlink" title="Redis的弊端"></a>Redis的弊端</h6><ul>
+<li>数据库事务超时，导致锁过期</li>
+<li><code>redis cluster</code>集群环境下，假如现在<code>A客户端</code>想要加锁，它会根据路由规则选择一台<code>master</code>节点写入<code>key</code> <code>mylock</code>，在加锁成功后，<code>master</code>节点会把<code>key</code>异步复制给对应的<code>slave</code>节点。如果此时<code>redis master</code>节点宕机，为保证集群可用性，会进行<code>主备切换</code>，<code>slave</code>变为了<code>redis master</code>。<code>B客户端</code>在新的<code>master</code>节点上加锁成功，而<code>A客户端</code>也以为自己还是成功加了锁的。此时就会导致同一时间内多个客户端对一个分布式锁完成了加锁，导致各种脏数据的产生。</li>
+</ul>
+<h5 id="Redis-缓存一致性"><a href="#Redis-缓存一致性" class="headerlink" title="Redis 缓存一致性"></a>Redis 缓存一致性</h5><h6 id="出现场景"><a href="#出现场景" class="headerlink" title="出现场景"></a>出现场景</h6><p>在<strong>高并发的情况</strong>下涉及到数据更新：数据库和缓存更新，就容易出现<strong>缓存(Redis)和数据库（MySQL）间的数据一致性问题</strong>。</p>
+<p>不管是先写MySQL数据库，再删除Redis缓存；还是先删除缓存，再写库，都有可能出现数据不一致的情况。举一个例子：</p>
+<p>1.如果删除了缓存Redis，还没有来得及写库MySQL，另一个线程就来读取，发现缓存为空，则去数据库中读取数据写入缓存，此时缓存中为脏数据。</p>
+<p>2.如果先写了库，在删除缓存前，写库的线程宕机了，没有删除掉缓存，则也会出现数据不一致情况。</p>
+<p>因为<strong>写和读是并发</strong>的，没法保证顺序,就会出现缓存和数据库的数据不一致的问题。</p>
+<h6 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h6><p><strong>1.第一种方案：采用延时双删策略</strong></p>
+<p>在写库前后都进行redis.del(key)操作，并且设定合理的超时时间。</p>
+<p>伪代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(String key,Object data)</span></span>&#123;</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> db.updateData(data);</span><br><span class="line"> Thread.sleep(<span class="number">500</span>);</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>具体的步骤就是：</strong></p>
+<ul>
+<li>先删除缓存；</li>
+<li>再写数据库；</li>
+<li>休眠500毫秒；</li>
+<li>再次删除缓存</li>
+</ul>
+<p><strong>该方案的弊端</strong></p>
+<p>结合<strong>双删策略+缓存超时设置</strong>，这样<strong>最差的情况就是在超时时间内数据存在不一致，而且又增加了写请求的耗时。</strong></p>
+<p><strong>2、第二种方案：异步更新缓存(基于订阅binlog的同步机制)</strong></p>
+<p>MySQL binlog增量订阅消费+消息队列+增量数据更新到redis</p>
+<ul>
+<li><strong>读Redis</strong>：热数据基本都在Redis</li>
+<li><strong>写MySQL</strong>:增删改都是操作MySQL</li>
+<li><strong>更新Redis数据</strong>：MySQ的数据操作binlog，来更新到Redis</li>
+</ul>
+<p><strong>1）数据操作主要分为两大块：</strong></p>
+<ul>
+<li>一个是全量(将全部数据一次写入到redis)</li>
+<li>一个是增量（实时更新）</li>
+</ul>
+<p>这里说的是增量,指的是mysql的update、insert、delate变更数据。</p>
+<p><strong>2）读取binlog后分析 ，利用消息队列,推送更新各台的redis缓存数据。</strong></p>
+<p>这样一旦MySQL中产生了新的写入、更新、删除等操作，就可以把binlog相关的消息推送至Redis，Redis再根据binlog中的记录，对Redis进行更新。</p>
+<p>其实这种机制，很类似MySQL的主从备份机制，因为MySQL的主备也是通过binlog来实现的数据一致性。</p>
+<p><strong>消息推送工具</strong>你也可以采用别的第三方：kafka、rabbitMQ等来实现推送更新Redis。</p>
+]]></content>
+      <categories>
+        <category>Redis</category>
+        <category>面试</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+        <tag>面试</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>win10的typora配置gitee云图床</title>
     <url>/posts/fd71e1c8/</url>
     <content><![CDATA[<h5 id="1-相关准备准备"><a href="#1-相关准备准备" class="headerlink" title="1.相关准备准备"></a>1.相关准备准备</h5><ul>
@@ -46,95 +144,6 @@
         <tag>Typora</tag>
         <tag>Gitee</tag>
         <tag>Github</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo部署第三方主题next 7.8版本</title>
-    <url>/posts/d23fb963/</url>
-    <content><![CDATA[<h5 id="1-next-7-8-主题安装"><a href="#1-next-7-8-主题安装" class="headerlink" title="1. next 7.8 主题安装"></a>1. next 7.8 主题安装</h5><p><a href="https://github.com/theme-next/hexo-theme-next/archive/v7.8.0.zip">7.8.0版本下载连接</a></p>
-<ol>
-<li><p>将下载好的主题文件解压到hexo主目录下的themes文件夹下</p>
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224204119.png" alt="image-20210224204118992"></p>
-</li>
-<li><p>在主目录的source下新建<strong>_data</strong>目录，将<strong>第三方主题</strong>中的<strong>_config.yml</strong>文件复制到该目录下重命名为next.yml,并修改文件中<strong>override为true</strong></p>
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203110.png" alt="image-20210224203110673"></p>
- <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">override:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修改主目录的<strong>_config.yml</strong>文件，启用主题</p>
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203236.png" alt="image-20210224203236580"></p>
- <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Extensions</span></span><br><span class="line"><span class="comment">## Plugins: https://hexo.io/plugins/</span></span><br><span class="line"><span class="comment">## Themes: https://hexo.io/themes/</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>生成next主题开启的界面</p>
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203417.png"></p>
- <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo new page home</span><br><span class="line">hexo new page archives</span><br><span class="line">hexo new page about</span><br><span class="line">hexo new page tags</span><br><span class="line">hexo new page categories</span><br><span class="line">hexo new page commonweal</span><br></pre></td></tr></table></figure>
-
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>Hexo</category>
-        <category>Next</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>Next</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>win10的搭建hexo博客</title>
-    <url>/posts/1bab7c20/</url>
-    <content><![CDATA[<h5 id="1-环境配置"><a href="#1-环境配置" class="headerlink" title="1. 环境配置"></a>1. 环境配置</h5><p><strong>安装前准备</strong></p>
-<ul>
-<li>git</li>
-<li>Nodejs</li>
-</ul>
-<h5 id="2、Hexo安装"><a href="#2、Hexo安装" class="headerlink" title="2、Hexo安装"></a>2、Hexo安装</h5><ol>
-<li><p>首先配置npm的<strong>淘宝源</strong>,安装完成后可通过npm info hexo查看是否配置淘宝源成功</p>
- <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">npm config <span class="built_in">set</span> registry https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>安装hexo</p>
- <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">npm install -g hexo</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>指定安装的hexo目录</p>
- <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo init test</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> test     </span><br><span class="line"></span><br><span class="line">npm install</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>测试安装是否成功</p>
- <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo clean      #清除缓存</span><br><span class="line">hexo g      #生成静态网页</span><br><span class="line">hexo s      #启动本地服务</span><br></pre></td></tr></table></figure>
-
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224200606.png" alt="image-20210224200605821"></p>
-</li>
-</ol>
-<h5 id="3-Gtihub相关配置"><a href="#3-Gtihub相关配置" class="headerlink" title="3. Gtihub相关配置"></a>3. Gtihub相关配置</h5><p>New repository创建新仓库，仓库名应该为：<strong>用户名</strong>.<a href="https://link.zhihu.com/?target=http://github.io">http://github.io</a> 这个<strong>用户名</strong>使用你的GitHub帐号名称代替，这是固定写法，比如我的仓库名为：</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210224200752.png" alt="image-20210224200752872"></p>
-<h5 id="4-hexo配置远程部署"><a href="#4-hexo配置远程部署" class="headerlink" title="4. hexo配置远程部署"></a>4. hexo配置远程部署</h5><p>修改根目录下的<strong>_config.yml</strong> 文件中配置</p>
-<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/CNRF/CNRF.github.io.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
-
-<p>使用相关命令进行部署</p>
-<figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo d  # 第一次部署会提示输入github的账号和密码</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Hexo</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>修复点击目录无法跳转</title>
-    <url>/posts/14f8dec7/</url>
-    <content><![CDATA[<p>在 themes/next/source/js/util.js 中增加两行代码，删除两行代码。保存，hexo clean &amp; hexo g &amp; hexo s 即可解决。（如果还是不行就删除浏览器缓存重试）</p>
-<p><a href="https://github.com/theme-next/hexo-theme-next/pull/1540/files">中文目录层级无法跳转</a></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210225115114.png" alt="image-20210225115114883"></p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">registerSidebarTOC: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> navItems = <span class="built_in">document</span>.querySelectorAll(<span class="string">&#x27;.post-toc li&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> sections = [...navItems].map(<span class="function"><span class="params">element</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> link = element.querySelector(<span class="string">&#x27;a.nav-link&#x27;</span>);</span><br><span class="line">    <span class="keyword">var</span> target = <span class="built_in">document</span>.getElementById(<span class="built_in">decodeURI</span>(link.getAttribute(<span class="string">&#x27;href&#x27;</span>)).replace(<span class="string">&#x27;#&#x27;</span>, <span class="string">&#x27;&#x27;</span>));</span><br><span class="line">    <span class="comment">// TOC item animation navigate.</span></span><br><span class="line">    link.addEventListener(<span class="string">&#x27;click&#x27;</span>, <span class="function"><span class="params">event</span> =&gt;</span> &#123;</span><br><span class="line">      event.preventDefault();</span><br><span class="line">      <span class="comment">// var target = document.getElementById(event.currentTarget.getAttribute(&#x27;href&#x27;).replace(&#x27;#&#x27;, &#x27;&#x27;));</span></span><br><span class="line">      <span class="keyword">var</span> offset = target.getBoundingClientRect().top + <span class="built_in">window</span>.scrollY;</span><br><span class="line">      <span class="built_in">window</span>.anime(&#123;</span><br><span class="line">        targets  : <span class="built_in">document</span>.scrollingElement,</span><br><span class="line">        duration : <span class="number">500</span>,</span><br><span class="line">        easing   : <span class="string">&#x27;linear&#x27;</span>,</span><br><span class="line">        scrollTop: offset + <span class="number">10</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">    <span class="comment">// return document.getElementById(link.getAttribute(&#x27;href&#x27;).replace(&#x27;#&#x27;, &#x27;&#x27;));</span></span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Hexo</category>
-        <category>Next</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
       </tags>
   </entry>
   <entry>
@@ -215,316 +224,6 @@
       <tags>
         <tag>Hexo</tag>
         <tag>Next</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>centos安装redis</title>
-    <url>/posts/725846d4/</url>
-    <content><![CDATA[<p><strong>操作系统为centOS7  redis为6.0.8版本</strong></p>
-<ol>
-<li>安装wget命令 </li>
-</ol>
-   <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum install wget</span><br></pre></td></tr></table></figure>
-
-<p>   <img src="https://gitee.com/CNRF/image/raw/master/img/20210223112933.png" alt="image-20201026172631943"></p>
-<ol start="2">
-<li><p>安装GCC包（redis是c语言编写，liunx需要安装相关软件）</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum install gcc</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223112947.png" alt="image-20201026172608587"></p>
-</li>
-<li><p>在指定目录获取安装包（或者下载之后移动到指定目录  ）</p>
-<p><a href="https://redis.io/download%E8%8E%B7%E5%8F%96%E7%9B%B8%E5%85%B3%E7%89%88%E6%9C%AC%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%99%E9%87%8C%E4%B8%8B%E8%BD%BD6.0%E7%89%88%E6%9C%AC">https://redis.io/download获取相关版本连接，这里下载6.0版本</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;download.redis.io&#x2F;releases&#x2F;redis-6.0.8.tar.gz</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113024.png" alt="image-20201026172901823"></p>
-</li>
-<li><p>解压gz包（下载的是源码）</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">tar xf redis-6.0.8.tar.gz</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>根据解压包中文件的REDME.md文档进行相关操作（重要：安装其他软件同理）</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113031.png" alt="image-20201103102727621"></p>
-</li>
-<li><p>使用make相关命令进行安装程序</p>
-</li>
-<li><p>安装可执行到指定目录（分离源码）</p>
-<p>查看/home/redis-6.0.8/INSTALL，根据文档安装</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">make install PREFIX&#x3D;&#x2F;home&#x2F;redis6</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>注册redis为服务</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;执行vi &#x2F;etc&#x2F;profile命令，在文件最后新增内容</span><br><span class="line">vi &#x2F;etc&#x2F;profile</span><br><span class="line">&#x2F;&#x2F;REDIS_HOME的路径为第七步的安装路径</span><br><span class="line">export REDIS_HOME&#x3D;&#x2F;home&#x2F;redis6</span><br><span class="line">export PATH&#x3D;$PATH:$REDIS_HOME&#x2F;bin</span><br><span class="line">&#x2F;&#x2F;使配置文件生效</span><br><span class="line">source &#x2F;etc&#x2F;profile</span><br><span class="line">&#x2F;&#x2F;验证是否添加成功</span><br><span class="line">echo $PATH</span><br><span class="line">&#x2F;&#x2F;执行</span><br><span class="line">&#x2F;home&#x2F;redis-6.0.8&#x2F;utils&#x2F;install_server.sh脚本注册为服务</span><br><span class="line">.&#x2F;install_server.sh</span><br></pre></td></tr></table></figure>
-
-
-</li>
-</ol>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113126.png" alt="image-20201103103148896"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113145.png" alt="image-20201103112714896">   </p>
-<ol start="9">
-<li><p>修改配置文件，安装需求修改相关配置</p>
-<p>redis常见配置参见<a href="https://blog.csdn.net/suprezheng/article/details/90679790">https://blog.csdn.net/suprezheng/article/details/90679790</a></p>
-</li>
-<li><p>将redis_6379(根据生成的配置文件名称)设置为开启</p>
-</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;init.d</span><br><span class="line">  #init.d没有redis_6379文件的可以在源文件中找到redis.conf文件进行修改</span><br><span class="line">  chkconfig --add redis_6379</span><br><span class="line">  chkconfig redis_6379 on</span><br><span class="line">  #查看开机自启的列表</span><br><span class="line">  chkconfig --list</span><br><span class="line">  #重启redis</span><br><span class="line">  service redis_6379 restart</span><br><span class="line">  #手动启用</span><br><span class="line">  redis-server &#x2F;etc&#x2F;redis&#x2F;6379.conf</span><br><span class="line">  chkconfig --list的参数意义</span><br><span class="line">  1表示：单用户模式</span><br><span class="line">  2表示：无网络连接的多用户命令行模式</span><br><span class="line">  3表示：有网络连接的多用户命令行模式</span><br><span class="line">  4表示：不可用</span><br><span class="line">  5表示：带图形界面的多用户模式</span><br><span class="line">  6表示：重新启动</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>Redis</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>安装redis出现的问题</title>
-    <url>/posts/5e07a887/</url>
-    <content><![CDATA[<p><strong>操作系统为centOs7  redis为6.0.8版本</strong></p>
-<h3 id="1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令"><a href="#1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令" class="headerlink" title="1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令"></a>1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;一般错误为gcc套装错误</span><br><span class="line">yum install cpp</span><br><span class="line">yum install binutils</span><br><span class="line">yum install glibc</span><br><span class="line">yum install glibc-kernheaders</span><br><span class="line">yum install glibc-common</span><br><span class="line">yum install glibc-devel</span><br><span class="line">yum install gcc</span><br><span class="line">yum install make</span><br><span class="line">&#x2F;&#x2F;清理错误文件</span><br><span class="line">make distclean</span><br><span class="line">&#x2F;&#x2F;重新安装</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-
-<p><a href="https://blog.csdn.net/m0_37952284/article/details/109012324">server.c:5307:31: 错误:‘struct redisServer’没有名为‘server_xxx’的成员</a></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113217.png" alt="image-20201103103148896"></p>
-<ol start="2">
-<li><h3 id="下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错"><a href="#下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错" class="headerlink" title="下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:"></a>下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:</h3></li>
-</ol>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113232.png" alt="image-20201103104749570"></p>
-<p>原因是redies用了c语言编写，centos7.6应该也有以下版本，默认安装的gcc4.8.5版本较低，需要在5.3以上版本，现更换为9.3，先查看当前版本：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">gcc -v</span><br></pre></td></tr></table></figure>
-
-<p>开始更换：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum -y install centos-release-scl</span><br><span class="line">yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils</span><br><span class="line">echo &quot;source &#x2F;opt&#x2F;rh&#x2F;devtoolset-9&#x2F;enable&quot; &gt;&gt;&#x2F;etc&#x2F;profile</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>重连shell</strong>(不重连gcc版本不变)，重新make，即成功了</p>
-<h3 id="3-安装Redis-6-0-6-install-server-sh报错"><a href="#3-安装Redis-6-0-6-install-server-sh报错" class="headerlink" title="3.安装Redis 6.0.6 ./install_server.sh报错"></a>3.安装Redis 6.0.6 ./install_server.sh报错</h3><p>产生原因:gcc9版本校验更加严格导致</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113249.png" alt="image-20201103111330639"></p>
-<p>解决方案</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vi .&#x2F;install_server.sh</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113254.png" alt="image-20201103111506170"></p>
-<p><strong>注释掉代码</strong>重新运行</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#bail if this system is managed by systemd</span><br><span class="line">#_pid_1_exe&#x3D;&quot;$(readlink -f &#x2F;proc&#x2F;1&#x2F;exe)&quot;</span><br><span class="line">#if [ &quot;$&#123;_pid_1_exe##*&#x2F;&#125;&quot; &#x3D; systemd ]</span><br><span class="line">#then</span><br><span class="line">#       echo &quot;This systems seems to use systemd.&quot;</span><br><span class="line">#       echo &quot;Please take a look at the provided example service unit files in this directory, and adapt and install them. Sorry!&quot;</span><br><span class="line">#       exit 1</span><br><span class="line">#fi</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>Redis</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>redis入门</title>
-    <url>/posts/eca8b4a8/</url>
-    <content><![CDATA[<h4 id="1-redis相关介绍"><a href="#1-redis相关介绍" class="headerlink" title="1.redis相关介绍"></a>1.redis相关介绍</h4><p><a href="http://redis.cn/">redis中文网</a></p>
-<h5 id="1-1-redis的介绍"><a href="#1-1-redis的介绍" class="headerlink" title="1.1 redis的介绍"></a>1.1 redis的介绍</h5><p>Redis 是一个开源（BSD许可）的，内存中的数据结构存储系统，它可以用作数据库、缓存和消息中间件。 它支持多种类型的数据结构，如 <a href="http://redis.cn/topics/data-types-intro.html#strings">字符串（strings）</a>， <a href="http://redis.cn/topics/data-types-intro.html#hashes">散列（hashes）</a>， <a href="http://redis.cn/topics/data-types-intro.html#lists">列表（lists）</a>， <a href="http://redis.cn/topics/data-types-intro.html#sets">集合（sets）</a>， <a href="http://redis.cn/topics/data-types-intro.html#sorted-sets">有序集合（sorted sets）</a> 与范围查询， <a href="http://redis.cn/topics/data-types-intro.html#bitmaps">bitmaps</a>， <a href="http://redis.cn/topics/data-types-intro.html#hyperloglogs">hyperloglogs</a> 和 <a href="http://redis.cn/commands/geoadd.html">地理空间（geospatial）</a> 索引半径查询。 Redis 内置了 <a href="http://redis.cn/topics/replication.html">复制（replication）</a>，<a href="http://redis.cn/commands/eval.html">LUA脚本（Lua scripting）</a>， <a href="http://redis.cn/topics/lru-cache.html">LRU驱动事件（LRU eviction）</a>，<a href="http://redis.cn/topics/transactions.html">事务（transactions）</a> 和不同级别的 <a href="http://redis.cn/topics/persistence.html">磁盘持久化（persistence）</a>， 并通过 <a href="http://redis.cn/topics/sentinel.html">Redis哨兵（Sentinel）</a>和自动 <a href="http://redis.cn/topics/cluster-tutorial.html">分区（Cluster）</a>提供高可用性（high availability）。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113311.png" alt="image-20210211203040301"></p>
-<h5 id="1-2-redis和memcached的区别"><a href="#1-2-redis和memcached的区别" class="headerlink" title="1.2  .redis和memcached的区别"></a>1.2  .redis和memcached的区别</h5><p>redis和memcached相比本质是解耦，用大数据说法是计算向数据移动</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113409.png" alt="image-20210218095611832"></p>
-<h5 id="1-3-liunx下常见的redis命令"><a href="#1-3-liunx下常见的redis命令" class="headerlink" title="1.3 . liunx下常见的redis命令"></a>1.3 . liunx下常见的redis命令</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#连接redis</span><br><span class="line">redis-cli</span><br><span class="line">#连接redis是6379端口的8号库 指定库(不同库数据不可见)</span><br><span class="line">redis-cli -p 6379 -n 8</span><br><span class="line">#连接redis后使用help进行查询</span><br><span class="line">help </span><br></pre></td></tr></table></figure>
-
-<h4 id="2-redis相关数据的操作常见命令"><a href="#2-redis相关数据的操作常见命令" class="headerlink" title="2.redis相关数据的操作常见命令"></a>2.redis相关数据的操作常见命令</h4><p>在redis客户端中使用help命令进行相关查询相关命令</p>
-<h5 id="2-1-Strings类型"><a href="#2-1-Strings类型" class="headerlink" title="2.1 Strings类型"></a>2.1 Strings类型</h5><p><a href="https://redis.io/commands#string">Strings 数据操作相关文档</a></p>
-<h6 id="2-1-1-查看string类型帮助命令"><a href="#2-1-1-查看string类型帮助命令" class="headerlink" title="2.1.1 查看string类型帮助命令"></a>2.1.1 查看string类型帮助命令</h6><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">help @string</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113419.png" alt="image-20210219155031906"></p>
-<h6 id="2-1-2-string数据类型及相关的应用场景"><a href="#2-1-2-string数据类型及相关的应用场景" class="headerlink" title="2.1.2  string数据类型及相关的应用场景"></a>2.1.2  string数据类型及相关的应用场景</h6><ol>
-<li><p>字符串</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#set设置key的value</span><br><span class="line">set k1 ooxx nx  （带nx，xx可用在分布式锁中）</span><br><span class="line">set k1 ooxx xx</span><br><span class="line">#mset批量设置</span><br><span class="line">mset k3 k3mest k4 k4mest</span><br><span class="line">#get获取key的value</span><br><span class="line">get k1</span><br><span class="line">#mget批量获取</span><br><span class="line">mget k3 k4</span><br><span class="line">#APPEND在字符串后面追加</span><br><span class="line">append k1 &quot; world&quot;</span><br><span class="line">#GETRANGE获取指定范围数据</span><br><span class="line">getrange k1 5 10</span><br><span class="line">#strlen获取字符串长度</span><br><span class="line">strlen k1</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113426.png" alt="image-20210219155108071"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113517.png" alt="image-20210219160021217"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113555.png" alt="image-20210219160343269"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113600.png" alt="image-20210219160751857"></p>
-</li>
-<li><p>数值</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">incr  将value的整数型+1</span><br><span class="line">incrby 将value的整数型加指定数</span><br><span class="line">decr </span><br><span class="line">descby</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>  <strong>应用场景</strong> ： 抢购，秒杀，详情页，点赞，评论规避并发下，对数据库的事务操作完全由redis内存操作代替，避免因数据库事务导致响应时间超时，<strong>但在银行等金融涉及金额不要放在redis中进行相关计算</strong></p>
-<ol start="3">
-<li><p>bitmap</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">setbit  &#x2F;&#x2F;设置bit数值</span><br><span class="line">bitcount  </span><br><span class="line">bitpos</span><br><span class="line">bitop</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p><strong>应用场景</strong> ：</p>
-<pre><code>1. 统计用户登陆天数
-
-    方案：用户id为key，设计长度为9bit的数据即可存储用户当年所有登陆天数数据，当天登陆为1，即可统计指定时间段的相关数据
-
-2. 统计当天所有用户登陆情况
-
-    方案：日期为Key，设计一个合适长度的数据存储，每一位对应一位客户，登陆则为1，统计时直接进行二进制与运算，则可以去重，统计那些用户登陆
-</code></pre>
-<h5 id="2-2-Lists类型"><a href="#2-2-Lists类型" class="headerlink" title="2.2  Lists类型"></a>2.2  Lists类型</h5><h6 id="2-2-1-Lists常见命令"><a href="#2-2-1-Lists常见命令" class="headerlink" title="2.2.1 Lists常见命令"></a>2.2.1 Lists常见命令</h6><p><a href="https://redis.io/commands#list">Lists数据相关操作命令</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#lpush 存放顺序为f e d c b a</span><br><span class="line">lpush k1 a b c d e f</span><br><span class="line">#rpush 存放顺序为a b c d e f</span><br><span class="line">rpush k2 a b c d e f</span><br><span class="line">#取数据 lpop</span><br><span class="line">lpop k1 </span><br><span class="line">#lrange按照范围取</span><br><span class="line">lrange k1 0 -1（取全部）</span><br><span class="line">#lindex</span><br><span class="line">#lset</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113620.png" alt="image-20210219205233457"></p>
-<h6 id="2-2-2应用场景"><a href="#2-2-2应用场景" class="headerlink" title="2.2.2应用场景"></a>2.2.2应用场景</h6><ol>
-<li>使用lpush模拟栈，后进先出</li>
-<li>使用rpush模拟队列，先进先出（买票排队问题）</li>
-<li>lindex模拟数组，直接根据下标取相关数据</li>
-<li>blpop模拟阻塞单播队列（blpop会让对应key有则弹出value，没有会阻塞等待key有值，并且只会弹出一次，当多个客户端同时对一个key使用blpop则可以实现阻塞单播）</li>
-</ol>
-<h5 id="2-3-hashes类型"><a href="#2-3-hashes类型" class="headerlink" title="2.3 hashes类型"></a>2.3 hashes类型</h5><p>类似java中的hashmap（key，hashmap（key，value））。这里面第一个key是hashes的key，hashmap（key，value）才是value</p>
-<h6 id="2-3-1-hashes常见命令"><a href="#2-3-1-hashes常见命令" class="headerlink" title="2.3.1 hashes常见命令"></a>2.3.1 hashes常见命令</h6><p><a href="https://redis.io/commands#hash">hashes常见的命令</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hdel</span><br><span class="line">hget</span><br><span class="line">hset</span><br><span class="line">hlen</span><br><span class="line">hincrbyfloat</span><br></pre></td></tr></table></figure>
-
-<h6 id="2-3-2-应用场景："><a href="#2-3-2-应用场景：" class="headerlink" title="2.3.2 应用场景："></a>2.3.2 应用场景：</h6><ol>
-<li>对员工薪水进行统计</li>
-</ol>
-<h5 id="2-4-sets数据类型"><a href="#2-4-sets数据类型" class="headerlink" title="2.4 sets数据类型"></a>2.4 sets数据类型</h5><p>Redis Set 是 String 的无序排列。<code>SADD</code> 指令把新的元素添加到 set 中。对 set 也可做一些其他的操作，比如测试一个给定的元素是否存在，对不同 set 取交集，并集或差，等等。</p>
-<h6 id="2-4-1常见命令"><a href="#2-4-1常见命令" class="headerlink" title="2.4.1常见命令"></a>2.4.1常见命令</h6><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sadd &#x2F;&#x2F;添加元素</span><br><span class="line">sadd myset 1 2 3</span><br><span class="line">smembers &#x2F;&#x2F;读取集合元素</span><br><span class="line">smembers myset</span><br><span class="line">sismember &#x2F;&#x2F;判断元素存在</span><br><span class="line">sismember myset 3 &#x2F;&#x2F;存在返回1，不存在为0</span><br><span class="line"> SINTER  &#x2F;&#x2F;获取多个集合的交集</span><br><span class="line"> SUNIONSTORE  &#x2F;&#x2F;多个集合取并集</span><br></pre></td></tr></table></figure>
-
-<h6 id="2-4-2-应用场景"><a href="#2-4-2-应用场景" class="headerlink" title="2.4.2 应用场景"></a>2.4.2 应用场景</h6><ol>
-<li><p>公平抽奖(随机事件) ：  SRANDMEMBER key count（用户作为value）</p>
-<p> ​                        正数：取出一个去重的结果集（不能超过已有集）</p>
-<p> ​                        负数：取出一个带重复的结果集，一定满足你要的数量如果：</p>
-<p> ​                        0，不返回</p>
-</li>
-</ol>
-<h5 id="2-5-sorted-sets数据类型"><a href="#2-5-sorted-sets数据类型" class="headerlink" title="2.5 sorted sets数据类型"></a>2.5 sorted sets数据类型</h5><h6 id="2-5-1-常见命令"><a href="#2-5-1-常见命令" class="headerlink" title="2.5.1 常见命令"></a>2.5.1 常见命令</h6><p><a href="https://redis.io/commands#sorted_set">sorted sets常见命令</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">zadd</span><br><span class="line">zmenmber</span><br><span class="line">zinter</span><br><span class="line">zscore &#x2F;&#x2F;按照什么排序</span><br></pre></td></tr></table></figure>
-
-<h6 id="2-5-2-排序底层实现"><a href="#2-5-2-排序底层实现" class="headerlink" title="2.5.2 排序底层实现"></a>2.5.2 排序底层实现</h6><p>通过Skip list（跳跃表）实现增删查改</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113634.png" alt="image-20210220102659707"></p>
-]]></content>
-      <categories>
-        <category>Redis</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>redis的消息订阅，pipeline，事务</title>
-    <url>/posts/d09e787/</url>
-    <content><![CDATA[<h5 id="1-Redis-管道（Pipelining）"><a href="#1-Redis-管道（Pipelining）" class="headerlink" title="1.Redis 管道（Pipelining）"></a>1.Redis 管道（Pipelining）</h5><p><a href="http://redis.cn/topics/pipelining.html">Redis 管道（Pipelining）</a></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113641.png" alt="image-20210220103817162"></p>
-<p>一次请求/响应服务器能实现处理新的请求即使旧的请求还未被响应。这样就可以将<em>多个命令</em>发送到服务器，而不用等待回复，最后在一个步骤中读取该答复。</p>
-<p><strong>重要说明</strong>: 使用管道发送命令时，服务器将被迫回复一个队列答复，占用很多内存。如果需要发送大量的命令，最好是按照合理数量分批次的处理，例如10K的命令，读回复，然后再发送另一个10k的命令，等等。这样速度几乎是相同的，但是在回复这10k命令队列需要非常大量的内存用来组织返回数据内容。</p>
-<h5 id="2-redis的消息订阅"><a href="#2-redis的消息订阅" class="headerlink" title="2. redis的消息订阅"></a>2. redis的消息订阅</h5><p><a href="http://redis.cn/topics/pubsub.html">redis的消息订阅</a></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">PUBLISH  &#x2F;&#x2F;发布消息</span><br><span class="line">SUBSCRIBE foo bar</span><br><span class="line">SUBSCRIBE  &#x2F;&#x2F;接收指定队列消息</span><br><span class="line">SUBSCRIBE foo</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-redis的事务"><a href="#3-redis的事务" class="headerlink" title="3. redis的事务"></a>3. redis的事务</h5><p><a href="http://redis.cn/topics/transactions.html">redis的事务</a></p>
-<p><a href="http://redis.cn/commands/multi.html">MULTI</a> 、 <a href="http://redis.cn/commands/exec.html">EXEC</a> 、 <a href="http://redis.cn/commands/discard.html">DISCARD</a> 和 <a href="http://redis.cn/commands/watch.html">WATCH</a> 是 Redis 事务相关的命令。事务可以一次执行多个命令， 并且带有以下两个重要的保证：</p>
-<ul>
-<li>事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</li>
-<li>事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。</li>
-</ul>
-<p><a href="http://redis.cn/commands/exec.html">EXEC</a> 命令负责触发并执行事务中的所有命令：</p>
-<ul>
-<li>如果客户端在使用 <a href="http://redis.cn/commands/multi.html">MULTI</a> 开启了一个事务之后，却因为断线而没有成功执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都不会被执行。</li>
-<li>另一方面，如果客户端成功在开启事务之后执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都会被执行</li>
-</ul>
-<blockquote>
-<p><code> AOF 方式做持久化</code>的时候，Redis 会使用单个 write(2) 命令将事务写入到磁盘中。然而，如果 Redis 服务器因为某些原因被管理员杀死，或者遇上某种硬件故障，那么可能只有部分事务命令会被成功写入到磁盘中。如果 Redis 在重新启动时发现 AOF 文件出了这样的问题，那么它会退出，并汇报一个错误。</p>
-<p>Redis (2.2版本开始)还可以通过乐观锁（optimistic lock）实现 CAS （check-and-set）操作</p>
-</blockquote>
-<h6 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h6><p><a href="http://redis.cn/commands/multi.html">MULTI</a> 命令用于开启一个事务，它总是返回 <code>OK</code> 。 <a href="http://redis.cn/commands/multi.html">MULTI</a> 执行之后， 客户端可以继续向服务器发送任意多条命令， 这些命令不会立即被执行， 而是被放到一个队列中， 当 <a href="http://redis.cn/commands/exec.html">EXEC</a>命令被调用时， 所有队列中的命令才会被执行。</p>
-<p>另一方面， 通过调用 <a href="http://redis.cn/commands/discard.html">DISCARD</a> ， 客户端可以清空事务队列， 并放弃执行事务。</p>
-<p>以下是一个事务例子， 它原子地增加了 <code>foo</code> 和 <code>bar</code> 两个键的值：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; MULTI</span><br><span class="line">OK</span><br><span class="line">&gt; INCR foo</span><br><span class="line">QUEUED</span><br><span class="line">&gt; INCR bar</span><br><span class="line">QUEUED</span><br><span class="line">&gt; EXEC</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (integer) 1</span><br></pre></td></tr></table></figure>
-
-<p><a href="http://redis.cn/commands/exec.html">EXEC</a> 命令的回复是一个数组， 数组中的每个元素都是执行事务中的命令所产生的回复。 其中， 回复元素的先后顺序和命令发送的先后顺序一致。</p>
-<p>当客户端处于事务状态时， 所有传入的命令都会返回一个内容为 <code>QUEUED</code> 的状态回复（status reply）， 这些被入队的命令将在 EXEC 命令被调用时执行</p>
-<h6 id="事务中的错误"><a href="#事务中的错误" class="headerlink" title="事务中的错误"></a>事务中的错误</h6><ul>
-<li>事务在执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> 之前，入队的命令可能会出错。比如说，命令可能会产生语法错误（参数数量错误，参数名错误，等等），或者其他更严重的错误，比如内存不足（如果服务器使用 <code>maxmemory</code> 设置了最大内存限制的话）。</li>
-<li>命令可能在 <a href="http://redis.cn/commands/exec.html">EXEC</a> 调用之后失败。举个例子，事务中的命令可能处理了错误类型的键，比如将列表命令用在了字符串键上面，诸如此类。</li>
-</ul>
-<p>服务器会对命令入队失败的情况进行记录，并在客户端调用 <a href="http://redis.cn/commands/exec.html">EXEC</a> 命令时，<strong>拒绝执行并自动放弃这个事务</strong>。</p>
-<h6 id="Redis-不支持回滚（roll-back）原因"><a href="#Redis-不支持回滚（roll-back）原因" class="headerlink" title="Redis 不支持回滚（roll back）原因"></a>Redis 不支持回滚（roll back）原因</h6><ul>
-<li>Redis 命令只会因为错误的语法而失败（并且这些问题不能在入队时发现），或是命令用在了错误类型的键上面：这也就是说，从实用性的角度来说，<strong>失败的命令是由编程错误造成的，而这些错误应该在开发的过程中被发现，而不应该出现在生产环境中</strong>。</li>
-<li>因为<strong>不需要对回滚进行支持</strong>，所以 Redis 的内部可以保持<strong>简单且快速</strong>。</li>
-</ul>
-<h5 id="4-布隆过滤器"><a href="#4-布隆过滤器" class="headerlink" title="4.布隆过滤器"></a>4.布隆过滤器</h5><p><a href="https://github.com/RedisBloom/RedisBloom">第三方实现的redis的布隆过滤器</a></p>
-<blockquote>
-<p>第三方实现redis的相关功能： <a href="https://redis.io/modules">https://redis.io/modules</a></p>
-</blockquote>
-<h5 id="5-redis的LRU（Least-Recently-Used）淘汰策略"><a href="#5-redis的LRU（Least-Recently-Used）淘汰策略" class="headerlink" title="5.redis的LRU（Least Recently Used）淘汰策略"></a>5.redis的LRU（Least Recently Used）淘汰策略</h5><p><a href="http://redis.cn/topics/lru-cache.html">将redis当做使用LRU算法的缓存来使用</a></p>
-<p><strong>LRU是Redis唯一支持的回收方法</strong>，Redis的<code>maxmemory</code>指令用于将可用内存限制成一个固定大小，还包括了Redis使用的LRU算法，这个实际上只是近似的LRU。</p>
-<p><strong>Redis的LRU算法并非完整的实现</strong>。这意味着<strong>Redis并没办法选择最佳候选来进行回收</strong>，也就是最久未被访问的键。相反它会尝试运行一个近似LRU的算法，<strong>通过对少量keys进行取样，然后回收其中一个最好的key（被访问时间较早的）</strong>。</p>
-<h6 id="回收策略"><a href="#回收策略" class="headerlink" title="回收策略"></a>回收策略</h6><p>以下的策略是可用的:</p>
-<ul>
-<li><strong>noeviction</strong>:返回错误当内存限制达到并且客户端尝试执行会让更多内存被使用的命令（大部分的写入指令，但DEL和几个例外）</li>
-<li><strong>allkeys-lru</strong>: 尝试回收最少使用的键（LRU），使得新添加的数据有空间存放。</li>
-<li><strong>volatile-lru</strong>: 尝试回收最少使用的键（LRU），但仅限于在过期集合的键,使得新添加的数据有空间存放。</li>
-<li><strong>allkeys-random</strong>: 回收随机的键使得新添加的数据有空间存放。</li>
-<li><strong>volatile-random</strong>: 回收随机的键使得新添加的数据有空间存放，但仅限于在过期集合的键。</li>
-<li><strong>volatile-ttl</strong>: 回收在过期集合的键，并且优先回收存活时间（TTL）较短的键,使得新添加的数据有空间存放。</li>
-</ul>
-<h6 id="回收进程如何工作"><a href="#回收进程如何工作" class="headerlink" title="回收进程如何工作"></a><strong>回收进程如何工作</strong></h6><p>理解回收进程如何工作是非常重要的:</p>
-<ul>
-<li>一个客户端运行了新的命令，添加了新的数据。</li>
-<li>Redi检查内存使用情况，如果大于maxmemory的限制, 则根据设定好的策略进行回收。</li>
-<li>一个新的命令被执行，等等。</li>
-<li>所以我们不断地穿越内存限制的边界，通过不断达到边界然后不断地回收回到边界以下。</li>
-</ul>
-<p>如果一个命令的结果导致大量内存被使用（例如很大的集合的交集保存到一个新的键），不用多久内存限制就会被这个内存使用量超越。</p>
-]]></content>
-      <categories>
-        <category>Redis</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>redis持久化</title>
-    <url>/posts/dcfaa904/</url>
-    <content><![CDATA[<h5 id="1-redis的持久化方式"><a href="#1-redis的持久化方式" class="headerlink" title="1. redis的持久化方式"></a>1. redis的持久化方式</h5><ol>
-<li><p>RDB持久化</p>
-<p> 原理是将<strong>Reids在内存中的数据库记录定时dump到磁盘上的RDB持久化</strong></p>
-</li>
-<li><p>AOF持久化</p>
-<p> 原理是将<strong>Reids的操作日志以追加的方式写入文件</strong></p>
-<p> <a href="https://www.cnblogs.com/zxs117/p/11242026.html">两种持久化方式区别</a></p>
-<p> 二者选择的标准，就是看系统是愿意牺牲一些性能，换取更高的缓存一致性（aof），还是愿意写操作频繁的时候，不启用备份来换取更高的性能，待手动运行save的时候，再做备份（rdb）。rdb这个就更有些 eventually consistent的意思了。不过生产环境其实更多都是二者结合使用的。</p>
-</li>
-</ol>
-<h5 id="2-RDB持久化"><a href="#2-RDB持久化" class="headerlink" title="2.RDB持久化"></a>2.RDB持久化</h5><p><strong>原理</strong> :在liunx系统系统中，<strong>进程之间的数据是隔离的</strong>，在使用export的环境变量，<strong>父子进程的修改都不会影响到其他进程的数据</strong></p>
-<p>RDB持久化是指在指定的时间间隔内将内存中的数据集快照写入磁盘，实际操作过程是<strong>fork一个子进程</strong>，先将<strong>数据集写入临时文件</strong>，写入成功后，再替换之前的文件，用二进制压缩存储。</p>
-<h6 id="2-1-RDB的优缺点"><a href="#2-1-RDB的优缺点" class="headerlink" title="2.1 RDB的优缺点"></a>2.1 RDB的优缺点</h6><p><strong>优点</strong>： </p>
-<ol>
-<li><strong>还原速度快</strong>（类似java的对象序列化，可快速还原）</li>
-<li><strong>整个Redis数据库将只包含一个文件，这对于文件备份而言是非常完美的</strong>。比如，你可能打算每个小时归档一次最近24小时的数据，同时还要每天归档一次最近30天的数据。通过这样的备份策略，一旦系统出现灾难性故障，我们可以非常容易的进行恢复。</li>
-</ol>
-<p><strong>弊端</strong>：</p>
-<ol>
-<li>如果你想保证数据的高可用性，即最大限度的避免数据丢失，那么<strong>RDB将不是一个很好的选择。因为系统一旦在定时持久化完成之前出现宕机现象，此前没有来得及写入磁盘的数据都将丢失</strong>。</li>
-<li> 由于RDB是通过fork子进程来协助完成数据持久化工作的，因此，<strong>如果当数据集较大时，可能会导致整个服务器停止服务几百毫秒，甚至是1秒钟。</strong></li>
-</ol>
-<blockquote>
-<p>fork命令只是创建进程，并不会在此时进行复制，因此创建进程的速度变快</p>
-<p>fork出来的父子进程具有 <strong>相同但是独立的地址空间</strong>因为父进程和子进程是独立的进程，他们都有自己私有的地址空间，当父进程或者子进程单独改变时，不会影响到彼此，类似于c++的写实拷贝的形式自建一个副本</p>
-<p><a href="https://blog.csdn.net/weixin_40853073/article/details/81873398?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control&dist_request_id=4254810a-f10f-43c5-8965-6b775b5a3682&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control">fork命令详细说明</a></p>
-</blockquote>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113700.png" alt="image-20210221233300160"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151043.png" alt="image-20210226151042967"></p>
-<h5 id="3-AOF持久化"><a href="#3-AOF持久化" class="headerlink" title="3. AOF持久化"></a>3. AOF持久化</h5><p>AOF持久化以<strong>日志的形式</strong>记录服务器所处理的<strong>每一个写、删除操作</strong>，查询操作不会记录，以文本的方式记录，可以打开文件看到详细的操作记录。</p>
-<blockquote>
-<p>当redis同时开启RDB和AOF备份，redis恢复是只会依据AOF的备份（AOF的数据丢失较少）</p>
-</blockquote>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113653.png" alt="image-20210221233312115"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151129.png" alt="image-20210226151129085"></p>
-<h6 id="3-1-AOF的优缺点"><a href="#3-1-AOF的优缺点" class="headerlink" title="3.1 AOF的优缺点"></a>3.1 AOF的优缺点</h6><p><strong>优点</strong>：</p>
-<p>1). 该机制可以带来<strong>更高的数据安全性，即数据持久性</strong>。Redis中提供了3中同步策略，即每秒同步、每修改同步和不同步。事实上，每秒同步也是异步完成的，其效率也是非常高的，所差的是一旦系统出现宕机现象，那么这一秒钟之内修改的数据将会丢失。而每修改同步，我们可以将其视为同步持久化，即每次发生的数据变化都会被立即记录到磁盘中。可以预见，这种方式在效率上是最低的。</p>
-<p>2). 由于该机制对日志文件的<strong>写入操作采用的是append模式，因此在写入过程中即使出现宕机现象，也不会破坏日志文件中已经存在的内容</strong>。然而如果我们本次操作只是写入了一半数据就出现了系统崩溃问题，不用担心，在Redis下一次启动之前，我们可以<strong>通过redis-check-aof工具来帮助我们解决数据一致性的问题。</strong></p>
-<p>3). 如果<strong>日志过大，Redis可以自动启用rewrite机制</strong>。即Redis以append模式不断的将修改数据写入到老的磁盘文件中，同时Redis还会创建一个新的文件用于记录此期间有哪些修改命令被执行。因此在进行rewrite切换时可以更好的保证数据安全性。</p>
-<blockquote>
-<p>redis4.0以前：rewrite其实是删除抵消的命令（创建和删除），合并重复的命名。最终会生成重复命令</p>
-<p>redis4.0以后：将老的数据RDB到AOF中，将增量的以指令的方式append到aof中（实际就是混合RDB+AOF的持久化方式）</p>
-</blockquote>
-<p>4). <strong>AOF包含一个格式清晰、易于理解的日志文件用于记录所有的修改操作。事实上，我们也可以通过该文件完成数据的重建</strong>。</p>
-<p><strong>缺点</strong>：</p>
-<p>1). 对于相同数量的数据集而言，AOF文件通常要大于RDB文件。<strong>RDB 在恢复大数据集时的速度比 AOF 的恢复速度要快。</strong></p>
-<p>2). 根据同步策略的不同，<strong>AOF在运行效率上往往会慢于RDB</strong>。总之，每秒同步策略的效率是比较高的，同步禁用策略的效率和RDB一样高效。</p>
-]]></content>
-      <categories>
-        <category>Redis</category>
-      </categories>
-      <tags>
-        <tag>Redis</tag>
       </tags>
   </entry>
   <entry>
@@ -629,101 +328,151 @@
       </tags>
   </entry>
   <entry>
-    <title>Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</title>
+    <title>redis持久化</title>
     <url>/posts/dcfaa904/</url>
-    <content><![CDATA[<h5 id="1-Redis-的击穿，穿透，雪崩"><a href="#1-Redis-的击穿，穿透，雪崩" class="headerlink" title="1. Redis 的击穿，穿透，雪崩"></a>1. Redis 的击穿，穿透，雪崩</h5><h6 id="1-1-Redis-击穿"><a href="#1-1-Redis-击穿" class="headerlink" title="1.1 Redis 击穿"></a>1.1 Redis 击穿</h6><p><strong>产生原因</strong>：在高并发的情况下，在某一时间点，<strong>在高频获取的key在此时过期，大量请求直接请求到服务器上</strong>，导致缓存击穿</p>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li><p>可以将<strong>热点数据设置为永远不过期</strong>；</p>
+    <content><![CDATA[<h5 id="1-redis的持久化方式"><a href="#1-redis的持久化方式" class="headerlink" title="1. redis的持久化方式"></a>1. redis的持久化方式</h5><ol>
+<li><p>RDB持久化</p>
+<p> 原理是将<strong>Reids在内存中的数据库记录定时dump到磁盘上的RDB持久化</strong></p>
 </li>
-<li><p>基于 <strong>redis</strong> or <strong>zookeeper</strong> 实现互斥锁，等待第一个请求构建完缓存之后，再释放锁，进而其它请求才能通过该 key 访问数据。</p>
+<li><p>AOF持久化</p>
+<p> 原理是将<strong>Reids的操作日志以追加的方式写入文件</strong></p>
+<p> <a href="https://www.cnblogs.com/zxs117/p/11242026.html">两种持久化方式区别</a></p>
+<p> 二者选择的标准，就是看系统是愿意牺牲一些性能，换取更高的缓存一致性（aof），还是愿意写操作频繁的时候，不启用备份来换取更高的性能，待手动运行save的时候，再做备份（rdb）。rdb这个就更有些 eventually consistent的意思了。不过生产环境其实更多都是二者结合使用的。</p>
+</li>
+</ol>
+<h5 id="2-RDB持久化"><a href="#2-RDB持久化" class="headerlink" title="2.RDB持久化"></a>2.RDB持久化</h5><p><strong>原理</strong> :在liunx系统系统中，<strong>进程之间的数据是隔离的</strong>，在使用export的环境变量，<strong>父子进程的修改都不会影响到其他进程的数据</strong></p>
+<p>RDB持久化是指在指定的时间间隔内将内存中的数据集快照写入磁盘，实际操作过程是<strong>fork一个子进程</strong>，先将<strong>数据集写入临时文件</strong>，写入成功后，再替换之前的文件，用二进制压缩存储。</p>
+<h6 id="2-1-RDB的优缺点"><a href="#2-1-RDB的优缺点" class="headerlink" title="2.1 RDB的优缺点"></a>2.1 RDB的优缺点</h6><p><strong>优点</strong>： </p>
+<ol>
+<li><strong>还原速度快</strong>（类似java的对象序列化，可快速还原）</li>
+<li><strong>整个Redis数据库将只包含一个文件，这对于文件备份而言是非常完美的</strong>。比如，你可能打算每个小时归档一次最近24小时的数据，同时还要每天归档一次最近30天的数据。通过这样的备份策略，一旦系统出现灾难性故障，我们可以非常容易的进行恢复。</li>
+</ol>
+<p><strong>弊端</strong>：</p>
+<ol>
+<li>如果你想保证数据的高可用性，即最大限度的避免数据丢失，那么<strong>RDB将不是一个很好的选择。因为系统一旦在定时持久化完成之前出现宕机现象，此前没有来得及写入磁盘的数据都将丢失</strong>。</li>
+<li> 由于RDB是通过fork子进程来协助完成数据持久化工作的，因此，<strong>如果当数据集较大时，可能会导致整个服务器停止服务几百毫秒，甚至是1秒钟。</strong></li>
+</ol>
 <blockquote>
-<p>redis的分布式锁主要是通过  setnx 命令，设置锁的过期时间，只有返回是ok的才能去数据库中获取数据</p>
-<p><strong>产生问题</strong>：在db端超时导致锁过期 </p>
-<p><strong>解决方案</strong>： 通过<strong>zookeeper</strong> 实现分布式锁</p>
+<p>fork命令只是创建进程，并不会在此时进行复制，因此创建进程的速度变快</p>
+<p>fork出来的父子进程具有 <strong>相同但是独立的地址空间</strong>因为父进程和子进程是独立的进程，他们都有自己私有的地址空间，当父进程或者子进程单独改变时，不会影响到彼此，类似于c++的写实拷贝的形式自建一个副本</p>
+<p><a href="https://blog.csdn.net/weixin_40853073/article/details/81873398?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control&dist_request_id=4254810a-f10f-43c5-8965-6b775b5a3682&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control">fork命令详细说明</a></p>
 </blockquote>
-</li>
-</ul>
-<h6 id="1-2-Redis穿透"><a href="#1-2-Redis穿透" class="headerlink" title="1.2 Redis穿透"></a>1.2 Redis穿透</h6><p>  一般是出现这种情况是因为恶意频繁查询才会对系统造成很大的问题: <strong>key缓存并且数据库不存在</strong>，所以<strong>每次查询都会查询数据库从而导致数据库崩溃</strong>。</p>
-<p><strong>解决方案：</strong>使用布隆过滤器</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113700.png" alt="image-20210221233300160"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151043.png" alt="image-20210226151042967"></p>
+<h5 id="3-AOF持久化"><a href="#3-AOF持久化" class="headerlink" title="3. AOF持久化"></a>3. AOF持久化</h5><p>AOF持久化以<strong>日志的形式</strong>记录服务器所处理的<strong>每一个写、删除操作</strong>，查询操作不会记录，以文本的方式记录，可以打开文件看到详细的操作记录。</p>
 <blockquote>
-<p>布隆过滤器缺点：只能增加不能删除</p>
-<p>可使用布谷鸟过滤器 ，设置空key</p>
+<p>当redis同时开启RDB和AOF备份，redis恢复是只会依据AOF的备份（AOF的数据丢失较少）</p>
 </blockquote>
-<h6 id="1-3-Redis雪崩"><a href="#1-3-Redis雪崩" class="headerlink" title="1.3 Redis雪崩"></a>1.3 Redis雪崩</h6><p>雪崩指的是<strong>多个key</strong>查询并且出现<strong>高并发</strong>，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。</p>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li><p> 时点性无关:<strong>均匀的设计过期时间</strong></p>
-</li>
-<li><p>时点性有关:<strong>强依赖击穿的方案</strong></p>
-<p>​                    也可在<strong>程序设计的时候在业务层进行时点进行请求延时操作</strong></p>
-<p>​                    当知道<strong>时点之后的数据也可以进行预加载工作</strong></p>
-</li>
-<li><p>事前：redis 高可用，主从+哨兵，redis cluster，避免全盘崩溃。</p>
-</li>
-<li><p> 事中：本地 ehcache 缓存 + hystrix 限流&amp;降级，避免 MySQL 被打死。</p>
-</li>
-<li><p>事后：redis 持久化，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113653.png" alt="image-20210221233312115"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151129.png" alt="image-20210226151129085"></p>
+<h6 id="3-1-AOF的优缺点"><a href="#3-1-AOF的优缺点" class="headerlink" title="3.1 AOF的优缺点"></a>3.1 AOF的优缺点</h6><p><strong>优点</strong>：</p>
+<p>1). 该机制可以带来<strong>更高的数据安全性，即数据持久性</strong>。Redis中提供了3中同步策略，即每秒同步、每修改同步和不同步。事实上，每秒同步也是异步完成的，其效率也是非常高的，所差的是一旦系统出现宕机现象，那么这一秒钟之内修改的数据将会丢失。而每修改同步，我们可以将其视为同步持久化，即每次发生的数据变化都会被立即记录到磁盘中。可以预见，这种方式在效率上是最低的。</p>
+<p>2). 由于该机制对日志文件的<strong>写入操作采用的是append模式，因此在写入过程中即使出现宕机现象，也不会破坏日志文件中已经存在的内容</strong>。然而如果我们本次操作只是写入了一半数据就出现了系统崩溃问题，不用担心，在Redis下一次启动之前，我们可以<strong>通过redis-check-aof工具来帮助我们解决数据一致性的问题。</strong></p>
+<p>3). 如果<strong>日志过大，Redis可以自动启用rewrite机制</strong>。即Redis以append模式不断的将修改数据写入到老的磁盘文件中，同时Redis还会创建一个新的文件用于记录此期间有哪些修改命令被执行。因此在进行rewrite切换时可以更好的保证数据安全性。</p>
 <blockquote>
-<p>时点性有关指<strong>某一个时间段某些key必须要过期使用新数据</strong></p>
+<p>redis4.0以前：rewrite其实是删除抵消的命令（创建和删除），合并重复的命名。最终会生成重复命令</p>
+<p>redis4.0以后：将老的数据RDB到AOF中，将增量的以指令的方式append到aof中（实际就是混合RDB+AOF的持久化方式）</p>
 </blockquote>
-</li>
-</ul>
-<h5 id="2-Redis-的分布式锁实现"><a href="#2-Redis-的分布式锁实现" class="headerlink" title="2. Redis  的分布式锁实现"></a>2. Redis  的分布式锁实现</h5><p>最好是使用zookeeper实现分布式锁</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">原理需要三个关键元素</span><br><span class="line">1. setnx</span><br><span class="line">2.过期时间</span><br><span class="line">3.多线程（守护进程），延长过期</span><br></pre></td></tr></table></figure>
-
-<h6 id="2-1-Redis加锁实现"><a href="#2-1-Redis加锁实现" class="headerlink" title="2.1 Redis加锁实现"></a>2.1 Redis加锁实现</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOCK_SUCCESS = <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_IF_NOT_EXIST = <span class="string">&quot;NX&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_WITH_EXPIRE_TIME = <span class="string">&quot;PX&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 尝试获取分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expireTime 超期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否获取成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">tryGetDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId, <span class="keyword">int</span> expireTime)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (LOCK_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h6 id="2-2-redis-解锁代码"><a href="#2-2-redis-解锁代码" class="headerlink" title="2.2 redis 解锁代码"></a>2.2 redis 解锁代码</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Long RELEASE_SUCCESS = <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否释放成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">releaseDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String script = <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (RELEASE_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h6 id="Redis的弊端"><a href="#Redis的弊端" class="headerlink" title="Redis的弊端"></a>Redis的弊端</h6><ul>
-<li>数据库事务超时，导致锁过期</li>
-<li><code>redis cluster</code>集群环境下，假如现在<code>A客户端</code>想要加锁，它会根据路由规则选择一台<code>master</code>节点写入<code>key</code> <code>mylock</code>，在加锁成功后，<code>master</code>节点会把<code>key</code>异步复制给对应的<code>slave</code>节点。如果此时<code>redis master</code>节点宕机，为保证集群可用性，会进行<code>主备切换</code>，<code>slave</code>变为了<code>redis master</code>。<code>B客户端</code>在新的<code>master</code>节点上加锁成功，而<code>A客户端</code>也以为自己还是成功加了锁的。此时就会导致同一时间内多个客户端对一个分布式锁完成了加锁，导致各种脏数据的产生。</li>
-</ul>
-<h5 id="Redis-缓存一致性"><a href="#Redis-缓存一致性" class="headerlink" title="Redis 缓存一致性"></a>Redis 缓存一致性</h5><h6 id="出现场景"><a href="#出现场景" class="headerlink" title="出现场景"></a>出现场景</h6><p>在<strong>高并发的情况</strong>下涉及到数据更新：数据库和缓存更新，就容易出现<strong>缓存(Redis)和数据库（MySQL）间的数据一致性问题</strong>。</p>
-<p>不管是先写MySQL数据库，再删除Redis缓存；还是先删除缓存，再写库，都有可能出现数据不一致的情况。举一个例子：</p>
-<p>1.如果删除了缓存Redis，还没有来得及写库MySQL，另一个线程就来读取，发现缓存为空，则去数据库中读取数据写入缓存，此时缓存中为脏数据。</p>
-<p>2.如果先写了库，在删除缓存前，写库的线程宕机了，没有删除掉缓存，则也会出现数据不一致情况。</p>
-<p>因为<strong>写和读是并发</strong>的，没法保证顺序,就会出现缓存和数据库的数据不一致的问题。</p>
-<h6 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h6><p><strong>1.第一种方案：采用延时双删策略</strong></p>
-<p>在写库前后都进行redis.del(key)操作，并且设定合理的超时时间。</p>
-<p>伪代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(String key,Object data)</span></span>&#123;</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> db.updateData(data);</span><br><span class="line"> Thread.sleep(<span class="number">500</span>);</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>具体的步骤就是：</strong></p>
-<ul>
-<li>先删除缓存；</li>
-<li>再写数据库；</li>
-<li>休眠500毫秒；</li>
-<li>再次删除缓存</li>
-</ul>
-<p><strong>该方案的弊端</strong></p>
-<p>结合<strong>双删策略+缓存超时设置</strong>，这样<strong>最差的情况就是在超时时间内数据存在不一致，而且又增加了写请求的耗时。</strong></p>
-<p><strong>2、第二种方案：异步更新缓存(基于订阅binlog的同步机制)</strong></p>
-<p>MySQL binlog增量订阅消费+消息队列+增量数据更新到redis</p>
-<ul>
-<li><strong>读Redis</strong>：热数据基本都在Redis</li>
-<li><strong>写MySQL</strong>:增删改都是操作MySQL</li>
-<li><strong>更新Redis数据</strong>：MySQ的数据操作binlog，来更新到Redis</li>
-</ul>
-<p><strong>1）数据操作主要分为两大块：</strong></p>
-<ul>
-<li>一个是全量(将全部数据一次写入到redis)</li>
-<li>一个是增量（实时更新）</li>
-</ul>
-<p>这里说的是增量,指的是mysql的update、insert、delate变更数据。</p>
-<p><strong>2）读取binlog后分析 ，利用消息队列,推送更新各台的redis缓存数据。</strong></p>
-<p>这样一旦MySQL中产生了新的写入、更新、删除等操作，就可以把binlog相关的消息推送至Redis，Redis再根据binlog中的记录，对Redis进行更新。</p>
-<p>其实这种机制，很类似MySQL的主从备份机制，因为MySQL的主备也是通过binlog来实现的数据一致性。</p>
-<p><strong>消息推送工具</strong>你也可以采用别的第三方：kafka、rabbitMQ等来实现推送更新Redis。</p>
+<p>4). <strong>AOF包含一个格式清晰、易于理解的日志文件用于记录所有的修改操作。事实上，我们也可以通过该文件完成数据的重建</strong>。</p>
+<p><strong>缺点</strong>：</p>
+<p>1). 对于相同数量的数据集而言，AOF文件通常要大于RDB文件。<strong>RDB 在恢复大数据集时的速度比 AOF 的恢复速度要快。</strong></p>
+<p>2). 根据同步策略的不同，<strong>AOF在运行效率上往往会慢于RDB</strong>。总之，每秒同步策略的效率是比较高的，同步禁用策略的效率和RDB一样高效。</p>
 ]]></content>
       <categories>
         <category>Redis</category>
-        <category>面试</category>
       </categories>
       <tags>
         <tag>Redis</tag>
-        <tag>面试</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>redis的消息订阅，pipeline，事务</title>
+    <url>/posts/d09e787/</url>
+    <content><![CDATA[<h5 id="1-Redis-管道（Pipelining）"><a href="#1-Redis-管道（Pipelining）" class="headerlink" title="1.Redis 管道（Pipelining）"></a>1.Redis 管道（Pipelining）</h5><p><a href="http://redis.cn/topics/pipelining.html">Redis 管道（Pipelining）</a></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113641.png" alt="image-20210220103817162"></p>
+<p>一次请求/响应服务器能实现处理新的请求即使旧的请求还未被响应。这样就可以将<em>多个命令</em>发送到服务器，而不用等待回复，最后在一个步骤中读取该答复。</p>
+<p><strong>重要说明</strong>: 使用管道发送命令时，服务器将被迫回复一个队列答复，占用很多内存。如果需要发送大量的命令，最好是按照合理数量分批次的处理，例如10K的命令，读回复，然后再发送另一个10k的命令，等等。这样速度几乎是相同的，但是在回复这10k命令队列需要非常大量的内存用来组织返回数据内容。</p>
+<h5 id="2-redis的消息订阅"><a href="#2-redis的消息订阅" class="headerlink" title="2. redis的消息订阅"></a>2. redis的消息订阅</h5><p><a href="http://redis.cn/topics/pubsub.html">redis的消息订阅</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">PUBLISH  &#x2F;&#x2F;发布消息</span><br><span class="line">SUBSCRIBE foo bar</span><br><span class="line">SUBSCRIBE  &#x2F;&#x2F;接收指定队列消息</span><br><span class="line">SUBSCRIBE foo</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-redis的事务"><a href="#3-redis的事务" class="headerlink" title="3. redis的事务"></a>3. redis的事务</h5><p><a href="http://redis.cn/topics/transactions.html">redis的事务</a></p>
+<p><a href="http://redis.cn/commands/multi.html">MULTI</a> 、 <a href="http://redis.cn/commands/exec.html">EXEC</a> 、 <a href="http://redis.cn/commands/discard.html">DISCARD</a> 和 <a href="http://redis.cn/commands/watch.html">WATCH</a> 是 Redis 事务相关的命令。事务可以一次执行多个命令， 并且带有以下两个重要的保证：</p>
+<ul>
+<li>事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</li>
+<li>事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。</li>
+</ul>
+<p><a href="http://redis.cn/commands/exec.html">EXEC</a> 命令负责触发并执行事务中的所有命令：</p>
+<ul>
+<li>如果客户端在使用 <a href="http://redis.cn/commands/multi.html">MULTI</a> 开启了一个事务之后，却因为断线而没有成功执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都不会被执行。</li>
+<li>另一方面，如果客户端成功在开启事务之后执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都会被执行</li>
+</ul>
+<blockquote>
+<p><code> AOF 方式做持久化</code>的时候，Redis 会使用单个 write(2) 命令将事务写入到磁盘中。然而，如果 Redis 服务器因为某些原因被管理员杀死，或者遇上某种硬件故障，那么可能只有部分事务命令会被成功写入到磁盘中。如果 Redis 在重新启动时发现 AOF 文件出了这样的问题，那么它会退出，并汇报一个错误。</p>
+<p>Redis (2.2版本开始)还可以通过乐观锁（optimistic lock）实现 CAS （check-and-set）操作</p>
+</blockquote>
+<h6 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h6><p><a href="http://redis.cn/commands/multi.html">MULTI</a> 命令用于开启一个事务，它总是返回 <code>OK</code> 。 <a href="http://redis.cn/commands/multi.html">MULTI</a> 执行之后， 客户端可以继续向服务器发送任意多条命令， 这些命令不会立即被执行， 而是被放到一个队列中， 当 <a href="http://redis.cn/commands/exec.html">EXEC</a>命令被调用时， 所有队列中的命令才会被执行。</p>
+<p>另一方面， 通过调用 <a href="http://redis.cn/commands/discard.html">DISCARD</a> ， 客户端可以清空事务队列， 并放弃执行事务。</p>
+<p>以下是一个事务例子， 它原子地增加了 <code>foo</code> 和 <code>bar</code> 两个键的值：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; MULTI</span><br><span class="line">OK</span><br><span class="line">&gt; INCR foo</span><br><span class="line">QUEUED</span><br><span class="line">&gt; INCR bar</span><br><span class="line">QUEUED</span><br><span class="line">&gt; EXEC</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (integer) 1</span><br></pre></td></tr></table></figure>
+
+<p><a href="http://redis.cn/commands/exec.html">EXEC</a> 命令的回复是一个数组， 数组中的每个元素都是执行事务中的命令所产生的回复。 其中， 回复元素的先后顺序和命令发送的先后顺序一致。</p>
+<p>当客户端处于事务状态时， 所有传入的命令都会返回一个内容为 <code>QUEUED</code> 的状态回复（status reply）， 这些被入队的命令将在 EXEC 命令被调用时执行</p>
+<h6 id="事务中的错误"><a href="#事务中的错误" class="headerlink" title="事务中的错误"></a>事务中的错误</h6><ul>
+<li>事务在执行 <a href="http://redis.cn/commands/exec.html">EXEC</a> 之前，入队的命令可能会出错。比如说，命令可能会产生语法错误（参数数量错误，参数名错误，等等），或者其他更严重的错误，比如内存不足（如果服务器使用 <code>maxmemory</code> 设置了最大内存限制的话）。</li>
+<li>命令可能在 <a href="http://redis.cn/commands/exec.html">EXEC</a> 调用之后失败。举个例子，事务中的命令可能处理了错误类型的键，比如将列表命令用在了字符串键上面，诸如此类。</li>
+</ul>
+<p>服务器会对命令入队失败的情况进行记录，并在客户端调用 <a href="http://redis.cn/commands/exec.html">EXEC</a> 命令时，<strong>拒绝执行并自动放弃这个事务</strong>。</p>
+<h6 id="Redis-不支持回滚（roll-back）原因"><a href="#Redis-不支持回滚（roll-back）原因" class="headerlink" title="Redis 不支持回滚（roll back）原因"></a>Redis 不支持回滚（roll back）原因</h6><ul>
+<li>Redis 命令只会因为错误的语法而失败（并且这些问题不能在入队时发现），或是命令用在了错误类型的键上面：这也就是说，从实用性的角度来说，<strong>失败的命令是由编程错误造成的，而这些错误应该在开发的过程中被发现，而不应该出现在生产环境中</strong>。</li>
+<li>因为<strong>不需要对回滚进行支持</strong>，所以 Redis 的内部可以保持<strong>简单且快速</strong>。</li>
+</ul>
+<h5 id="4-布隆过滤器"><a href="#4-布隆过滤器" class="headerlink" title="4.布隆过滤器"></a>4.布隆过滤器</h5><p><a href="https://github.com/RedisBloom/RedisBloom">第三方实现的redis的布隆过滤器</a></p>
+<blockquote>
+<p>第三方实现redis的相关功能： <a href="https://redis.io/modules">https://redis.io/modules</a></p>
+</blockquote>
+<h5 id="5-redis的LRU（Least-Recently-Used）淘汰策略"><a href="#5-redis的LRU（Least-Recently-Used）淘汰策略" class="headerlink" title="5.redis的LRU（Least Recently Used）淘汰策略"></a>5.redis的LRU（Least Recently Used）淘汰策略</h5><p><a href="http://redis.cn/topics/lru-cache.html">将redis当做使用LRU算法的缓存来使用</a></p>
+<p><strong>LRU是Redis唯一支持的回收方法</strong>，Redis的<code>maxmemory</code>指令用于将可用内存限制成一个固定大小，还包括了Redis使用的LRU算法，这个实际上只是近似的LRU。</p>
+<p><strong>Redis的LRU算法并非完整的实现</strong>。这意味着<strong>Redis并没办法选择最佳候选来进行回收</strong>，也就是最久未被访问的键。相反它会尝试运行一个近似LRU的算法，<strong>通过对少量keys进行取样，然后回收其中一个最好的key（被访问时间较早的）</strong>。</p>
+<h6 id="回收策略"><a href="#回收策略" class="headerlink" title="回收策略"></a>回收策略</h6><p>以下的策略是可用的:</p>
+<ul>
+<li><strong>noeviction</strong>:返回错误当内存限制达到并且客户端尝试执行会让更多内存被使用的命令（大部分的写入指令，但DEL和几个例外）</li>
+<li><strong>allkeys-lru</strong>: 尝试回收最少使用的键（LRU），使得新添加的数据有空间存放。</li>
+<li><strong>volatile-lru</strong>: 尝试回收最少使用的键（LRU），但仅限于在过期集合的键,使得新添加的数据有空间存放。</li>
+<li><strong>allkeys-random</strong>: 回收随机的键使得新添加的数据有空间存放。</li>
+<li><strong>volatile-random</strong>: 回收随机的键使得新添加的数据有空间存放，但仅限于在过期集合的键。</li>
+<li><strong>volatile-ttl</strong>: 回收在过期集合的键，并且优先回收存活时间（TTL）较短的键,使得新添加的数据有空间存放。</li>
+</ul>
+<h6 id="回收进程如何工作"><a href="#回收进程如何工作" class="headerlink" title="回收进程如何工作"></a><strong>回收进程如何工作</strong></h6><p>理解回收进程如何工作是非常重要的:</p>
+<ul>
+<li>一个客户端运行了新的命令，添加了新的数据。</li>
+<li>Redi检查内存使用情况，如果大于maxmemory的限制, 则根据设定好的策略进行回收。</li>
+<li>一个新的命令被执行，等等。</li>
+<li>所以我们不断地穿越内存限制的边界，通过不断达到边界然后不断地回收回到边界以下。</li>
+</ul>
+<p>如果一个命令的结果导致大量内存被使用（例如很大的集合的交集保存到一个新的键），不用多久内存限制就会被这个内存使用量超越。</p>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>修复点击目录无法跳转</title>
+    <url>/posts/14f8dec7/</url>
+    <content><![CDATA[<p>在 themes/next/source/js/util.js 中增加两行代码，删除两行代码。保存，hexo clean &amp; hexo g &amp; hexo s 即可解决。（如果还是不行就删除浏览器缓存重试）</p>
+<p><a href="https://github.com/theme-next/hexo-theme-next/pull/1540/files">中文目录层级无法跳转</a></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210225115114.png" alt="image-20210225115114883"></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">registerSidebarTOC: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> navItems = <span class="built_in">document</span>.querySelectorAll(<span class="string">&#x27;.post-toc li&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> sections = [...navItems].map(<span class="function"><span class="params">element</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> link = element.querySelector(<span class="string">&#x27;a.nav-link&#x27;</span>);</span><br><span class="line">    <span class="keyword">var</span> target = <span class="built_in">document</span>.getElementById(<span class="built_in">decodeURI</span>(link.getAttribute(<span class="string">&#x27;href&#x27;</span>)).replace(<span class="string">&#x27;#&#x27;</span>, <span class="string">&#x27;&#x27;</span>));</span><br><span class="line">    <span class="comment">// TOC item animation navigate.</span></span><br><span class="line">    link.addEventListener(<span class="string">&#x27;click&#x27;</span>, <span class="function"><span class="params">event</span> =&gt;</span> &#123;</span><br><span class="line">      event.preventDefault();</span><br><span class="line">      <span class="comment">// var target = document.getElementById(event.currentTarget.getAttribute(&#x27;href&#x27;).replace(&#x27;#&#x27;, &#x27;&#x27;));</span></span><br><span class="line">      <span class="keyword">var</span> offset = target.getBoundingClientRect().top + <span class="built_in">window</span>.scrollY;</span><br><span class="line">      <span class="built_in">window</span>.anime(&#123;</span><br><span class="line">        targets  : <span class="built_in">document</span>.scrollingElement,</span><br><span class="line">        duration : <span class="number">500</span>,</span><br><span class="line">        easing   : <span class="string">&#x27;linear&#x27;</span>,</span><br><span class="line">        scrollTop: offset + <span class="number">10</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> target;</span><br><span class="line">    <span class="comment">// return document.getElementById(link.getAttribute(&#x27;href&#x27;).replace(&#x27;#&#x27;, &#x27;&#x27;));</span></span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Hexo</category>
+        <category>Next</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
       </tags>
   </entry>
   <entry>
@@ -908,7 +657,7 @@
 <figure class="highlight js"><table><tr><td class="code"><pre><span class="line">npm install hexo-abbrlink --save</span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#x65;&#115;&#108;&#x69;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;">&#x65;&#115;&#108;&#x69;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;</a> babel-eslint@8 –save-dev</p>
+<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#101;&#115;&#x6c;&#x69;&#110;&#116;&#64;&#52;&#46;&#120;">&#101;&#115;&#x6c;&#x69;&#110;&#116;&#64;&#52;&#46;&#120;</a> babel-eslint@8 –save-dev</p>
 </blockquote>
 <p>修改根目录站点配置文件<code>config.yml</code>，改为：</p>
 <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">permalink:</span> <span class="string">posts/:abbrlink/</span></span><br><span class="line"><span class="attr">abbrlink:</span></span><br><span class="line">	<span class="attr">alg:</span> <span class="string">crc32</span>   <span class="comment">#算法： crc16(default) and crc32</span></span><br><span class="line">	<span class="attr">rep:</span> <span class="string">hex</span>     <span class="comment">#进制： dec(default) and hex</span></span><br><span class="line"><span class="number">1234</span></span><br></pre></td></tr></table></figure>
@@ -942,6 +691,257 @@
       <tags>
         <tag>Hexo</tag>
         <tag>Next</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo部署第三方主题next 7.8版本</title>
+    <url>/posts/d23fb963/</url>
+    <content><![CDATA[<h5 id="1-next-7-8-主题安装"><a href="#1-next-7-8-主题安装" class="headerlink" title="1. next 7.8 主题安装"></a>1. next 7.8 主题安装</h5><p><a href="https://github.com/theme-next/hexo-theme-next/archive/v7.8.0.zip">7.8.0版本下载连接</a></p>
+<ol>
+<li><p>将下载好的主题文件解压到hexo主目录下的themes文件夹下</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224204119.png" alt="image-20210224204118992"></p>
+</li>
+<li><p>在主目录的source下新建<strong>_data</strong>目录，将<strong>第三方主题</strong>中的<strong>_config.yml</strong>文件复制到该目录下重命名为next.yml,并修改文件中<strong>override为true</strong></p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203110.png" alt="image-20210224203110673"></p>
+ <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">override:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改主目录的<strong>_config.yml</strong>文件，启用主题</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203236.png" alt="image-20210224203236580"></p>
+ <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Extensions</span></span><br><span class="line"><span class="comment">## Plugins: https://hexo.io/plugins/</span></span><br><span class="line"><span class="comment">## Themes: https://hexo.io/themes/</span></span><br><span class="line"><span class="attr">theme:</span> <span class="string">next</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成next主题开启的界面</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224203417.png"></p>
+ <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo new page home</span><br><span class="line">hexo new page archives</span><br><span class="line">hexo new page about</span><br><span class="line">hexo new page tags</span><br><span class="line">hexo new page categories</span><br><span class="line">hexo new page commonweal</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Hexo</category>
+        <category>Next</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Next</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>win10的搭建hexo博客</title>
+    <url>/posts/1bab7c20/</url>
+    <content><![CDATA[<h5 id="1-环境配置"><a href="#1-环境配置" class="headerlink" title="1. 环境配置"></a>1. 环境配置</h5><p><strong>安装前准备</strong></p>
+<ul>
+<li>git</li>
+<li>Nodejs</li>
+</ul>
+<h5 id="2、Hexo安装"><a href="#2、Hexo安装" class="headerlink" title="2、Hexo安装"></a>2、Hexo安装</h5><ol>
+<li><p>首先配置npm的<strong>淘宝源</strong>,安装完成后可通过npm info hexo查看是否配置淘宝源成功</p>
+ <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">npm config <span class="built_in">set</span> registry https://registry.npm.taobao.org</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>安装hexo</p>
+ <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">npm install -g hexo</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>指定安装的hexo目录</p>
+ <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo init test</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> test     </span><br><span class="line"></span><br><span class="line">npm install</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>测试安装是否成功</p>
+ <figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo clean      #清除缓存</span><br><span class="line">hexo g      #生成静态网页</span><br><span class="line">hexo s      #启动本地服务</span><br></pre></td></tr></table></figure>
+
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210224200606.png" alt="image-20210224200605821"></p>
+</li>
+</ol>
+<h5 id="3-Gtihub相关配置"><a href="#3-Gtihub相关配置" class="headerlink" title="3. Gtihub相关配置"></a>3. Gtihub相关配置</h5><p>New repository创建新仓库，仓库名应该为：<strong>用户名</strong>.<a href="https://link.zhihu.com/?target=http://github.io">http://github.io</a> 这个<strong>用户名</strong>使用你的GitHub帐号名称代替，这是固定写法，比如我的仓库名为：</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210224200752.png" alt="image-20210224200752872"></p>
+<h5 id="4-hexo配置远程部署"><a href="#4-hexo配置远程部署" class="headerlink" title="4. hexo配置远程部署"></a>4. hexo配置远程部署</h5><p>修改根目录下的<strong>_config.yml</strong> 文件中配置</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/CNRF/CNRF.github.io.git</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
+
+<p>使用相关命令进行部署</p>
+<figure class="highlight cmd"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo d  # 第一次部署会提示输入github的账号和密码</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Hexo</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>redis入门</title>
+    <url>/posts/eca8b4a8/</url>
+    <content><![CDATA[<h4 id="1-redis相关介绍"><a href="#1-redis相关介绍" class="headerlink" title="1.redis相关介绍"></a>1.redis相关介绍</h4><p><a href="http://redis.cn/">redis中文网</a></p>
+<h5 id="1-1-redis的介绍"><a href="#1-1-redis的介绍" class="headerlink" title="1.1 redis的介绍"></a>1.1 redis的介绍</h5><p>Redis 是一个开源（BSD许可）的，内存中的数据结构存储系统，它可以用作数据库、缓存和消息中间件。 它支持多种类型的数据结构，如 <a href="http://redis.cn/topics/data-types-intro.html#strings">字符串（strings）</a>， <a href="http://redis.cn/topics/data-types-intro.html#hashes">散列（hashes）</a>， <a href="http://redis.cn/topics/data-types-intro.html#lists">列表（lists）</a>， <a href="http://redis.cn/topics/data-types-intro.html#sets">集合（sets）</a>， <a href="http://redis.cn/topics/data-types-intro.html#sorted-sets">有序集合（sorted sets）</a> 与范围查询， <a href="http://redis.cn/topics/data-types-intro.html#bitmaps">bitmaps</a>， <a href="http://redis.cn/topics/data-types-intro.html#hyperloglogs">hyperloglogs</a> 和 <a href="http://redis.cn/commands/geoadd.html">地理空间（geospatial）</a> 索引半径查询。 Redis 内置了 <a href="http://redis.cn/topics/replication.html">复制（replication）</a>，<a href="http://redis.cn/commands/eval.html">LUA脚本（Lua scripting）</a>， <a href="http://redis.cn/topics/lru-cache.html">LRU驱动事件（LRU eviction）</a>，<a href="http://redis.cn/topics/transactions.html">事务（transactions）</a> 和不同级别的 <a href="http://redis.cn/topics/persistence.html">磁盘持久化（persistence）</a>， 并通过 <a href="http://redis.cn/topics/sentinel.html">Redis哨兵（Sentinel）</a>和自动 <a href="http://redis.cn/topics/cluster-tutorial.html">分区（Cluster）</a>提供高可用性（high availability）。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113311.png" alt="image-20210211203040301"></p>
+<h5 id="1-2-redis和memcached的区别"><a href="#1-2-redis和memcached的区别" class="headerlink" title="1.2  .redis和memcached的区别"></a>1.2  .redis和memcached的区别</h5><p>redis和memcached相比本质是解耦，用大数据说法是计算向数据移动</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113409.png" alt="image-20210218095611832"></p>
+<h5 id="1-3-liunx下常见的redis命令"><a href="#1-3-liunx下常见的redis命令" class="headerlink" title="1.3 . liunx下常见的redis命令"></a>1.3 . liunx下常见的redis命令</h5><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#连接redis</span><br><span class="line">redis-cli</span><br><span class="line">#连接redis是6379端口的8号库 指定库(不同库数据不可见)</span><br><span class="line">redis-cli -p 6379 -n 8</span><br><span class="line">#连接redis后使用help进行查询</span><br><span class="line">help </span><br></pre></td></tr></table></figure>
+
+<h4 id="2-redis相关数据的操作常见命令"><a href="#2-redis相关数据的操作常见命令" class="headerlink" title="2.redis相关数据的操作常见命令"></a>2.redis相关数据的操作常见命令</h4><p>在redis客户端中使用help命令进行相关查询相关命令</p>
+<h5 id="2-1-Strings类型"><a href="#2-1-Strings类型" class="headerlink" title="2.1 Strings类型"></a>2.1 Strings类型</h5><p><a href="https://redis.io/commands#string">Strings 数据操作相关文档</a></p>
+<h6 id="2-1-1-查看string类型帮助命令"><a href="#2-1-1-查看string类型帮助命令" class="headerlink" title="2.1.1 查看string类型帮助命令"></a>2.1.1 查看string类型帮助命令</h6><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">help @string</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113419.png" alt="image-20210219155031906"></p>
+<h6 id="2-1-2-string数据类型及相关的应用场景"><a href="#2-1-2-string数据类型及相关的应用场景" class="headerlink" title="2.1.2  string数据类型及相关的应用场景"></a>2.1.2  string数据类型及相关的应用场景</h6><ol>
+<li><p>字符串</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#set设置key的value</span><br><span class="line">set k1 ooxx nx  （带nx，xx可用在分布式锁中）</span><br><span class="line">set k1 ooxx xx</span><br><span class="line">#mset批量设置</span><br><span class="line">mset k3 k3mest k4 k4mest</span><br><span class="line">#get获取key的value</span><br><span class="line">get k1</span><br><span class="line">#mget批量获取</span><br><span class="line">mget k3 k4</span><br><span class="line">#APPEND在字符串后面追加</span><br><span class="line">append k1 &quot; world&quot;</span><br><span class="line">#GETRANGE获取指定范围数据</span><br><span class="line">getrange k1 5 10</span><br><span class="line">#strlen获取字符串长度</span><br><span class="line">strlen k1</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113426.png" alt="image-20210219155108071"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113517.png" alt="image-20210219160021217"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113555.png" alt="image-20210219160343269"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113600.png" alt="image-20210219160751857"></p>
+</li>
+<li><p>数值</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">incr  将value的整数型+1</span><br><span class="line">incrby 将value的整数型加指定数</span><br><span class="line">decr </span><br><span class="line">descby</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>  <strong>应用场景</strong> ： 抢购，秒杀，详情页，点赞，评论规避并发下，对数据库的事务操作完全由redis内存操作代替，避免因数据库事务导致响应时间超时，<strong>但在银行等金融涉及金额不要放在redis中进行相关计算</strong></p>
+<ol start="3">
+<li><p>bitmap</p>
+ <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">setbit  &#x2F;&#x2F;设置bit数值</span><br><span class="line">bitcount  </span><br><span class="line">bitpos</span><br><span class="line">bitop</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>应用场景</strong> ：</p>
+<pre><code>1. 统计用户登陆天数
+
+    方案：用户id为key，设计长度为9bit的数据即可存储用户当年所有登陆天数数据，当天登陆为1，即可统计指定时间段的相关数据
+
+2. 统计当天所有用户登陆情况
+
+    方案：日期为Key，设计一个合适长度的数据存储，每一位对应一位客户，登陆则为1，统计时直接进行二进制与运算，则可以去重，统计那些用户登陆
+</code></pre>
+<h5 id="2-2-Lists类型"><a href="#2-2-Lists类型" class="headerlink" title="2.2  Lists类型"></a>2.2  Lists类型</h5><h6 id="2-2-1-Lists常见命令"><a href="#2-2-1-Lists常见命令" class="headerlink" title="2.2.1 Lists常见命令"></a>2.2.1 Lists常见命令</h6><p><a href="https://redis.io/commands#list">Lists数据相关操作命令</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#lpush 存放顺序为f e d c b a</span><br><span class="line">lpush k1 a b c d e f</span><br><span class="line">#rpush 存放顺序为a b c d e f</span><br><span class="line">rpush k2 a b c d e f</span><br><span class="line">#取数据 lpop</span><br><span class="line">lpop k1 </span><br><span class="line">#lrange按照范围取</span><br><span class="line">lrange k1 0 -1（取全部）</span><br><span class="line">#lindex</span><br><span class="line">#lset</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113620.png" alt="image-20210219205233457"></p>
+<h6 id="2-2-2应用场景"><a href="#2-2-2应用场景" class="headerlink" title="2.2.2应用场景"></a>2.2.2应用场景</h6><ol>
+<li>使用lpush模拟栈，后进先出</li>
+<li>使用rpush模拟队列，先进先出（买票排队问题）</li>
+<li>lindex模拟数组，直接根据下标取相关数据</li>
+<li>blpop模拟阻塞单播队列（blpop会让对应key有则弹出value，没有会阻塞等待key有值，并且只会弹出一次，当多个客户端同时对一个key使用blpop则可以实现阻塞单播）</li>
+</ol>
+<h5 id="2-3-hashes类型"><a href="#2-3-hashes类型" class="headerlink" title="2.3 hashes类型"></a>2.3 hashes类型</h5><p>类似java中的hashmap（key，hashmap（key，value））。这里面第一个key是hashes的key，hashmap（key，value）才是value</p>
+<h6 id="2-3-1-hashes常见命令"><a href="#2-3-1-hashes常见命令" class="headerlink" title="2.3.1 hashes常见命令"></a>2.3.1 hashes常见命令</h6><p><a href="https://redis.io/commands#hash">hashes常见的命令</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">hdel</span><br><span class="line">hget</span><br><span class="line">hset</span><br><span class="line">hlen</span><br><span class="line">hincrbyfloat</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-3-2-应用场景："><a href="#2-3-2-应用场景：" class="headerlink" title="2.3.2 应用场景："></a>2.3.2 应用场景：</h6><ol>
+<li>对员工薪水进行统计</li>
+</ol>
+<h5 id="2-4-sets数据类型"><a href="#2-4-sets数据类型" class="headerlink" title="2.4 sets数据类型"></a>2.4 sets数据类型</h5><p>Redis Set 是 String 的无序排列。<code>SADD</code> 指令把新的元素添加到 set 中。对 set 也可做一些其他的操作，比如测试一个给定的元素是否存在，对不同 set 取交集，并集或差，等等。</p>
+<h6 id="2-4-1常见命令"><a href="#2-4-1常见命令" class="headerlink" title="2.4.1常见命令"></a>2.4.1常见命令</h6><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sadd &#x2F;&#x2F;添加元素</span><br><span class="line">sadd myset 1 2 3</span><br><span class="line">smembers &#x2F;&#x2F;读取集合元素</span><br><span class="line">smembers myset</span><br><span class="line">sismember &#x2F;&#x2F;判断元素存在</span><br><span class="line">sismember myset 3 &#x2F;&#x2F;存在返回1，不存在为0</span><br><span class="line"> SINTER  &#x2F;&#x2F;获取多个集合的交集</span><br><span class="line"> SUNIONSTORE  &#x2F;&#x2F;多个集合取并集</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-4-2-应用场景"><a href="#2-4-2-应用场景" class="headerlink" title="2.4.2 应用场景"></a>2.4.2 应用场景</h6><ol>
+<li><p>公平抽奖(随机事件) ：  SRANDMEMBER key count（用户作为value）</p>
+<p> ​                        正数：取出一个去重的结果集（不能超过已有集）</p>
+<p> ​                        负数：取出一个带重复的结果集，一定满足你要的数量如果：</p>
+<p> ​                        0，不返回</p>
+</li>
+</ol>
+<h5 id="2-5-sorted-sets数据类型"><a href="#2-5-sorted-sets数据类型" class="headerlink" title="2.5 sorted sets数据类型"></a>2.5 sorted sets数据类型</h5><h6 id="2-5-1-常见命令"><a href="#2-5-1-常见命令" class="headerlink" title="2.5.1 常见命令"></a>2.5.1 常见命令</h6><p><a href="https://redis.io/commands#sorted_set">sorted sets常见命令</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">zadd</span><br><span class="line">zmenmber</span><br><span class="line">zinter</span><br><span class="line">zscore &#x2F;&#x2F;按照什么排序</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-5-2-排序底层实现"><a href="#2-5-2-排序底层实现" class="headerlink" title="2.5.2 排序底层实现"></a>2.5.2 排序底层实现</h6><p>通过Skip list（跳跃表）实现增删查改</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113634.png" alt="image-20210220102659707"></p>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>安装redis出现的问题</title>
+    <url>/posts/5e07a887/</url>
+    <content><![CDATA[<p><strong>操作系统为centOs7  redis为6.0.8版本</strong></p>
+<h3 id="1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令"><a href="#1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令" class="headerlink" title="1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令"></a>1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;一般错误为gcc套装错误</span><br><span class="line">yum install cpp</span><br><span class="line">yum install binutils</span><br><span class="line">yum install glibc</span><br><span class="line">yum install glibc-kernheaders</span><br><span class="line">yum install glibc-common</span><br><span class="line">yum install glibc-devel</span><br><span class="line">yum install gcc</span><br><span class="line">yum install make</span><br><span class="line">&#x2F;&#x2F;清理错误文件</span><br><span class="line">make distclean</span><br><span class="line">&#x2F;&#x2F;重新安装</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://blog.csdn.net/m0_37952284/article/details/109012324">server.c:5307:31: 错误:‘struct redisServer’没有名为‘server_xxx’的成员</a></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113217.png" alt="image-20201103103148896"></p>
+<ol start="2">
+<li><h3 id="下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错"><a href="#下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错" class="headerlink" title="下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:"></a>下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:</h3></li>
+</ol>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113232.png" alt="image-20201103104749570"></p>
+<p>原因是redies用了c语言编写，centos7.6应该也有以下版本，默认安装的gcc4.8.5版本较低，需要在5.3以上版本，现更换为9.3，先查看当前版本：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">gcc -v</span><br></pre></td></tr></table></figure>
+
+<p>开始更换：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum -y install centos-release-scl</span><br><span class="line">yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils</span><br><span class="line">echo &quot;source &#x2F;opt&#x2F;rh&#x2F;devtoolset-9&#x2F;enable&quot; &gt;&gt;&#x2F;etc&#x2F;profile</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>重连shell</strong>(不重连gcc版本不变)，重新make，即成功了</p>
+<h3 id="3-安装Redis-6-0-6-install-server-sh报错"><a href="#3-安装Redis-6-0-6-install-server-sh报错" class="headerlink" title="3.安装Redis 6.0.6 ./install_server.sh报错"></a>3.安装Redis 6.0.6 ./install_server.sh报错</h3><p>产生原因:gcc9版本校验更加严格导致</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113249.png" alt="image-20201103111330639"></p>
+<p>解决方案</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">vi .&#x2F;install_server.sh</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113254.png" alt="image-20201103111506170"></p>
+<p><strong>注释掉代码</strong>重新运行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#bail if this system is managed by systemd</span><br><span class="line">#_pid_1_exe&#x3D;&quot;$(readlink -f &#x2F;proc&#x2F;1&#x2F;exe)&quot;</span><br><span class="line">#if [ &quot;$&#123;_pid_1_exe##*&#x2F;&#125;&quot; &#x3D; systemd ]</span><br><span class="line">#then</span><br><span class="line">#       echo &quot;This systems seems to use systemd.&quot;</span><br><span class="line">#       echo &quot;Please take a look at the provided example service unit files in this directory, and adapt and install them. Sorry!&quot;</span><br><span class="line">#       exit 1</span><br><span class="line">#fi</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>centos安装redis</title>
+    <url>/posts/725846d4/</url>
+    <content><![CDATA[<p><strong>操作系统为centOS7  redis为6.0.8版本</strong></p>
+<ol>
+<li>安装wget命令 </li>
+</ol>
+   <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum install wget</span><br></pre></td></tr></table></figure>
+
+<p>   <img src="https://gitee.com/CNRF/image/raw/master/img/20210223112933.png" alt="image-20201026172631943"></p>
+<ol start="2">
+<li><p>安装GCC包（redis是c语言编写，liunx需要安装相关软件）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">yum install gcc</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223112947.png" alt="image-20201026172608587"></p>
+</li>
+<li><p>在指定目录获取安装包（或者下载之后移动到指定目录  ）</p>
+<p><a href="https://redis.io/download%E8%8E%B7%E5%8F%96%E7%9B%B8%E5%85%B3%E7%89%88%E6%9C%AC%E8%BF%9E%E6%8E%A5%EF%BC%8C%E8%BF%99%E9%87%8C%E4%B8%8B%E8%BD%BD6.0%E7%89%88%E6%9C%AC">https://redis.io/download获取相关版本连接，这里下载6.0版本</a></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;download.redis.io&#x2F;releases&#x2F;redis-6.0.8.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113024.png" alt="image-20201026172901823"></p>
+</li>
+<li><p>解压gz包（下载的是源码）</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">tar xf redis-6.0.8.tar.gz</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>根据解压包中文件的REDME.md文档进行相关操作（重要：安装其他软件同理）</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113031.png" alt="image-20201103102727621"></p>
+</li>
+<li><p>使用make相关命令进行安装程序</p>
+</li>
+<li><p>安装可执行到指定目录（分离源码）</p>
+<p>查看/home/redis-6.0.8/INSTALL，根据文档安装</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">make install PREFIX&#x3D;&#x2F;home&#x2F;redis6</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>注册redis为服务</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F;执行vi &#x2F;etc&#x2F;profile命令，在文件最后新增内容</span><br><span class="line">vi &#x2F;etc&#x2F;profile</span><br><span class="line">&#x2F;&#x2F;REDIS_HOME的路径为第七步的安装路径</span><br><span class="line">export REDIS_HOME&#x3D;&#x2F;home&#x2F;redis6</span><br><span class="line">export PATH&#x3D;$PATH:$REDIS_HOME&#x2F;bin</span><br><span class="line">&#x2F;&#x2F;使配置文件生效</span><br><span class="line">source &#x2F;etc&#x2F;profile</span><br><span class="line">&#x2F;&#x2F;验证是否添加成功</span><br><span class="line">echo $PATH</span><br><span class="line">&#x2F;&#x2F;执行</span><br><span class="line">&#x2F;home&#x2F;redis-6.0.8&#x2F;utils&#x2F;install_server.sh脚本注册为服务</span><br><span class="line">.&#x2F;install_server.sh</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113126.png" alt="image-20201103103148896"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113145.png" alt="image-20201103112714896">   </p>
+<ol start="9">
+<li><p>修改配置文件，安装需求修改相关配置</p>
+<p>redis常见配置参见<a href="https://blog.csdn.net/suprezheng/article/details/90679790">https://blog.csdn.net/suprezheng/article/details/90679790</a></p>
+</li>
+<li><p>将redis_6379(根据生成的配置文件名称)设置为开启</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;init.d</span><br><span class="line">  #init.d没有redis_6379文件的可以在源文件中找到redis.conf文件进行修改</span><br><span class="line">  chkconfig --add redis_6379</span><br><span class="line">  chkconfig redis_6379 on</span><br><span class="line">  #查看开机自启的列表</span><br><span class="line">  chkconfig --list</span><br><span class="line">  #重启redis</span><br><span class="line">  service redis_6379 restart</span><br><span class="line">  #手动启用</span><br><span class="line">  redis-server &#x2F;etc&#x2F;redis&#x2F;6379.conf</span><br><span class="line">  chkconfig --list的参数意义</span><br><span class="line">  1表示：单用户模式</span><br><span class="line">  2表示：无网络连接的多用户命令行模式</span><br><span class="line">  3表示：有网络连接的多用户命令行模式</span><br><span class="line">  4表示：不可用</span><br><span class="line">  5表示：带图形界面的多用户模式</span><br><span class="line">  6表示：重新启动</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
       </tags>
   </entry>
 </search>
