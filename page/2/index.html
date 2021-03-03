@@ -126,12 +126,12 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">15</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">15</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
@@ -198,7 +198,7 @@
 
 	<div class="tag-cloud">
 	  <div class="tag-cloud-tags" id="tags">
-		<a href="/tags/BASE%E7%90%86%E8%AE%BA/" style="font-size: 16px; color: #fff">BASE理论</a> <a href="/tags/CAP/" style="font-size: 16px; color: #fff">CAP</a> <a href="/tags/Gitee/" style="font-size: 16px; color: #fff">Gitee</a> <a href="/tags/Github/" style="font-size: 16px; color: #fff">Github</a> <a href="/tags/Hexo/" style="font-size: 16px; color: #fff">Hexo</a> <a href="/tags/Next/" style="font-size: 16px; color: #fff">Next</a> <a href="/tags/Redis/" style="font-size: 16px; color: #fff">Redis</a> <a href="/tags/Typora/" style="font-size: 16px; color: #fff">Typora</a> <a href="/tags/Win10/" style="font-size: 16px; color: #fff">Win10</a> <a href="/tags/ZAB/" style="font-size: 16px; color: #fff">ZAB</a> <a href="/tags/ZooKeeper/" style="font-size: 16px; color: #fff">ZooKeeper</a> <a href="/tags/panxos/" style="font-size: 16px; color: #fff">panxos</a> <a href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7Hash%E7%AE%97%E6%B3%95/" style="font-size: 16px; color: #fff">一致性Hash算法</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" style="font-size: 16px; color: #fff">分布式</a> <a href="/tags/%E9%9D%A2%E8%AF%95/" style="font-size: 16px; color: #fff">面试</a>
+		<a href="/tags/BASE%E7%90%86%E8%AE%BA/" style="font-size: 16px; color: #fff">BASE理论</a> <a href="/tags/CAP/" style="font-size: 16px; color: #fff">CAP</a> <a href="/tags/Gitee/" style="font-size: 16px; color: #fff">Gitee</a> <a href="/tags/Github/" style="font-size: 16px; color: #fff">Github</a> <a href="/tags/Hexo/" style="font-size: 16px; color: #fff">Hexo</a> <a href="/tags/IO/" style="font-size: 16px; color: #fff">IO</a> <a href="/tags/Next/" style="font-size: 16px; color: #fff">Next</a> <a href="/tags/Redis/" style="font-size: 16px; color: #fff">Redis</a> <a href="/tags/Typora/" style="font-size: 16px; color: #fff">Typora</a> <a href="/tags/Win10/" style="font-size: 16px; color: #fff">Win10</a> <a href="/tags/ZAB/" style="font-size: 16px; color: #fff">ZAB</a> <a href="/tags/ZooKeeper/" style="font-size: 16px; color: #fff">ZooKeeper</a> <a href="/tags/panxos/" style="font-size: 16px; color: #fff">panxos</a> <a href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7Hash%E7%AE%97%E6%B3%95/" style="font-size: 16px; color: #fff">一致性Hash算法</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" style="font-size: 16px; color: #fff">分布式</a> <a href="/tags/%E9%9D%A2%E8%AF%95/" style="font-size: 16px; color: #fff">面试</a>
 	  </div>
 	</div>
 	<br>
@@ -238,6 +238,192 @@
      transition-duration: 0.15s;
   }
 </style>
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/fe45d335/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/fe45d335/" class="post-title-link" itemprop="url">分布式一致性协议——paxos算法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-02 15:39:00" itemprop="dateCreated datePublished" datetime="2021-03-02T15:39:00Z">2021-03-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ZooKeeper/" itemprop="url" rel="index"><span itemprop="name">ZooKeeper</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/panxos/" itemprop="url" rel="index"><span itemprop="name">panxos</span></a>
+                </span>
+            </span>
+
+          
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>分布式一致性协议——paxos算法</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/fe45d335/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/b439f21c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/posts/b439f21c/" class="post-title-link" itemprop="url">ZooKeeper的安装和简单操作</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-01 10:05:39" itemprop="dateCreated datePublished" datetime="2021-03-01T10:05:39Z">2021-03-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ZooKeeper/" itemprop="url" rel="index"><span itemprop="name">ZooKeeper</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>ZooKeeper的安装和简单操作</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/b439f21c/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
 
       
   
@@ -319,188 +505,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/posts/6afaddd1/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/558e0cc4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar111.png">
-      <meta itemprop="name" content="CNRF">
-      <meta itemprop="description" content="天地人，日月星">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="三才生">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/558e0cc4/" class="post-title-link" itemprop="url">win10添加新建文件md方式以及设置md模版</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-02-26 08:32:28" itemprop="dateCreated datePublished" datetime="2021-02-26T08:32:28Z">2021-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Typora/" itemprop="url" rel="index"><span itemprop="name">Typora</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Win10/" itemprop="url" rel="index"><span itemprop="name">Win10</span></a>
-                </span>
-            </span>
-
-          
-
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-              <span>746</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>win10添加新建文件md方式以及设置md模版</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/558e0cc4/">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/be9758cd/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar111.png">
-      <meta itemprop="name" content="CNRF">
-      <meta itemprop="description" content="天地人，日月星">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="三才生">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/posts/be9758cd/" class="post-title-link" itemprop="url">Hexo+NexT博客归档/标签/分类页美化</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-02-26 08:32:28" itemprop="dateCreated datePublished" datetime="2021-02-26T08:32:28Z">2021-02-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hexo/" itemprop="url" rel="index"><span itemprop="name">Hexo</span></a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Hexo/Next/" itemprop="url" rel="index"><span itemprop="name">Next</span></a>
-                </span>
-            </span>
-
-          
-
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-file-word-o"></i>
-              </span>
-              <span>8.5k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-clock-o"></i>
-              </span>
-              <span>8 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Hexo+NexT博客归档/标签/分类页美化</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/be9758cd/">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1219,13 +1223,13 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -1246,23 +1250,23 @@
         
         
           <li>
-            <a href="/posts/b369a3b6/" title="分布式一致性协议——Zab算法" target="_blank">分布式一致性协议——Zab算法</a>
-          </li>
-        
-          <li>
-            <a href="/posts/fe45d335/" title="分布式一致性协议——paxos算法" target="_blank">分布式一致性协议——paxos算法</a>
-          </li>
-        
-          <li>
-            <a href="/posts/0/" title="" target="_blank"></a>
-          </li>
-        
-          <li>
             <a href="/posts/5af4d7fe/" title="ZooKeeper集群简单介绍" target="_blank">ZooKeeper集群简单介绍</a>
           </li>
         
           <li>
-            <a href="/posts/dcfaa904/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+            <a href="/posts/8f6adc3b/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+          </li>
+        
+          <li>
+            <a href="/posts/b153a32a/" title="redis集群" target="_blank">redis集群</a>
+          </li>
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="redis持久化" target="_blank">redis持久化</a>
+          </li>
+        
+          <li>
+            <a href="/posts/d09e787/" title="redis的消息订阅，pipeline，事务" target="_blank">redis的消息订阅，pipeline，事务</a>
           </li>
         
       </ul>
@@ -1299,12 +1303,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">69k</span>
+    <span title="站点总字数">71k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:03</span>
+    <span title="站点阅读时长">1:04</span>
 </div>
   <div class="powered-by">
   </div>

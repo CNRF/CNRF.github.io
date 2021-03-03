@@ -23,27 +23,21 @@
     var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="redis持久化">
+  <meta name="description" content="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
 <meta property="og:type" content="article">
-<meta property="og:title" content="redis持久化">
-<meta property="og:url" content="https://cnrfwang.top/posts/dcfaa904/index.html">
+<meta property="og:title" content="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
+<meta property="og:url" content="https://cnrfwang.top/posts/8f6adc3b/index.html">
 <meta property="og:site_name" content="三才生">
-<meta property="og:description" content="redis持久化">
+<meta property="og:description" content="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303093740.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113700.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303093910.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226151043.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113653.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226151129.png">
-<meta property="article:published_time" content="2021-03-03T03:03:47.313Z">
-<meta property="article:modified_time" content="2021-03-03T03:04:02.431Z">
+<meta property="article:published_time" content="2021-03-03T03:03:47.315Z">
+<meta property="article:modified_time" content="2021-03-03T03:04:02.433Z">
 <meta property="article:author" content="CNRF">
 <meta property="article:tag" content="Redis">
+<meta property="article:tag" content="面试">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303093740.png">
 
-<link rel="canonical" href="https://cnrfwang.top/posts/dcfaa904/">
+<link rel="canonical" href="https://cnrfwang.top/posts/8f6adc3b/">
 
 
 <script id="page-configurations">
@@ -56,7 +50,7 @@
   };
 </script>
 
-  <title>redis持久化 | 三才生</title>
+  <title>Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性 | 三才生</title>
   
 
 
@@ -210,7 +204,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/dcfaa904/">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/8f6adc3b/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar111.png">
@@ -223,7 +217,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          redis持久化
+          Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性
         </h1>
 
         <div class="post-meta">
@@ -243,6 +237,10 @@
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
                 </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">面试</span></a>
+                </span>
             </span>
 
           
@@ -258,15 +256,15 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-file-word-o"></i>
               </span>
-              <span>1.7k</span>
+              <span>3.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="fa fa-clock-o"></i>
               </span>
-              <span>2 分钟</span>
+              <span>3 分钟</span>
             </span>
-            <div class="post-description">redis持久化</div>
+            <div class="post-description">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</div>
 
         </div>
       </header>
@@ -277,55 +275,91 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h5 id="1-redis的持久化方式"><a href="#1-redis的持久化方式" class="headerlink" title="1. redis的持久化方式"></a>1. redis的持久化方式</h5><ol>
-<li><p>RDB持久化</p>
-<p> 原理是将<strong>Reids在内存中的数据库记录定时dump到磁盘上的RDB持久化</strong></p>
+        <h5 id="1-Redis-的击穿，穿透，雪崩"><a href="#1-Redis-的击穿，穿透，雪崩" class="headerlink" title="1. Redis 的击穿，穿透，雪崩"></a>1. Redis 的击穿，穿透，雪崩</h5><h6 id="1-1-Redis-击穿"><a href="#1-1-Redis-击穿" class="headerlink" title="1.1 Redis 击穿"></a>1.1 Redis 击穿</h6><p><strong>产生原因</strong>：在高并发的情况下，在某一时间点，<strong>在高频获取的key在此时过期，大量请求直接请求到服务器上</strong>，导致缓存击穿</p>
+<p><strong>解决方案：</strong></p>
+<ul>
+<li><p>可以将<strong>热点数据设置为永远不过期</strong>；</p>
 </li>
-<li><p>AOF持久化</p>
-<p> 原理是将<strong>Reids的操作日志以追加的方式写入文件</strong></p>
-<p> <a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.cnblogs.com/zxs117/p/11242026.html">两种持久化方式区别</a></p>
-<p> 二者选择的标准，就是看系统是愿意牺牲一些性能，换取更高的缓存一致性（aof），还是愿意写操作频繁的时候，不启用备份来换取更高的性能，待手动运行save的时候，再做备份（rdb）。rdb这个就更有些 eventually consistent的意思了。不过生产环境其实更多都是二者结合使用的。</p>
+<li><p>基于 <strong>redis</strong> or <strong>zookeeper</strong> 实现互斥锁，等待第一个请求构建完缓存之后，再释放锁，进而其它请求才能通过该 key 访问数据。</p>
+<blockquote>
+<p>redis的分布式锁主要是通过  setnx 命令，设置锁的过期时间，只有返回是ok的才能去数据库中获取数据</p>
+<p><strong>产生问题</strong>：在db端超时导致锁过期 </p>
+<p><strong>解决方案</strong>： 通过<strong>zookeeper</strong> 实现分布式锁</p>
+</blockquote>
 </li>
-</ol>
-<h5 id="2-RDB持久化"><a href="#2-RDB持久化" class="headerlink" title="2.RDB持久化"></a>2.RDB持久化</h5><p><strong>原理</strong> :在liunx系统系统中，<strong>进程之间的数据是隔离的</strong>，在使用export的环境变量，<strong>父子进程的修改都不会影响到其他进程的数据</strong></p>
-<p>RDB持久化是指在指定的时间间隔内将内存中的数据集快照写入磁盘，实际操作过程是<strong>fork一个子进程</strong>，先将<strong>数据集写入临时文件</strong>，写入成功后，再替换之前的文件，用二进制压缩存储。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303093740.png"></p>
-<h6 id="2-1-RDB的优缺点"><a href="#2-1-RDB的优缺点" class="headerlink" title="2.1 RDB的优缺点"></a>2.1 RDB的优缺点</h6><p><strong>优点</strong>： </p>
-<ol>
-<li><strong>还原速度快</strong>（类似java的对象序列化，可快速还原）</li>
-<li><strong>整个Redis数据库将只包含一个文件，这对于文件备份而言是非常完美的</strong>。比如，你可能打算每个小时归档一次最近24小时的数据，同时还要每天归档一次最近30天的数据。通过这样的备份策略，一旦系统出现灾难性故障，我们可以非常容易的进行恢复。</li>
-</ol>
-<p><strong>弊端</strong>：</p>
-<ol>
-<li>如果你想保证数据的高可用性，即最大限度的避免数据丢失，那么<strong>RDB将不是一个很好的选择。因为系统一旦在定时持久化完成之前出现宕机现象，此前没有来得及写入磁盘的数据都将丢失</strong>。</li>
-<li> 由于RDB是通过fork子进程来协助完成数据持久化工作的，因此，<strong>如果当数据集较大时，可能会导致整个服务器停止服务几百毫秒，甚至是1秒钟。</strong></li>
-</ol>
+</ul>
+<h6 id="1-2-Redis穿透"><a href="#1-2-Redis穿透" class="headerlink" title="1.2 Redis穿透"></a>1.2 Redis穿透</h6><p>  一般是出现这种情况是因为恶意频繁查询才会对系统造成很大的问题: <strong>key缓存并且数据库不存在</strong>，所以<strong>每次查询都会查询数据库从而导致数据库崩溃</strong>。</p>
+<p><strong>解决方案：</strong>使用布隆过滤器</p>
 <blockquote>
-<p>fork命令只是创建进程，并不会在此时进行复制，因此创建进程的速度变快</p>
-<p>fork出来的父子进程具有 <strong>相同但是独立的地址空间</strong>因为父进程和子进程是独立的进程，他们都有自己私有的地址空间，当父进程或者子进程单独改变时，不会影响到彼此，类似于c++的写实拷贝的形式自建一个副本</p>
-<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://blog.csdn.net/weixin_40853073/article/details/81873398?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control&dist_request_id=4254810a-f10f-43c5-8965-6b775b5a3682&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.control">fork命令详细说明</a></p>
+<p>布隆过滤器缺点：只能增加不能删除</p>
+<p>可使用布谷鸟过滤器 ，设置空key</p>
 </blockquote>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113700.png" alt="image-20210221233300160"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303093910.png" alt="image-20210303093910862"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151043.png" alt="image-20210226151042967"></p>
-<h5 id="3-AOF持久化"><a href="#3-AOF持久化" class="headerlink" title="3. AOF持久化"></a>3. AOF持久化</h5><p>AOF持久化以<strong>日志的形式</strong>记录服务器所处理的<strong>每一个写、删除操作</strong>，查询操作不会记录，以文本的方式记录，可以打开文件看到详细的操作记录。</p>
+<h6 id="1-3-Redis雪崩"><a href="#1-3-Redis雪崩" class="headerlink" title="1.3 Redis雪崩"></a>1.3 Redis雪崩</h6><p>雪崩指的是<strong>多个key</strong>查询并且出现<strong>高并发</strong>，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。</p>
+<p><strong>解决方案：</strong></p>
+<ul>
+<li><p> 时点性无关:<strong>均匀的设计过期时间</strong></p>
+</li>
+<li><p>时点性有关:<strong>强依赖击穿的方案</strong></p>
+<p>​                    也可在<strong>程序设计的时候在业务层进行时点进行请求延时操作</strong></p>
+<p>​                    当知道<strong>时点之后的数据也可以进行预加载工作</strong></p>
+</li>
+<li><p>事前：redis 高可用，主从+哨兵，redis cluster，避免全盘崩溃。</p>
+</li>
+<li><p> 事中：本地 ehcache 缓存 + hystrix 限流&amp;降级，避免 MySQL 被打死。</p>
+</li>
+<li><p>事后：redis 持久化，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。</p>
 <blockquote>
-<p>当redis同时开启RDB和AOF备份，redis恢复是只会依据AOF的备份（AOF的数据丢失较少）</p>
+<p>时点性有关指<strong>某一个时间段某些key必须要过期使用新数据</strong></p>
 </blockquote>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113653.png" alt="image-20210221233312115"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226151129.png" alt="image-20210226151129085"></p>
-<h6 id="3-1-AOF的优缺点"><a href="#3-1-AOF的优缺点" class="headerlink" title="3.1 AOF的优缺点"></a>3.1 AOF的优缺点</h6><p><strong>优点</strong>：</p>
-<p>1). 该机制可以带来<strong>更高的数据安全性，即数据持久性</strong>。Redis中提供了3中同步策略，即每秒同步、每修改同步和不同步。事实上，每秒同步也是异步完成的，其效率也是非常高的，所差的是一旦系统出现宕机现象，那么这一秒钟之内修改的数据将会丢失。而每修改同步，我们可以将其视为同步持久化，即每次发生的数据变化都会被立即记录到磁盘中。可以预见，这种方式在效率上是最低的。</p>
-<p>2). 由于该机制对日志文件的<strong>写入操作采用的是append模式，因此在写入过程中即使出现宕机现象，也不会破坏日志文件中已经存在的内容</strong>。然而如果我们本次操作只是写入了一半数据就出现了系统崩溃问题，不用担心，在Redis下一次启动之前，我们可以<strong>通过redis-check-aof工具来帮助我们解决数据一致性的问题。</strong></p>
-<p>3). 如果<strong>日志过大，Redis可以自动启用rewrite机制</strong>。即Redis以append模式不断的将修改数据写入到老的磁盘文件中，同时Redis还会创建一个新的文件用于记录此期间有哪些修改命令被执行。因此在进行rewrite切换时可以更好的保证数据安全性。</p>
-<blockquote>
-<p>redis4.0以前：rewrite其实是删除抵消的命令（创建和删除），合并重复的命名。最终会生成重复命令</p>
-<p>redis4.0以后：将老的数据RDB到AOF中，将增量的以指令的方式append到aof中（实际就是混合RDB+AOF的持久化方式）</p>
-</blockquote>
-<p>4). <strong>AOF包含一个格式清晰、易于理解的日志文件用于记录所有的修改操作。事实上，我们也可以通过该文件完成数据的重建</strong>。</p>
-<p><strong>缺点</strong>：</p>
-<p>1). 对于相同数量的数据集而言，AOF文件通常要大于RDB文件。<strong>RDB 在恢复大数据集时的速度比 AOF 的恢复速度要快。</strong></p>
-<p>2). 根据同步策略的不同，<strong>AOF在运行效率上往往会慢于RDB</strong>。总之，每秒同步策略的效率是比较高的，同步禁用策略的效率和RDB一样高效。</p>
+</li>
+</ul>
+<h5 id="2-Redis-的分布式锁实现"><a href="#2-Redis-的分布式锁实现" class="headerlink" title="2. Redis  的分布式锁实现"></a>2. Redis  的分布式锁实现</h5><p>最好是使用zookeeper实现分布式锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原理需要三个关键元素</span><br><span class="line">1. setnx</span><br><span class="line">2.过期时间</span><br><span class="line">3.多线程（守护进程），延长过期</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-1-Redis加锁实现"><a href="#2-1-Redis加锁实现" class="headerlink" title="2.1 Redis加锁实现"></a>2.1 Redis加锁实现</h6><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOCK_SUCCESS = <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_IF_NOT_EXIST = <span class="string">&quot;NX&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_WITH_EXPIRE_TIME = <span class="string">&quot;PX&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 尝试获取分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expireTime 超期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否获取成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">tryGetDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId, <span class="keyword">int</span> expireTime)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (LOCK_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-2-redis-解锁代码"><a href="#2-2-redis-解锁代码" class="headerlink" title="2.2 redis 解锁代码"></a>2.2 redis 解锁代码</h6><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Long RELEASE_SUCCESS = <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否释放成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">releaseDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String script = <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (RELEASE_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="Redis的弊端"><a href="#Redis的弊端" class="headerlink" title="Redis的弊端"></a>Redis的弊端</h6><ul>
+<li>数据库事务超时，导致锁过期</li>
+<li><code>redis cluster</code>集群环境下，假如现在<code>A客户端</code>想要加锁，它会根据路由规则选择一台<code>master</code>节点写入<code>key</code> <code>mylock</code>，在加锁成功后，<code>master</code>节点会把<code>key</code>异步复制给对应的<code>slave</code>节点。如果此时<code>redis master</code>节点宕机，为保证集群可用性，会进行<code>主备切换</code>，<code>slave</code>变为了<code>redis master</code>。<code>B客户端</code>在新的<code>master</code>节点上加锁成功，而<code>A客户端</code>也以为自己还是成功加了锁的。此时就会导致同一时间内多个客户端对一个分布式锁完成了加锁，导致各种脏数据的产生。</li>
+</ul>
+<h5 id="Redis-缓存一致性"><a href="#Redis-缓存一致性" class="headerlink" title="Redis 缓存一致性"></a>Redis 缓存一致性</h5><h6 id="出现场景"><a href="#出现场景" class="headerlink" title="出现场景"></a>出现场景</h6><p>在<strong>高并发的情况</strong>下涉及到数据更新：数据库和缓存更新，就容易出现<strong>缓存(Redis)和数据库（MySQL）间的数据一致性问题</strong>。</p>
+<p>不管是先写MySQL数据库，再删除Redis缓存；还是先删除缓存，再写库，都有可能出现数据不一致的情况。举一个例子：</p>
+<p>1.如果删除了缓存Redis，还没有来得及写库MySQL，另一个线程就来读取，发现缓存为空，则去数据库中读取数据写入缓存，此时缓存中为脏数据。</p>
+<p>2.如果先写了库，在删除缓存前，写库的线程宕机了，没有删除掉缓存，则也会出现数据不一致情况。</p>
+<p>因为<strong>写和读是并发</strong>的，没法保证顺序,就会出现缓存和数据库的数据不一致的问题。</p>
+<h6 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h6><p><strong>1.第一种方案：采用延时双删策略</strong></p>
+<p>在写库前后都进行redis.del(key)操作，并且设定合理的超时时间。</p>
+<p>伪代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(String key,Object data)</span></span>&#123;</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> db.updateData(data);</span><br><span class="line"> Thread.sleep(<span class="number">500</span>);</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>具体的步骤就是：</strong></p>
+<ul>
+<li>先删除缓存；</li>
+<li>再写数据库；</li>
+<li>休眠500毫秒；</li>
+<li>再次删除缓存</li>
+</ul>
+<p><strong>该方案的弊端</strong></p>
+<p>结合<strong>双删策略+缓存超时设置</strong>，这样<strong>最差的情况就是在超时时间内数据存在不一致，而且又增加了写请求的耗时。</strong></p>
+<p><strong>2、第二种方案：异步更新缓存(基于订阅binlog的同步机制)</strong></p>
+<p>MySQL binlog增量订阅消费+消息队列+增量数据更新到redis</p>
+<ul>
+<li><strong>读Redis</strong>：热数据基本都在Redis</li>
+<li><strong>写MySQL</strong>:增删改都是操作MySQL</li>
+<li><strong>更新Redis数据</strong>：MySQ的数据操作binlog，来更新到Redis</li>
+</ul>
+<p><strong>1）数据操作主要分为两大块：</strong></p>
+<ul>
+<li>一个是全量(将全部数据一次写入到redis)</li>
+<li>一个是增量（实时更新）</li>
+</ul>
+<p>这里说的是增量,指的是mysql的update、insert、delate变更数据。</p>
+<p><strong>2）读取binlog后分析 ，利用消息队列,推送更新各台的redis缓存数据。</strong></p>
+<p>这样一旦MySQL中产生了新的写入、更新、删除等操作，就可以把binlog相关的消息推送至Redis，Redis再根据binlog中的记录，对Redis进行更新。</p>
+<p>其实这种机制，很类似MySQL的主从备份机制，因为MySQL的主备也是通过binlog来实现的数据一致性。</p>
+<p><strong>消息推送工具</strong>你也可以采用别的第三方：kafka、rabbitMQ等来实现推送更新Redis。</p>
 
     </div>
 
@@ -336,10 +370,10 @@
   <div class="popular-posts-header">相关文章推荐</div>
   <ul class="popular-posts">
     <li class="popular-posts-item">
-      <div class="popular-posts-title"><a href="\posts\8f6adc3b\" rel="bookmark">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a></div>
+      <div class="popular-posts-title"><a href="\posts\b153a32a\" rel="bookmark">redis集群</a></div>
     </li>
     <li class="popular-posts-item">
-      <div class="popular-posts-title"><a href="\posts\b153a32a\" rel="bookmark">redis集群</a></div>
+      <div class="popular-posts-title"><a href="\posts\dcfaa904\" rel="bookmark">redis持久化</a></div>
     </li>
     <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="\posts\d09e787\" rel="bookmark">redis的消息订阅，pipeline，事务</a></div>
@@ -366,7 +400,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://cnrfwang.top/posts/dcfaa904/" title="redis持久化">https://cnrfwang.top/posts/dcfaa904/</a>
+    <a href="https://cnrfwang.top/posts/8f6adc3b/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">https://cnrfwang.top/posts/8f6adc3b/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -378,6 +412,7 @@
       <footer class="post-footer">
           <div class="post-tags">
                <a href="/tags/Redis/" rel="tag"><i class="fa fa-tag"></i> Redis</a>
+               <a href="/tags/%E9%9D%A2%E8%AF%95/" rel="tag"><i class="fa fa-tag"></i> 面试</a>
           </div>
 
         
@@ -386,12 +421,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/posts/d09e787/" rel="prev" title="redis的消息订阅，pipeline，事务">
-      <i class="fa fa-chevron-left"></i> redis的消息订阅，pipeline，事务
+    <a href="/posts/b153a32a/" rel="prev" title="redis集群">
+      <i class="fa fa-chevron-left"></i> redis集群
     </a></div>
       <div class="post-nav-item">
-    <a href="/posts/b153a32a/" rel="next" title="redis集群">
-      redis集群 <i class="fa fa-chevron-right"></i>
+    <a href="/posts/5af4d7fe/" rel="next" title="ZooKeeper集群简单介绍">
+      ZooKeeper集群简单介绍 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -451,7 +486,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-redis%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">1. redis的持久化方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-RDB%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">2.RDB持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-1-RDB%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 RDB的优缺点</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-AOF%E6%8C%81%E4%B9%85%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">3. AOF持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#3-1-AOF%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 AOF的优缺点</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-Redis-%E7%9A%84%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%A9%BF%E9%80%8F%EF%BC%8C%E9%9B%AA%E5%B4%A9"><span class="nav-number">1.</span> <span class="nav-text">1. Redis 的击穿，穿透，雪崩</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#1-1-Redis-%E5%87%BB%E7%A9%BF"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 Redis 击穿</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#1-2-Redis%E7%A9%BF%E9%80%8F"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 Redis穿透</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#1-3-Redis%E9%9B%AA%E5%B4%A9"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 Redis雪崩</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-Redis-%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">2. Redis  的分布式锁实现</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#2-1-Redis%E5%8A%A0%E9%94%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 Redis加锁实现</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-2-redis-%E8%A7%A3%E9%94%81%E4%BB%A3%E7%A0%81"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 redis 解锁代码</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Redis%E7%9A%84%E5%BC%8A%E7%AB%AF"><span class="nav-number">2.3.</span> <span class="nav-text">Redis的弊端</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Redis-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">Redis 缓存一致性</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%87%BA%E7%8E%B0%E5%9C%BA%E6%99%AF"><span class="nav-number">3.1.</span> <span class="nav-text">出现场景</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

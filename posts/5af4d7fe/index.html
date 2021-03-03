@@ -34,10 +34,15 @@
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210228143924.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302102953.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302103007.jpg">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303103255.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302100241.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302103739.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303103735.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210228144112.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210228144131.png">
-<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302100241.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303103925.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303104435.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303104900.webp">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302121105.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302121316.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302123647.png">
@@ -49,8 +54,8 @@
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302130554.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302130614.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302130920.png">
-<meta property="article:published_time" content="2021-03-02T09:48:32.612Z">
-<meta property="article:modified_time" content="2021-03-02T09:48:47.180Z">
+<meta property="article:published_time" content="2021-03-03T03:03:47.325Z">
+<meta property="article:modified_time" content="2021-03-03T03:04:02.445Z">
 <meta property="article:author" content="CNRF">
 <meta property="article:tag" content="ZooKeeper">
 <meta property="article:tag" content="分布式">
@@ -150,12 +155,12 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">15</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">15</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">16</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
@@ -247,7 +252,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-03-02 09:48:32" itemprop="dateCreated datePublished" datetime="2021-03-02T09:48:32Z">2021-03-02</time>
+              <time title="创建时间：2021-03-03 03:03:47" itemprop="dateCreated datePublished" datetime="2021-03-03T03:03:47Z">2021-03-03</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -276,7 +281,7 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-file-word-o"></i>
               </span>
-              <span>5k</span>
+              <span>6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -323,11 +328,12 @@
 <h1 id="集群中的角色"><a href="#集群中的角色" class="headerlink" title="集群中的角色"></a>集群中的角色</h1><ul>
 <li>领导者（leader），负责进行投票的发起和决议，更新系统状态</li>
 <li>学习者（learner），包括跟随者（follower）和观察者（observer），follower用于接受客户端请求并想客户端返回结果，在选主过程中参与投票</li>
-<li>Observer可以接受客户端连接，将写请求转发给leader，但<strong>observer不参加投票过程</strong>，只同步leader的状态，observer的目的是为了扩展系统，提高读取速度</li>
+<li>Observer可以接受客户端连接，将写请求转发给leader，但<strong>observer不参加投票过程</strong>，只同步leader的状态，<font color=red>observer的目的是为了扩展系统，提高读取速度,放大查询能力</font></li>
 <li>客户端（client），请求发起方</li>
 </ul>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302102953.png" alt="183233-20160316222444771-1363762533"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302103007.jpg" alt="183233-20160316222520584-1877673765"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302103007.jpg"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303103255.png" alt="节点间连接模式"></p>
 <ul>
 <li>　　Zookeeper的核心<strong>是原子广播，这个机制保证了各个Server之间的同步。实现这个机制的协议叫做Zab协议。Zab协议有两种模式，它们分别是恢复模式（选主）和广播模式（同步）。</strong>当服务启动或者在领导者崩溃后，Zab就进入了恢复模式，当领导者被选举出来，且大多数Server完成了和leader的状态同步以后，恢复模式就结束了。状态同步保证了leader和Server具有相同的系统状态。</li>
 </ul>
@@ -357,7 +363,19 @@
 <li>SYNC消息：返回SYNC结果到客户端，这个消息最初由客户端发起，用来强制得到最新的更新。</li>
 </ol>
 <p>其他文档：<a target="_blank" rel="noopener external nofollow noreferrer" href="http://www.cnblogs.com/lpshou/archive/2013/06/14/3136738.html">http://www.cnblogs.com/lpshou/archive/2013/06/14/3136738.html</a></p>
+<h1 id="Zookeeper中节点的状态信息各字段含义"><a href="#Zookeeper中节点的状态信息各字段含义" class="headerlink" title="Zookeeper中节点的状态信息各字段含义"></a>Zookeeper中节点的状态信息各字段含义</h1><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302100241.png" alt="image-20210302100241394"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@InterfaceAudience</span>.Public</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Stat</span> <span class="keyword">implements</span> <span class="title">Record</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> czxid; <span class="comment">// 该数据节点被创建时的事务id</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> mzxid; <span class="comment">// 该数据节点被修改时最新的事务id（集群中会不一样）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> ctime; <span class="comment">// 该数据节点创建时间</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> mtime; <span class="comment">// 该数据节点最后修改时间</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> version; <span class="comment">// 当前节点版本号（可以理解为修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> cversion;<span class="comment">// 子节点版本号（子节点修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> aversion; <span class="comment">// 当前节点acl版本号（acl节点被修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> ephemeralOwner; <span class="comment">// 临时节点标示，当前节点如果是临时节点，则存储的创建者的会话id（sessionId），如果不是，那么值=0</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> dataLength;<span class="comment">// 当前节点数据长度</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> numChildren; <span class="comment">// 当前节点子节点个数</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> pzxid; <span class="comment">// 当前节点的父级节点事务ID</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Stat</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><font color=red>其中zxid表示的是zookeeper的事务ID，由64位数字组成，分为高32位和低32位</font></strong></p>
+<p><strong>高32位</strong>：Epoch周期数，值为最新的领导的对应的id，其实就是就是一个递增的数字</p>
+<p><strong>低32位</strong>：计数器，一个递增的计数器，当处理了一个事务，值+1</p>
+<p>zxid生成的规则：ZxidUtils.makeZxid</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZxidUtils</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getEpochFromZxid</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> zxid &gt;&gt; <span class="number">32L</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getCounterFromZxid</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> zxid &amp; <span class="number">0xffffffffL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">makeZxid</span><span class="params">(<span class="keyword">long</span> epoch, <span class="keyword">long</span> counter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (epoch &lt;&lt; <span class="number">32L</span>) | (counter &amp; <span class="number">0xffffffffL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">zxidToString</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Long.toHexString(zxid);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h1 id="Zookeeper节点数据操作流程"><a href="#Zookeeper节点数据操作流程" class="headerlink" title="Zookeeper节点数据操作流程"></a>Zookeeper节点数据操作流程</h1><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302103739.png" alt="183233-20160316223234865-1124736424"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303103735.png"></p>
 <p><strong>详细说明</strong></p>
 <ol>
 <li>在Client向Follwer发出一个写的请求</li>
@@ -384,22 +402,51 @@
  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">优先检查ZXID，ZXID比较大的服务器优先作为Leader</span><br><span class="line"></span><br><span class="line">如果ZXID相同的话，那么就比较myid。myid比较大的服务器作为Leader服务器</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>==改变服务器状态==，一旦确定Leader，每个服务器就会更新自己的状态。如果是Follower，那么就变更为FOLLOWING，如果是Leader，那么就变更为LEADING。</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210303103925.png"></p>
 </li>
 </ol>
 </li>
 </ol>
 <h3 id="服务器运行时期的Leader选举"><a href="#服务器运行时期的Leader选举" class="headerlink" title="服务器运行时期的Leader选举"></a>服务器运行时期的Leader选举</h3><p>在Zookeeper集群正常运行过程中，<strong>一旦选出一个Leader，那么所有服务器的集群角色一般不会再发生变化</strong>，也就是说，Leader服务器将一直作为集群的Leader，<strong>即使集群中有非Leader挂了或有新机器加入集群也不会影响Leader</strong>。但是<strong>一旦Leader所在机器挂了，那么整个集群将暂时无法对外提供服务，而是进入新一轮的Leader选举</strong>。服务器运行期间的Leader选举和启动时期的Leader选举基本过程一致的。</p>
-<h1 id="Zookeeper中节点的状态信息各字段含义"><a href="#Zookeeper中节点的状态信息各字段含义" class="headerlink" title="Zookeeper中节点的状态信息各字段含义"></a>Zookeeper中节点的状态信息各字段含义</h1><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302100241.png" alt="image-20210302100241394"></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@InterfaceAudience</span>.Public</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Stat</span> <span class="keyword">implements</span> <span class="title">Record</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> czxid; <span class="comment">// 该数据节点被创建时的事务id</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> mzxid; <span class="comment">// 该数据节点被修改时最新的事务id（集群中会不一样）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> ctime; <span class="comment">// 该数据节点创建时间</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> mtime; <span class="comment">// 该数据节点最后修改时间</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> version; <span class="comment">// 当前节点版本号（可以理解为修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> cversion;<span class="comment">// 子节点版本号（子节点修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> aversion; <span class="comment">// 当前节点acl版本号（acl节点被修改次数，每修改一次值+1）</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> ephemeralOwner; <span class="comment">// 临时节点标示，当前节点如果是临时节点，则存储的创建者的会话id（sessionId），如果不是，那么值=0</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> dataLength;<span class="comment">// 当前节点数据长度</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> numChildren; <span class="comment">// 当前节点子节点个数</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">long</span> pzxid; <span class="comment">// 当前节点的父级节点事务ID</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Stat</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong><font color=red>其中zxid表示的是zookeeper的事务ID，由64位数字组成，分为高32位和低32位</font></strong></p>
-<p><strong>高32位</strong>：Epoch周期数，值为最新的领导的对应的id，其实就是就是一个递增的数字</p>
-<p><strong>低32位</strong>：计数器，一个递增的计数器，当处理了一个事务，值+1</p>
-<p>zxid生成的规则：ZxidUtils.makeZxid</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZxidUtils</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getEpochFromZxid</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> zxid &gt;&gt; <span class="number">32L</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getCounterFromZxid</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> zxid &amp; <span class="number">0xffffffffL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">makeZxid</span><span class="params">(<span class="keyword">long</span> epoch, <span class="keyword">long</span> counter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (epoch &lt;&lt; <span class="number">32L</span>) | (counter &amp; <span class="number">0xffffffffL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">zxidToString</span><span class="params">(<span class="keyword">long</span> zxid)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Long.toHexString(zxid);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
+<h1 id="ZooKeeper的Watch"><a href="#ZooKeeper的Watch" class="headerlink" title="ZooKeeper的Watch"></a>ZooKeeper的Watch</h1><p>  Zookeeper提供了数据的发布/订阅功能，多个订阅者可同时监听某一特定主题对象，当该主题对象的自身状态发生变化时(例如节点内容改变、节点下的子节点列表改变等)，会实时、主动通知所有订阅者。</p>
+<p>  Zookeeper采用了Watcher机制实现数据的发布/订阅功能。该机制在被订阅对象发生变化时会异步通知客户端，因此客户端不必在Watcher注册后轮询阻塞，从而减轻了客户端压力。</p>
+<blockquote>
+<p>Watcher机制实际上<strong>与观察者模式类似</strong>，也可看作是一种观察者模式在分布式场景下的实现方式。</p>
+</blockquote>
+<h2 id="watcher架构"><a href="#watcher架构" class="headerlink" title="watcher架构"></a>watcher架构</h2><p>Watcher实现由三个部分组成：</p>
+<ul>
+<li>Zookeeper服务端；</li>
+<li>Zookeeper客户端；</li>
+<li>客户端的ZKWatchManager对象；</li>
+</ul>
+<p>客户端首先将Watcher注册到服务端，同时将Watcher对象保存到客户端的Watch管理器中。当ZooKeeper服务端监听的数据状态发生变化时，服务端会主动通知客户端，接着客户端的Watch管理器会触发相关Watcher来回调相应处理逻辑，从而完成整体的数据发布/订阅流程。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303104435.png" alt="image-20210303104435501"></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303104900.webp" alt="img"></p>
+<p>此时小红旗是一个watcher，当小红旗被创建并注册到node1节点(会有相应的API实现)后，就会监听node1+node_a+node_b或node_a+node_b。这里两种情况是因为在创建watcher注册时会有多种途径。并且watcher不能监听到孙节点。注意注意注意，watcher设置后，一旦触发一次后就会失效，如果要想一直监听，需要在process回调函数里重新注册相同的 <strong>watcher</strong>。</p>
+<h2 id="Watcher特性"><a href="#Watcher特性" class="headerlink" title="Watcher特性"></a>Watcher特性</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>一次性</td>
+<td>Watcher是一次性的，一旦被触发就会移除，再次使用时需要重新注册</td>
+</tr>
+<tr>
+<td>客户端顺序回调</td>
+<td>Watcher回调是顺序串行化执行的，只有回调后客户端才能看到最新的数据状态。一个Watcher回调逻辑不应该太多，以免影响别的watcher执行</td>
+</tr>
+<tr>
+<td>轻量级</td>
+<td>WatchEvent是最小的通信单元，结构上只包含通知状态、事件类型和节点路径，并不会告诉数据节点变化前后的具体内容；</td>
+</tr>
+<tr>
+<td>时效性</td>
+<td>Watcher只有在当前session彻底失效时才会无效，若在session有效期内快速重连成功，则watcher依然存在，仍可接收到通知；</td>
+</tr>
+</tbody></table>
 <h1 id="Zookeeper顺序一致性简单验证"><a href="#Zookeeper顺序一致性简单验证" class="headerlink" title="Zookeeper顺序一致性简单验证"></a>Zookeeper顺序一致性简单验证</h1><ol>
 <li><p>启动三个1，2，3三个节点(共四个节点)，三个节点已经可以选举出leader</p>
 <p> <code>./bin/zkServer.sh start-foreground</code></p>
@@ -503,13 +550,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/posts/dcfaa904/" rel="prev" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
+    <a href="/posts/8f6adc3b/" rel="prev" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
       <i class="fa fa-chevron-left"></i> Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性
     </a></div>
-      <div class="post-nav-item">
-    <a href="/posts/0/" rel="next" title="">
-       <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -568,7 +612,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">Zookeeper介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E8%AF%BB%E5%86%99%E6%9C%BA%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">Zookeeper的读写机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper-%E7%9A%84%E4%BF%9D%E8%AF%81"><span class="nav-number">3.</span> <span class="nav-text">Zookeeper 的保证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">4.</span> <span class="nav-text">集群中的角色</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E8%8A%82%E7%82%B9%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">Zookeeper节点数据操作流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E9%9B%86%E7%BE%A4%E7%9A%84%E4%B8%A4%E7%A7%8D%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81"><span class="nav-number">6.</span> <span class="nav-text">Zookeeper集群的两种运行状态</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#leader%E5%8F%AF%E7%94%A8%E7%8A%B6%E6%80%81"><span class="nav-number">6.1.</span> <span class="nav-text">leader可用状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#leader%E4%B8%8D%E5%8F%AF%E7%94%A8%E7%8A%B6%E6%80%81"><span class="nav-number">6.2.</span> <span class="nav-text">leader不可用状态</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E9%9B%86%E7%BE%A4%E9%80%89%E4%B8%BE"><span class="nav-number">7.</span> <span class="nav-text">Zookeeper的集群选举</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%AF%E5%8A%A8%E6%97%B6%E6%9C%9F%E7%9A%84%E9%80%89%E4%B8%BE"><span class="nav-number">7.1.</span> <span class="nav-text">服务器启动时期的选举</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%AF%E5%8A%A8%E6%97%B6%E6%9C%9F%E7%9A%84Leader%E9%80%89%E4%B8%BE"><span class="nav-number">7.1.1.</span> <span class="nav-text">服务器启动时期的Leader选举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9C%9F%E7%9A%84Leader%E9%80%89%E4%B8%BE"><span class="nav-number">7.1.2.</span> <span class="nav-text">服务器运行时期的Leader选举</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E4%B8%AD%E8%8A%82%E7%82%B9%E7%9A%84%E7%8A%B6%E6%80%81%E4%BF%A1%E6%81%AF%E5%90%84%E5%AD%97%E6%AE%B5%E5%90%AB%E4%B9%89"><span class="nav-number">8.</span> <span class="nav-text">Zookeeper中节点的状态信息各字段含义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%80%E5%8D%95%E9%AA%8C%E8%AF%81"><span class="nav-number">9.</span> <span class="nav-text">Zookeeper顺序一致性简单验证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">10.</span> <span class="nav-text">Zookeeper的应用场景</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">Zookeeper介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E8%AF%BB%E5%86%99%E6%9C%BA%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">Zookeeper的读写机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper-%E7%9A%84%E4%BF%9D%E8%AF%81"><span class="nav-number">3.</span> <span class="nav-text">Zookeeper 的保证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">4.</span> <span class="nav-text">集群中的角色</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E4%B8%AD%E8%8A%82%E7%82%B9%E7%9A%84%E7%8A%B6%E6%80%81%E4%BF%A1%E6%81%AF%E5%90%84%E5%AD%97%E6%AE%B5%E5%90%AB%E4%B9%89"><span class="nav-number">5.</span> <span class="nav-text">Zookeeper中节点的状态信息各字段含义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E8%8A%82%E7%82%B9%E6%95%B0%E6%8D%AE%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">Zookeeper节点数据操作流程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E9%9B%86%E7%BE%A4%E7%9A%84%E4%B8%A4%E7%A7%8D%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81"><span class="nav-number">7.</span> <span class="nav-text">Zookeeper集群的两种运行状态</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#leader%E5%8F%AF%E7%94%A8%E7%8A%B6%E6%80%81"><span class="nav-number">7.1.</span> <span class="nav-text">leader可用状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#leader%E4%B8%8D%E5%8F%AF%E7%94%A8%E7%8A%B6%E6%80%81"><span class="nav-number">7.2.</span> <span class="nav-text">leader不可用状态</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E9%9B%86%E7%BE%A4%E9%80%89%E4%B8%BE"><span class="nav-number">8.</span> <span class="nav-text">Zookeeper的集群选举</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%AF%E5%8A%A8%E6%97%B6%E6%9C%9F%E7%9A%84%E9%80%89%E4%B8%BE"><span class="nav-number">8.1.</span> <span class="nav-text">服务器启动时期的选举</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%AF%E5%8A%A8%E6%97%B6%E6%9C%9F%E7%9A%84Leader%E9%80%89%E4%B8%BE"><span class="nav-number">8.1.1.</span> <span class="nav-text">服务器启动时期的Leader选举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9C%9F%E7%9A%84Leader%E9%80%89%E4%B8%BE"><span class="nav-number">8.1.2.</span> <span class="nav-text">服务器运行时期的Leader选举</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ZooKeeper%E7%9A%84Watch"><span class="nav-number">9.</span> <span class="nav-text">ZooKeeper的Watch</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#watcher%E6%9E%B6%E6%9E%84"><span class="nav-number">9.1.</span> <span class="nav-text">watcher架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Watcher%E7%89%B9%E6%80%A7"><span class="nav-number">9.2.</span> <span class="nav-text">Watcher特性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%80%E5%8D%95%E9%AA%8C%E8%AF%81"><span class="nav-number">10.</span> <span class="nav-text">Zookeeper顺序一致性简单验证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zookeeper%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">11.</span> <span class="nav-text">Zookeeper的应用场景</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -591,13 +635,13 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -618,23 +662,23 @@
         
         
           <li>
-            <a href="/posts/b369a3b6/" title="分布式一致性协议——Zab算法" target="_blank">分布式一致性协议——Zab算法</a>
-          </li>
-        
-          <li>
-            <a href="/posts/fe45d335/" title="分布式一致性协议——paxos算法" target="_blank">分布式一致性协议——paxos算法</a>
-          </li>
-        
-          <li>
-            <a href="/posts/0/" title="" target="_blank"></a>
-          </li>
-        
-          <li>
             <a href="/posts/5af4d7fe/" title="ZooKeeper集群简单介绍" target="_blank">ZooKeeper集群简单介绍</a>
           </li>
         
           <li>
-            <a href="/posts/dcfaa904/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+            <a href="/posts/8f6adc3b/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+          </li>
+        
+          <li>
+            <a href="/posts/b153a32a/" title="redis集群" target="_blank">redis集群</a>
+          </li>
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="redis持久化" target="_blank">redis持久化</a>
+          </li>
+        
+          <li>
+            <a href="/posts/d09e787/" title="redis的消息订阅，pipeline，事务" target="_blank">redis的消息订阅，pipeline，事务</a>
           </li>
         
       </ul>
@@ -671,12 +715,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">69k</span>
+    <span title="站点总字数">71k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:03</span>
+    <span title="站点阅读时长">1:04</span>
 </div>
   <div class="powered-by">
   </div>
