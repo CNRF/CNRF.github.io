@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="分布式一致性协议——Zab算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式一致性协议——Zab算法">
+<meta property="og:url" content="https://cnrfwang.top/posts/b369a3b6/index.html">
+<meta property="og:site_name" content="三才生">
+<meta property="og:description" content="分布式一致性协议——Zab算法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302165537.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302170013.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302171418.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302171535.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302171702.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302171740.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302172451.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302172728.png">
+<meta property="article:published_time" content="2021-03-02T16:39:00.000Z">
+<meta property="article:modified_time" content="2021-03-03T03:04:02.443Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="ZooKeeper">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="ZAB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210302165537.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/b369a3b6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分布式一致性协议——Zab算法 | 三才生</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">三才生</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三才生</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">17</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">17</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">29</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/b369a3b6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式一致性协议——Zab算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-02 16:39:00" itemprop="dateCreated datePublished" datetime="2021-03-02T16:39:00Z">2021-03-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ZooKeeper/" itemprop="url" rel="index"><span itemprop="name">ZooKeeper</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Zab/" itemprop="url" rel="index"><span itemprop="name">Zab</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>7.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">分布式一致性协议——Zab算法</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Zab算法描述"><a href="#Zab算法描述" class="headerlink" title="Zab算法描述"></a>Zab算法描述</h1><p>Zab协议 的全称是 <strong>Zookeeper Atomic Broadcast</strong> （Zookeeper原子广播）。</p>
+<p><strong>Zookeeper 是通过 Zab 协议来保证分布式事务的最终一致性</strong>。</p>
+<ol>
+<li>Zab协议是为分布式协调服务Zookeeper专门设计的一种 <strong>支持崩溃恢复</strong> 的 <strong>原子广播协议</strong> ，是Zookeeper保证数据一致性的核心算法。Zab借鉴了Paxos算法，但又不像Paxos那样，是一种通用的分布式一致性算法。<strong>它是特别为Zookeeper设计的支持崩溃恢复的原子广播协议</strong>。</li>
+<li>在Zookeeper中主要依赖Zab协议来实现数据一致性，基于该协议，zk实现了一种主备模型（即Leader和Follower模型）的系统架构来保证集群中各个副本之间数据的一致性。<br> 这里的主备系统架构模型，就是指只有一台客户端（Leader）负责处理外部的写事务请求，然后Leader客户端将数据同步到其他Follower节点。</li>
+</ol>
+<p>Zookeeper 客户端会随机的链接到 zookeeper 集群中的一个节点，如果是<font color=red>读请求，就直接从当前节点中读取数据；如果是写请求，那么节点就会向 Leader 提交事务，Leader 接收到事务提交，会广播该事务，只要超过半数节点写入成功，该事务就会被提交</font>。</p>
+<h1 id="Zab-协议的特性："><a href="#Zab-协议的特性：" class="headerlink" title="Zab 协议的特性："></a><strong>Zab 协议的特性</strong>：</h1><p>1）Zab 协议需要确保那些<strong>已经在 Leader 服务器上提交（Commit）的事务最终被所有的服务器提交</strong>。</p>
+<p>2）Zab 协议需要确保<strong>丢弃那些只在 Leader 上被提出而没有被提交的事务</strong>。</p>
+<h1 id="Zab-协议的作用"><a href="#Zab-协议的作用" class="headerlink" title="Zab 协议的作用"></a>Zab 协议的作用</h1><ol>
+<li><p><strong>使用一个单一的主进程（Leader）来接收并处理客户端的事务请求</strong>（也就是写请求），并采用了Zab的原子广播协议，将服务器数据的状态变更以 <strong>事务proposal</strong> （事务提议）的形式广播到所有的副本（Follower）进程上去。</p>
+</li>
+<li><p><strong>保证一个全局的变更序列被顺序引用</strong>。<br> Zookeeper是一个树形结构，很多操作都要先检查才能确定是否可以执行，比如P1的事务t1可能是创建节点”/a”，t2可能是创建节点”/a/bb”，只有先创建了父节点”/a”，才能创建子节点”/a/b”。</p>
+<p> 为了保证这一点，Zab要保证同一个Leader发起的事务要按顺序被apply，同时还要保证只有先前Leader的事务被apply之后，新选举出来的Leader才能再次发起事务。</p>
+</li>
+<li><p><strong>当主进程出现异常的时候，整个zk集群依旧能正常工作</strong>。</p>
+</li>
+</ol>
+<h2 id="Zab协议原理"><a href="#Zab协议原理" class="headerlink" title="Zab协议原理"></a>Zab协议原理</h2><p>Zab协议要求每个 Leader 都要经历三个阶段：<strong>发现，同步，广播</strong>。</p>
+<ul>
+<li><strong>发现</strong>：要求zookeeper集群必须选举出一个 Leader 进程，同时 Leader 会维护一个 Follower 可用客户端列表。将来客户端可以和这些 Follower节点进行通信。</li>
+<li><strong>同步</strong>：Leader 要负责将本身的数据与 Follower 完成同步，做到多副本存储。这样也是提现了CAP中的高可用和分区容错。Follower将队列中未处理完的请求消费完成后，写入本地事务日志中。</li>
+<li><strong>广播</strong>：Leader 可以接受客户端新的事务Proposal请求，将新的Proposal请求广播给所有的 Follower。</li>
+</ul>
+<h2 id="Zab协议核心"><a href="#Zab协议核心" class="headerlink" title="Zab协议核心"></a>Zab协议核心</h2><p>Zab协议的核心：<strong>定义了事务请求的处理方式</strong></p>
+<p>1）所有的事务请求必须由一个全局唯一的服务器来协调处理，这样的服务器被叫做 <strong>Leader服务器</strong>。其他剩余的服务器则是 <strong>Follower服务器</strong>。</p>
+<p>2）Leader服务器 负责将一个客户端事务请求，转换成一个 <strong>事务Proposal</strong>，并将该 Proposal 分发给集群中所有的 Follower 服务器，也就是向所有 Follower 节点发送数据广播请求（或数据复制）</p>
+<p>3）分发之后Leader服务器需要等待所有Follower服务器的反馈（Ack请求），<strong>在Zab协议中，只要超过半数的Follower服务器进行了正确的反馈</strong>后（也就是收到半数以上的Follower的Ack请求），那么 Leader 就会再次向所有的 Follower服务器发送 Commit 消息，要求其将上一个 事务proposal 进行提交。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302165537.png" alt="image-20210302165537904"></p>
+<h2 id="Zab协议内容"><a href="#Zab协议内容" class="headerlink" title="Zab协议内容"></a>Zab协议内容</h2><p>Zab 协议包括两种基本的模式：<strong>崩溃恢复</strong> 和 <strong>消息广播</strong></p>
+<h3 id="Zab协议内容-1"><a href="#Zab协议内容-1" class="headerlink" title="Zab协议内容"></a>Zab协议内容</h3><h4 id="协议过程"><a href="#协议过程" class="headerlink" title="协议过程"></a>协议过程</h4><p>当整个集群启动过程中，或者当 Leader 服务器出现网络中弄断、崩溃退出或重启等异常时，Zab协议就会 <strong>进入崩溃恢复模式</strong>，选举产生新的Leader。</p>
+<p>当选举产生了新的 Leader，同时集群中有过半的机器与该 Leader 服务器完成了状态同步（即数据同步）之后，Zab协议就会退出崩溃恢复模式，<strong>进入消息广播模式</strong>。</p>
+<p>这时，如果有一台遵守Zab协议的服务器加入集群，因为此时集群中已经存在一个Leader服务器在广播消息，那么该新加入的服务器自动进入恢复模式：找到Leader服务器，并且完成数据同步。同步完成后，作为新的Follower一起参与到消息广播流程中。</p>
+<h4 id="协议状态切换"><a href="#协议状态切换" class="headerlink" title="协议状态切换"></a>协议状态切换</h4><p>当Leader出现崩溃退出或者机器重启，亦或是集群中不存在超过半数的服务器与Leader保存正常通信，Zab就会再一次进入崩溃恢复，发起新一轮Leader选举并实现数据同步。同步完成后又会进入消息广播模式，接收事务请求。</p>
+<h4 id="保证消息有序"><a href="#保证消息有序" class="headerlink" title="保证消息有序"></a>保证消息有序</h4><p>在整个消息广播中，Leader会将每一个事务请求转换成对应的 proposal 来进行广播，并且在广播 事务Proposal 之前，Leader服务器会首先为这个事务Proposal分配一个全局单递增的唯一ID，称之为事务ID（即zxid），由于Zab协议需要保证每一个消息的严格的顺序关系，因此必须将每一个proposal按照其zxid的先后顺序进行排序和处理。</p>
+<h3 id="消息广播"><a href="#消息广播" class="headerlink" title="消息广播"></a>消息广播</h3><ol>
+<li><p>在zookeeper集群中，数据副本的传递策略就是采用消息广播模式。zookeeper中农数据副本的同步方式与二段提交相似，但是却又不同。二段提交要求协调者必须等到所有的参与者全部反馈ACK确认消息后，再发送commit消息。要求所有的参与者要么全部成功，要么全部失败。二段提交会产生严重的阻塞问题。</p>
+</li>
+<li><p>Zab协议中 Leader 等待 Follower 的ACK反馈消息是指“只要半数以上的Follower成功反馈即可，不需要收到全部Follower反馈”</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210302170013.png" alt="消息广播流程图"></p>
+</li>
+</ol>
+<h4 id="消息广播具体步骤"><a href="#消息广播具体步骤" class="headerlink" title="消息广播具体步骤"></a>消息广播具体步骤</h4><ol>
+<li>客户端发起一个写操作请求。</li>
+<li>Leader 服务器将客户端的请求转化为事务 Proposal 提案，同时为每个 Proposal 分配一个全局的ID，即zxid。</li>
+<li>Leader 服务器为每个 Follower 服务器分配一个单独的队列，然后将需要广播的 Proposal 依次放到队列中取，并且根据 FIFO 策略进行消息发送。</li>
+<li>Follower 接收到 Proposal 后，会首先将其以事务日志的方式写入本地磁盘中，写入成功后向 Leader 反馈一个 Ack 响应消息。</li>
+<li>Leader 接收到超过半数以上 Follower 的 Ack 响应消息后，即认为消息发送成功，可以发送 commit 消息。</li>
+<li>Leader 向所有 Follower 广播 commit 消息，同时自身也会完成事务提交。Follower 接收到 commit 消息后，会将上一条事务提交。</li>
+</ol>
+<p><strong>zookeeper 采用 Zab 协议的核心，就是只要有一台服务器提交了 Proposal，就要确保所有的服务器最终都能正确提交 Proposal。这也是 CAP/BASE 实现最终一致性的一个体现。</strong></p>
+<p><strong>Leader 服务器与每一个 Follower 服务器之间都维护了一个单独的 FIFO 消息队列进行收发消息，使用队列消息可以做到异步解耦。 Leader 和 Follower 之间只需要往队列中发消息即可。如果使用同步的方式会引起阻塞，性能要下降很多。</strong></p>
+<h3 id="崩溃恢复"><a href="#崩溃恢复" class="headerlink" title="崩溃恢复"></a>崩溃恢复</h3><p><strong>一旦 Leader 服务器出现崩溃或者由于网络原因导致 Leader 服务器失去了与过半 Follower 的联系，那么就会进入崩溃恢复模式。</strong></p>
+<p>在 Zab 协议中，为了保证程序的正确运行，整个恢复过程结束后需要选举出一个新的 Leader 服务器。因此 Zab 协议需要一个高效且可靠的 Leader 选举算法，从而确保能够快速选举出新的 Leader 。</p>
+<p>Leader 选举算法不仅仅需要让 Leader 自己知道自己已经被选举为 Leader ，同时还需要让集群中的所有其他机器也能够快速感知到选举产生的新 Leader 服务器。</p>
+<p>崩溃恢复主要包括两部分：<strong>Leader选举</strong> 和 <strong>数据恢复</strong></p>
+<h4 id="Zab-协议保证数据一致性"><a href="#Zab-协议保证数据一致性" class="headerlink" title="Zab 协议保证数据一致性"></a>Zab 协议保证数据一致性</h4><p><strong>Zab 协议崩溃恢复要求满足以下两个要求</strong>：</p>
+<ol>
+<li><p><strong>确保已经被 Leader 提交的 Proposal 必须最终被所有的 Follower 服务器提交</strong>。</p>
+</li>
+<li><p><strong>确保丢弃已经被 Leader 提出的但是没有被提交的 Proposal</strong>。</p>
+</li>
+</ol>
+<p>根据上述要求</p>
+<p>Zab协议需要保证选举出来的Leader需要满足以下条件：</p>
+<ol>
+<li><p><strong>新选举出来的 Leader 不能包含未提交的 Proposal</strong> 。</p>
+<p> 即新选举的 Leader 必须都是已经提交了 Proposal 的 Follower 服务器节点。</p>
+</li>
+<li><p><strong>新选举的 Leader 节点中含有最大的 zxid</strong> 。<br> 这样做的好处是可以避免 Leader 服务器检查 Proposal 的提交和丢弃工作。</p>
+</li>
+</ol>
+<h4 id="Zab-数据同步"><a href="#Zab-数据同步" class="headerlink" title="Zab 数据同步"></a>Zab 数据同步</h4><ol>
+<li>完成 Leader 选举后（新的 Leader 具有最高的zxid），在正式开始工作之前（接收事务请求，然后提出新的 Proposal），Leader 服务器会首先确认事务日志中的所有的 Proposal 是否已经被集群中过半的服务器 Commit。</li>
+<li>Leader 服务器需要确保所有的 Follower 服务器能够接收到每一条事务的 Proposal ，并且能将所有已经提交的事务 Proposal 应用到内存数据中。等到 Follower 将所有尚未同步的事务 Proposal 都从 Leader 服务器上同步过啦并且应用到内存数据中以后，Leader 才会把该 Follower 加入到真正可用的 Follower 列表中。</li>
+</ol>
+<h4 id="Zab-数据同步过程中，如何处理需要丢弃的-Proposal"><a href="#Zab-数据同步过程中，如何处理需要丢弃的-Proposal" class="headerlink" title="Zab 数据同步过程中，如何处理需要丢弃的 Proposal"></a>Zab 数据同步过程中，如何处理需要丢弃的 Proposal</h4><p>在 Zab 的事务编号 zxid 设计中，zxid是一个64位的数字。</p>
+<p>其中低32位可以看成一个简单的单增计数器，针对客户端每一个事务请求，Leader 在产生新的 Proposal 事务时，都会对该计数器加1。而<font color=red>高32位则代表了 Leader 周期的 epoch 编号</font>。</p>
+<blockquote>
+<p>epoch 编号可以理解为当前集群所处的年代，或者周期。每次Leader变更之后都会在 epoch 的基础上加1，这样旧的 Leader 崩溃恢复之后，其他Follower 也不会听它的了，因为 Follower 只服从epoch最高的 Leader 命令。</p>
+</blockquote>
+<p>每当选举产生一个新的 Leader ，就会从这个 <font color=red>Leader 服务器上取出本地事务日志充最大编号 Proposal 的 zxid，并从 zxid 中解析得到对应的 epoch 编号，然后再对其加1，之后该编号就作为新的 epoch 值，并将低32位数字归零，由0开始重新生成zxid</font>。</p>
+<p><strong>Zab 协议通过 epoch 编号来区分 Leader 变化周期</strong>，能够有效避免不同的 Leader 错误的使用了相同的 zxid 编号提出了不一样的 Proposal 的异常情况。</p>
+<h1 id="Zab实现原理"><a href="#Zab实现原理" class="headerlink" title="Zab实现原理"></a>Zab实现原理</h1><p><strong>Zab 节点有三种状态</strong>：</p>
+<ul>
+<li>Following：当前节点是跟随者，服从 Leader 节点的命令。</li>
+<li>Leading：当前节点是 Leader，负责协调事务。</li>
+<li>Election/Looking：节点处于选举状态，正在寻找 Leader。</li>
+</ul>
+<p>代码实现中，多了一种状态：Observing 状态<br>这是 Zookeeper 引入 Observer 之后加入的，Observer 不参与选举，是只读节点，跟 Zab 协议没有关系。</p>
+<p><strong>节点的持久状态</strong>：</p>
+<ul>
+<li>history：当前节点接收到事务 Proposal 的Log</li>
+<li>acceptedEpoch：Follower 已经接受的 Leader 更改 epoch 的 newEpoch 提议。</li>
+<li>currentEpoch：当前所处的 Leader 年代</li>
+<li>lastZxid：history 中最近接收到的Proposal 的 zxid（最大zxid）</li>
+</ul>
+<h2 id="Zab-的四个阶段"><a href="#Zab-的四个阶段" class="headerlink" title="Zab 的四个阶段"></a>Zab 的四个阶段</h2><h3 id="选举阶段（Leader-Election"><a href="#选举阶段（Leader-Election" class="headerlink" title="选举阶段（Leader Election"></a>选举阶段（Leader Election</h3><p>节点在一开始都处于选举节点，只要有一个节点得到超过半数节点的票数，它就可以当选准 Leader，只有到达第三个阶段（也就是同步阶段），这个准 Leader 才会成为真正的 Leader。<strong>Zookeeper 规定所有有效的投票都必须在同一个 轮次 中，每个服务器在开始新一轮投票时，都会对自己维护的 logicalClock 进行自增操作</strong>。</p>
+<p>每个服务器在广播自己的选票前，会将自己的投票箱（recvset）清空。该投票箱记录了所受到的选票。</p>
+<p>例如：Server_2 投票给 Server_3，Server_3 投票给 Server_1，则Server_1的投票箱为(2,3)、(3,1)、(1,1)。（每个服务器都会默认给自己投票）</p>
+<p>前一个数字表示投票者，后一个数字表示被选举者。票箱中只会记录每一个投票者的最后一次投票记录，如果投票者更新自己的选票，则其他服务器收到该新选票后会在自己的票箱中更新该服务器的选票。</p>
+<p><strong>这一阶段的目的就是为了选出一个准 Leader ，然后进入下一个阶段。</strong></p>
+<p>协议并没有规定详细的选举算法，后面会提到实现中使用的 Fast Leader Election。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171418.png" alt="选举流程"></p>
+<h3 id="发现阶段（Descovery）"><a href="#发现阶段（Descovery）" class="headerlink" title="发现阶段（Descovery）"></a>发现阶段（Descovery）</h3><p>在这个阶段，Followers 和上一轮选举出的准 Leader 进行通信，同步 Followers 最近接收的事务 Proposal 。</p>
+<p>一个 Follower 只会连接一个 Leader，如果一个 Follower 节点连接另一个 Follower 节点，则会在尝试连接时被拒绝。被拒绝之后，该节点就会进入 Leader Election阶段。</p>
+<p><strong>这个阶段的主要目的是发现当前大多数节点接收的最新 Proposal，并且准 Leader 生成新的 epoch ，让 Followers 接收，更新它们的 acceptedEpoch</strong>。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171535.png" alt="发现流程"></p>
+<h3 id="同步阶段（Synchronization）"><a href="#同步阶段（Synchronization）" class="headerlink" title="同步阶段（Synchronization）"></a>同步阶段（Synchronization）</h3><p><strong>同步阶段主要是利用 Leader 前一阶段获得的最新 Proposal 历史，同步集群中所有的副本</strong>。<br>只有当 quorum（超过半数的节点） 都同步完成，准 Leader 才会成为真正的 Leader。Follower 只会接收 zxid 比自己 lastZxid 大的 Proposal。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171702.png" alt="同步流程"></p>
+<h3 id="广播阶段（Broadcast）"><a href="#广播阶段（Broadcast）" class="headerlink" title="广播阶段（Broadcast）"></a>广播阶段（Broadcast）</h3><p>到了这个阶段，Zookeeper 集群才能正式对外提供事务服务，并且 Leader 可以进行消息广播。同时，如果有新的节点加入，还需要对新节点进行同步。</p>
+<p>需要注意的是，Zab 提交事务并不像 2PC 一样需要全部 Follower 都 Ack，只需要得到 quorum（超过半数的节点）的Ack 就可以。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171740.png" alt="广播流程"></p>
+<h1 id="Zab协议实现"><a href="#Zab协议实现" class="headerlink" title="Zab协议实现"></a>Zab协议实现</h1><p>选举阶段使用 java版本实现的是Fast Leader Election算法，实际的实现将<strong>发现和同步阶段合并为 Recovery Phase（恢复阶段）</strong>，所以，Zab 的实现实际上有三个阶段。</p>
+<p>Zab协议三个阶段：</p>
+<ol>
+<li><strong>选举（Fast Leader Election）</strong></li>
+<li><strong>恢复（Recovery Phase）</strong></li>
+<li><strong>广播（Broadcast Phase）</strong></li>
+</ol>
+<h2 id="Fast-Leader-Election（快速选举）"><a href="#Fast-Leader-Election（快速选举）" class="headerlink" title="Fast Leader Election（快速选举）"></a>Fast Leader Election（快速选举）</h2><p> FLE 会选举拥有最新Proposal history （lastZxid最大）的节点作为 Leader，这样就省去了发现最新提议的步骤。<strong>这是基于拥有最新提议的节点也拥有最新的提交记录</strong></p>
+<h3 id="成为-Leader-的条件："><a href="#成为-Leader-的条件：" class="headerlink" title="成为 Leader 的条件："></a>成为 Leader 的条件：</h3><ol>
+<li>选 epoch 最大的</li>
+<li>若 epoch 相等，选 zxid 最大的</li>
+<li>若 epoch 和 zxid 相等，选择 server_id 最大的（<strong>zoo.cfg中的myid</strong>）</li>
+</ol>
+<p>节点在选举开始时，都默认投票给自己，当接收其他节点的选票时，会根据上面的 <strong>Leader条件</strong> 判断并且更改自己的选票，然后重新发送选票给其他节点。<strong>当有一个节点的得票超过半数，该节点会设置自己的状态为 Leading ，其他节点会设置自己的状态为 Following</strong>。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302172451.png" alt="选举过程"></p>
+<h2 id="Recovery-Phase（恢复阶段）"><a href="#Recovery-Phase（恢复阶段）" class="headerlink" title="Recovery Phase（恢复阶段）"></a>Recovery Phase（恢复阶段）</h2><p>这一阶段 Follower 发送他们的 <strong>lastZxid</strong> 给 Leader，Leader 根据 lastZxid 决定如何同步数据。这里的实现跟前面的 Phase 2 有所不同：Follower 收到 TRUNC 指令会终止L.lastCommitedZxid 之后的 Proposal ，收到 DIFF 指令会接收新的 Proposal。</p>
+<blockquote>
+<p>history.lastCommitedZxid：最近被提交的 Proposal zxid</p>
+<p>history.oldThreshold：被认为已经太旧的已经提交的 Proposal zxid</p>
+</blockquote>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302172728.png" alt="恢复阶段"></p>
+<h1 id="Zab特殊情况下需要解决的两个问题："><a href="#Zab特殊情况下需要解决的两个问题：" class="headerlink" title="Zab特殊情况下需要解决的两个问题："></a>Zab特殊情况下需要解决的两个问题：</h1><h2 id="已经被处理的事务请求（proposal）不能丢（commit的）"><a href="#已经被处理的事务请求（proposal）不能丢（commit的）" class="headerlink" title="已经被处理的事务请求（proposal）不能丢（commit的）"></a>已经被处理的事务请求（proposal）不能丢（commit的）</h2><h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>当 leader 收到合法数量 follower 的 ACKs 后，就向各个 follower 广播 COMMIT 命令，同时也会在本地执行 COMMIT 并向连接的客户端返回「成功」。但是如果在各个 follower 在收到COMMIT 命令前 leader 就挂了，导致剩下的服务器并没有执行都这条消息。</p>
+<h3 id="解决方式"><a href="#解决方式" class="headerlink" title="解决方式"></a>解决方式</h3><ol>
+<li><p>选举拥有 proposal 最大值（即 zxid 最大） 的节点作为新的 leader。</p>
+<blockquote>
+<p>由于所有提案被 COMMIT 之前必须有<font color=red>合法数量的 follower ACK，即必须有合法数量的服务器的事务日志上有该提案的 proposal</font>，因此，zxid最大也就是数据最新的节点保存了所有被 COMMIT 消息的 proposal 状态。</p>
+</blockquote>
+</li>
+<li><p>新的 leader 将自己事务日志中 proposal 但未 COMMIT 的消息处理。</p>
+</li>
+<li><p>新的 leader 与 follower 建立先进先出的队列， 先将自身有而 follower 没有的 proposal</p>
+<p> 发送给 follower，再将这些 proposal 的 COMMIT 命令发送给 follower，以保证所有的</p>
+<p> follower 都保存了所有的 proposal、所有的 follower 都处理了所有的消息</p>
+</li>
+</ol>
+<h2 id="没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？"><a href="#没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？" class="headerlink" title="没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？"></a>没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</h2><h3 id="问题描述-1"><a href="#问题描述-1" class="headerlink" title="问题描述"></a>问题描述</h3><p>当 leader 接收到消息请求生成 proposal 后就挂了，其他 follower 并没有收到此 proposal，因此经过恢复模式重新选了 leader 后，这条消息是被跳过的。 此时，之前挂了的 leader 重新启动并注册成了 follower，他保留了被跳过消息的 proposal 状态，与整个系统的状态是不一致的，需要将其删除。</p>
+<h3 id="解决方式-1"><a href="#解决方式-1" class="headerlink" title="解决方式"></a>解决方式</h3><p><strong>Zab 通过巧妙的设计 zxid 来实现这一目的。</strong></p>
+<p>一个 zxid 是64位，高 32 是纪元（epoch）编号，每经过一次 leader 选举产生一个新的 leader，新 leader 会将 epoch 号 +1。低 32 位是消息计数器，每接收到一条消息这个值 +1，新 leader 选举后这个值重置为 0。</p>
+<p>这样设计的好处是旧的 leader 挂了后重启，它不会被选举为 leader，因为此时它的 zxid 肯定小于当前的新 leader。当旧的 leader 作为 follower 接入新的 leader 后，新的 leader 会让它将所有的拥有旧的 epoch 号的未被 COMMIT 的 proposal 清除。</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\5af4d7fe\" rel="bookmark">ZooKeeper集群简单介绍</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\fe45d335\" rel="bookmark">分布式一致性协议——paxos算法</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\b439f21c\" rel="bookmark">ZooKeeper的安装和简单操作</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\6afaddd1\" rel="bookmark">分布式一致性理论，CAP，BASE理论</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/b369a3b6/" title="分布式一致性协议——Zab算法">https://cnrfwang.top/posts/b369a3b6/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/ZooKeeper/" rel="tag"><i class="fa fa-tag"></i> ZooKeeper</a>
+               <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"><i class="fa fa-tag"></i> 分布式</a>
+               <a href="/tags/ZAB/" rel="tag"><i class="fa fa-tag"></i> ZAB</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/fe45d335/" rel="prev" title="分布式一致性协议——paxos算法">
+      <i class="fa fa-chevron-left"></i> 分布式一致性协议——paxos算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/be9758cd/" rel="next" title="Hexo+NexT博客归档/标签/分类页美化">
+      Hexo+NexT博客归档/标签/分类页美化 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">Zab算法描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E7%9A%84%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">Zab 协议的特性：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">Zab 协议的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">3.1.</span> <span class="nav-text">Zab协议原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E6%A0%B8%E5%BF%83"><span class="nav-number">3.2.</span> <span class="nav-text">Zab协议核心</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9"><span class="nav-number">3.3.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.3.1.1.</span> <span class="nav-text">协议过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%8A%B6%E6%80%81%E5%88%87%E6%8D%A2"><span class="nav-number">3.3.1.2.</span> <span class="nav-text">协议状态切换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F"><span class="nav-number">3.3.1.3.</span> <span class="nav-text">保证消息有序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD"><span class="nav-number">3.3.2.</span> <span class="nav-text">消息广播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD%E5%85%B7%E4%BD%93%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">消息广播具体步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B4%A9%E6%BA%83%E6%81%A2%E5%A4%8D"><span class="nav-number">3.3.3.</span> <span class="nav-text">崩溃恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">Zab 协议保证数据一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="nav-number">3.3.3.2.</span> <span class="nav-text">Zab 数据同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E8%BF%87%E7%A8%8B%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E9%9C%80%E8%A6%81%E4%B8%A2%E5%BC%83%E7%9A%84-Proposal"><span class="nav-number">3.3.3.3.</span> <span class="nav-text">Zab 数据同步过程中，如何处理需要丢弃的 Proposal</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">Zab实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab-%E7%9A%84%E5%9B%9B%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="nav-number">4.1.</span> <span class="nav-text">Zab 的四个阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E9%98%B6%E6%AE%B5%EF%BC%88Leader-Election"><span class="nav-number">4.1.1.</span> <span class="nav-text">选举阶段（Leader Election</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E7%8E%B0%E9%98%B6%E6%AE%B5%EF%BC%88Descovery%EF%BC%89"><span class="nav-number">4.1.2.</span> <span class="nav-text">发现阶段（Descovery）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E9%98%B6%E6%AE%B5%EF%BC%88Synchronization%EF%BC%89"><span class="nav-number">4.1.3.</span> <span class="nav-text">同步阶段（Synchronization）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BF%E6%92%AD%E9%98%B6%E6%AE%B5%EF%BC%88Broadcast%EF%BC%89"><span class="nav-number">4.1.4.</span> <span class="nav-text">广播阶段（Broadcast）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">Zab协议实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fast-Leader-Election%EF%BC%88%E5%BF%AB%E9%80%9F%E9%80%89%E4%B8%BE%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">Fast Leader Election（快速选举）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E4%B8%BA-Leader-%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="nav-number">5.1.1.</span> <span class="nav-text">成为 Leader 的条件：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovery-Phase%EF%BC%88%E6%81%A2%E5%A4%8D%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">Recovery Phase（恢复阶段）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E4%B8%8B%E9%9C%80%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E4%B8%A4%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">Zab特殊情况下需要解决的两个问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%BB%8F%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E4%B8%A2%EF%BC%88commit%E7%9A%84%EF%BC%89"><span class="nav-number">6.1.</span> <span class="nav-text">已经被处理的事务请求（proposal）不能丢（commit的）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">6.1.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F"><span class="nav-number">6.1.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B2%A1%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E5%86%8D%E6%AC%A1%E5%87%BA%E7%8E%B0%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BC%9A%E5%87%BA%E7%8E%B0%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%E8%A2%AB%E4%B8%A2%E5%A4%B1%E5%91%A2%EF%BC%9F"><span class="nav-number">6.2.</span> <span class="nav-text">没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F-1"><span class="nav-number">6.2.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">天地人，日月星</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/0/" title="" target="_blank"></a>
+          </li>
+        
+          <li>
+            <a href="/posts/5af4d7fe/" title="ZooKeeper集群简单介绍" target="_blank">ZooKeeper集群简单介绍</a>
+          </li>
+        
+          <li>
+            <a href="/posts/8f6adc3b/" title="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性" target="_blank">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a>
+          </li>
+        
+          <li>
+            <a href="/posts/b153a32a/" title="redis集群" target="_blank">redis集群</a>
+          </li>
+        
+          <li>
+            <a href="/posts/dcfaa904/" title="redis持久化" target="_blank">redis持久化</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">146k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:13</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
