@@ -279,7 +279,7 @@
 <figure class="highlight js"><table><tr><td class="code"><pre><span class="line">npm install hexo-abbrlink --save</span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#101;&#x73;&#108;&#x69;&#x6e;&#x74;&#x40;&#52;&#x2e;&#x78;">&#101;&#x73;&#108;&#x69;&#x6e;&#x74;&#x40;&#52;&#x2e;&#x78;</a> babel-eslint@8 –save-dev</p>
+<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#x65;&#x73;&#108;&#x69;&#x6e;&#x74;&#x40;&#x34;&#46;&#120;">&#x65;&#x73;&#108;&#x69;&#x6e;&#x74;&#x40;&#x34;&#46;&#120;</a> babel-eslint@8 –save-dev</p>
 </blockquote>
 <p>修改根目录站点配置文件<code>config.yml</code>，改为：</p>
 <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">permalink:</span> <span class="string">posts/:abbrlink/</span></span><br><span class="line"><span class="attr">abbrlink:</span></span><br><span class="line">	<span class="attr">alg:</span> <span class="string">crc32</span>   <span class="comment">#算法： crc16(default) and crc32</span></span><br><span class="line">	<span class="attr">rep:</span> <span class="string">hex</span>     <span class="comment">#进制： dec(default) and hex</span></span><br><span class="line"><span class="number">1234</span></span><br></pre></td></tr></table></figure>
@@ -1973,7 +1973,7 @@
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303092823.png" alt="image-20210303092823060"></p>
 <p>从图中可以看出，当用户进程发出read操作时，如果kernel中的数据还没有准备好，那么它并不会block用户进程，而是立刻返回一个error。从用户进程角度讲 ，它发起一个read操作后，并不需要等待，而是马上就得到了一个结果。用户进程判断结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦kernel中的数据准备好了，并且又再次收到了用户进程的system call，那么它马上就将数据拷贝到了用户内存，然后返回。<br>所以，用户进程其实是需要不断的主动询问kernel数据好了没有。</p>
 <h1 id="多路复用NIO"><a href="#多路复用NIO" class="headerlink" title="多路复用NIO"></a>多路复用NIO</h1><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303093109.png" alt="image-20210303093109692"></p>
-<h3 id="Liunx的IO演变"><a href="#Liunx的IO演变" class="headerlink" title="Liunx的IO演变"></a>Liunx的IO演变</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303093222.png" alt="image-20210303093222430"></p>
+<h2 id="Liunx的IO演变"><a href="#Liunx的IO演变" class="headerlink" title="Liunx的IO演变"></a>Liunx的IO演变</h2><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303093222.png" alt="image-20210303093222430"></p>
 <h1 id="Redis中IO"><a href="#Redis中IO" class="headerlink" title="Redis中IO"></a>Redis中IO</h1><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303102906.png" alt="image-20210303102906808"></p>
 ]]></content>
       <categories>
