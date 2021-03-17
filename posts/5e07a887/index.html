@@ -278,30 +278,29 @@
 
       
         <p><strong>操作系统为centOs7  redis为6.0.8版本</strong></p>
-<h3 id="1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令"><a href="#1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令" class="headerlink" title="1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令"></a>1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;一般错误为gcc套装错误</span><br><span class="line">yum install cpp</span><br><span class="line">yum install binutils</span><br><span class="line">yum install glibc</span><br><span class="line">yum install glibc-kernheaders</span><br><span class="line">yum install glibc-common</span><br><span class="line">yum install glibc-devel</span><br><span class="line">yum install gcc</span><br><span class="line">yum install make</span><br><span class="line">&#x2F;&#x2F;清理错误文件</span><br><span class="line">make distclean</span><br><span class="line">&#x2F;&#x2F;重新安装</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-
+<h3 id="1-当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make-distclean清理相关文件，再执行make命令">1.当Make命令提示无cc环境时需要进行安装Gcc安装包重新安装，同时需要执行make distclean清理相关文件，再执行make命令</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;一般错误为gcc套装错误</span><br><span class="line">yum install cpp</span><br><span class="line">yum install binutils</span><br><span class="line">yum install glibc</span><br><span class="line">yum install glibc-kernheaders</span><br><span class="line">yum install glibc-common</span><br><span class="line">yum install glibc-devel</span><br><span class="line">yum install gcc</span><br><span class="line">yum install make</span><br><span class="line">&#x2F;&#x2F;清理错误文件</span><br><span class="line">make distclean</span><br><span class="line">&#x2F;&#x2F;重新安装</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
 <p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://blog.csdn.net/m0_37952284/article/details/109012324">server.c:5307:31: 错误:‘struct redisServer’没有名为‘server_xxx’的成员</a></p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113217.png" alt="image-20201103103148896"></p>
 <ol start="2">
-<li><h3 id="下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错"><a href="#下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错" class="headerlink" title="下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:"></a>下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:</h3></li>
+<li>
+<h3 id="下载了redis版本6-0-6，正常解压，Centos用的7-6，make安装时报错">下载了redis版本6.0.6，正常解压，Centos用的7.6，make安装时报错:</h3>
+</li>
 </ol>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113232.png" alt="image-20201103104749570"></p>
 <p>原因是redies用了c语言编写，centos7.6应该也有以下版本，默认安装的gcc4.8.5版本较低，需要在5.3以上版本，现更换为9.3，先查看当前版本：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -v</span><br></pre></td></tr></table></figure>
-
 <p>开始更换：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum -y install centos-release-scl</span><br><span class="line">yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils</span><br><span class="line">echo &quot;source &#x2F;opt&#x2F;rh&#x2F;devtoolset-9&#x2F;enable&quot; &gt;&gt;&#x2F;etc&#x2F;profile</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p><strong>重连shell</strong>(不重连gcc版本不变)，重新make，即成功了</p>
-<h3 id="3-安装Redis-6-0-6-install-server-sh报错"><a href="#3-安装Redis-6-0-6-install-server-sh报错" class="headerlink" title="3.安装Redis 6.0.6 ./install_server.sh报错"></a>3.安装Redis 6.0.6 ./install_server.sh报错</h3><p>产生原因:gcc9版本校验更加严格导致</p>
+<h3 id="3-安装Redis-6-0-6-install-server-sh报错">3.安装Redis 6.0.6 ./install_server.sh报错</h3>
+<p>产生原因:gcc9版本校验更加严格导致</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113249.png" alt="image-20201103111330639"></p>
 <p>解决方案</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi .&#x2F;install_server.sh</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113254.png" alt="image-20201103111506170"></p>
 <p><strong>注释掉代码</strong>重新运行</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#bail if this system is managed by systemd</span><br><span class="line">#_pid_1_exe&#x3D;&quot;$(readlink -f &#x2F;proc&#x2F;1&#x2F;exe)&quot;</span><br><span class="line">#if [ &quot;$&#123;_pid_1_exe##*&#x2F;&#125;&quot; &#x3D; systemd ]</span><br><span class="line">#then</span><br><span class="line">#       echo &quot;This systems seems to use systemd.&quot;</span><br><span class="line">#       echo &quot;Please take a look at the provided example service unit files in this directory, and adapt and install them. Sorry!&quot;</span><br><span class="line">#       exit 1</span><br><span class="line">#fi</span><br></pre></td></tr></table></figure>
-
 
     </div>
 
@@ -530,7 +529,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">252k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>

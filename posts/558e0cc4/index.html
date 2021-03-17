@@ -279,21 +279,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><strong><em>务必先创建系统还原点或者备份注册表</em></strong></p>
-<h1 id="添加新建方式步骤"><a href="#添加新建方式步骤" class="headerlink" title="添加新建方式步骤"></a>添加新建方式步骤</h1><p>新建<code>temp.txt</code>输入以下内容</p>
+        <p><em><strong>务必先创建系统还原点或者备份注册表</strong></em></p>
+<h1>添加新建方式步骤</h1>
+<p>新建<code>temp.txt</code>输入以下内容</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Windows Registry Editor Version 5.00</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\.md]</span><br><span class="line">@&#x3D;&quot;.md&quot;</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\.md\ShellNew]</span><br><span class="line">&quot;NullFile&quot;&#x3D;&quot;&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <ul>
-<li><p>把<code>temp.txt</code>改名为<code>temp.reg</code></p>
+<li>
+<p>把<code>temp.txt</code>改名为<code>temp.reg</code></p>
 </li>
-<li><p>双击运行，就ok了，有问题记得先重启，如果不行，就采用下面这个</p>
+<li>
+<p>双击运行，就ok了，有问题记得先重启，如果不行，就采用下面这个</p>
 </li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Windows Registry Editor Version 5.00</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\.md]</span><br><span class="line">@&#x3D;&quot;typora.md&quot;</span><br><span class="line">&quot;icon&quot;&#x3D;&quot;E:\\Typora\\bin\\typora.exe&quot;</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\.md\OpenWithProgids]</span><br><span class="line">&quot;Typora.md&quot;&#x3D;&quot;&quot;</span><br><span class="line">&quot;VSCode.md&quot;&#x3D;&quot;&quot;</span><br><span class="line"></span><br><span class="line">[HKEY_CLASSES_ROOT\.md\ShellNew]</span><br><span class="line">&quot;NullFile&quot;&#x3D;&quot;&quot;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h1 id="配置md文件模版"><a href="#配置md文件模版" class="headerlink" title="配置md文件模版"></a>配置md文件模版</h1><p>1、使用<code>notepad++</code>新建<code>新建 Markdown.md</code>文件，填入以下内容</p>
+<h1>配置md文件模版</h1>
+<p>1、使用<code>notepad++</code>新建<code>新建 Markdown.md</code>文件，填入以下内容</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: </span><br><span class="line">date: </span><br><span class="line">tags: []</span><br><span class="line">categories:</span><br><span class="line">- []</span><br><span class="line">- []</span><br><span class="line">description: </span><br><span class="line">updated: </span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-
 <p>将文件移动到不会<strong>轻易删除的文件夹</strong></p>
 <p>打开注册表，按如下(没有就创建)</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226105517.png" alt="image-20210226105516945"></p>
@@ -411,7 +412,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%96%B0%E5%BB%BA%E6%96%B9%E5%BC%8F%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.</span> <span class="nav-text">添加新建方式步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEmd%E6%96%87%E4%BB%B6%E6%A8%A1%E7%89%88"><span class="nav-number">2.</span> <span class="nav-text">配置md文件模版</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">添加新建方式步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">配置md文件模版</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -514,7 +515,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">252k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>

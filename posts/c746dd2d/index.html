@@ -282,21 +282,26 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="MySQL的约束"><a href="#MySQL的约束" class="headerlink" title="MySQL的约束"></a>MySQL的约束</h2><h3 id="排序查询"><a href="#排序查询" class="headerlink" title="排序查询"></a>排序查询</h3><ul>
+        <h2 id="MySQL的约束">MySQL的约束</h2>
+<h3 id="排序查询">排序查询</h3>
+<ul>
 <li>语法：order by 子句</li>
 <li>order by 排序字段1 排序方式1 ，  排序字段2 排序方式2…</li>
-<li>排序方式：<ul>
+<li>排序方式：
+<ul>
 <li>ASC：升序，默认的。</li>
 <li>DESC：降序。</li>
 </ul>
 </li>
 <li><strong>如果有多个排序条件，则当前边的条件值一样时，才会判断第二条件。</strong></li>
 </ul>
-<h3 id="聚合函数"><a href="#聚合函数" class="headerlink" title="聚合函数"></a>聚合函数</h3><p>将一列数据作为一个整体，进行纵向的计算。</p>
+<h3 id="聚合函数">聚合函数</h3>
+<p>将一列数据作为一个整体，进行纵向的计算。</p>
 <ul>
-<li><strong>count</strong>：计算个数<ul>
+<li><strong>count</strong>：计算个数
+<ul>
 <li>一般选择非空的列：主键</li>
-<li>count(*)  </li>
+<li>count(*)</li>
 </ul>
 </li>
 <li><strong>max</strong>：计算最大值</li>
@@ -312,7 +317,8 @@
 <li>IFNULL函数</li>
 </ol>
 </blockquote>
-<h3 id="分组查询"><a href="#分组查询" class="headerlink" title="分组查询"></a>分组查询</h3><p>group by 分组字段</p>
+<h3 id="分组查询">分组查询</h3>
+<p>group by 分组字段</p>
 <p>employee 表数据</p>
 <table>
 <thead>
@@ -327,7 +333,8 @@
 <th>deparmant</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>1001</td>
 <td>张三</td>
 <td>男</td>
@@ -407,87 +414,91 @@
 <td></td>
 <td>人事部</td>
 </tr>
-</tbody></table>
-<h4 id="GroupBy-Group-concat"><a href="#GroupBy-Group-concat" class="headerlink" title="GroupBy+Group_concat"></a>GroupBy+Group_concat</h4><p>group by 是分组，是分组，是分组，分组并不是去重，而是分组</p>
+</tbody>
+</table>
+<h4 id="GroupBy-Group-concat">GroupBy+Group_concat</h4>
+<p>group by 是分组，是分组，是分组，分组并不是去重，而是分组</p>
 <p>将查询结果按一个或多个进行分组，字段值相同的为一组</p>
 <p>GroupBy+Group_concat ： 表示分组之后，根据分组结果，使用 group_contact() 来放置每一组的每字段的值的集合</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> deparmant, GROUP_CONCAT(`name`) <span class="keyword">from</span> employee <span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309112830.png" alt="image-20210309112830453"></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> name,gender <span class="keyword">from</span> employee <span class="keyword">GROUP</span> <span class="keyword">BY</span> gender,name</span><br><span class="line"><span class="comment">-- 先按gender分组，再按姓名分组...</span></span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309112918.png" alt="image-20210309112918423"></p>
-<h4 id="SQL分组-聚合函数"><a href="#SQL分组-聚合函数" class="headerlink" title="SQL分组+聚合函数"></a>SQL分组+聚合函数</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> deparmant, GROUP_CONCAT(salary), <span class="built_in">SUM</span>(salary),<span class="built_in">AVG</span>(salary) 平均工资,<span class="built_in">MAX</span>(salary) 最高工资 <span class="keyword">from</span> employee <span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant;</span><br><span class="line"><span class="comment">-- 根据department 分组，计算各部门下工资总数，平均工资，最高工资![1532919789347]</span></span><br></pre></td></tr></table></figure>
-
+<h4 id="SQL分组-聚合函数">SQL分组+聚合函数</h4>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> deparmant, GROUP_CONCAT(salary), <span class="built_in">SUM</span>(salary),<span class="built_in">AVG</span>(salary) 平均工资,<span class="built_in">MAX</span>(salary) 最高工资 <span class="keyword">from</span> employee <span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant;</span><br><span class="line"><span class="comment">-- 根据department 分组，计算各部门下工资总数，平均工资，最高工资![1532919789347]</span></span><br></pre></td></tr></table></figure>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309112957.png" alt="image-20210309112957603"></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询每个部门的部门名称以及每个部门的人数</span></span><br><span class="line"><span class="keyword">SELECT</span> deparmant, GROUP_CONCAT(`name`), <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">from</span> employee <span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309113025.png" alt="image-20210309113025515"></p>
-<h4 id="SQL分组GroupBy-Having"><a href="#SQL分组GroupBy-Having" class="headerlink" title="SQL分组GroupBy+Having"></a>SQL分组GroupBy+Having</h4><ul>
+<h4 id="SQL分组GroupBy-Having">SQL分组GroupBy+Having</h4>
+<ul>
 <li>group by + having 用来分组查询后指定一些条件来输出查询结果</li>
 <li>having 和 where 一样，但 having 只能用于 group by</li>
 </ul>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询工资总和大于 9000的部门名称</span></span><br><span class="line"><span class="keyword">SELECT</span> deparmant, GROUP_CONCAT(salary), <span class="built_in">SUM</span>(salary) <span class="keyword">FROM</span> employee </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant </span><br><span class="line"><span class="keyword">HAVING</span> <span class="built_in">SUM</span>(salary) <span class="operator">&gt;</span> <span class="number">9000</span>;</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309113103.png" alt="image-20210309113103212"></p>
-<h5 id="having-和-where-的区别："><a href="#having-和-where-的区别：" class="headerlink" title="having 和 where 的区别："></a>having 和 where 的区别：</h5><ol>
+<h5 id="having-和-where-的区别：">having 和 where 的区别：</h5>
+<ol>
 <li>having 是在分组后对数据进行过滤，where 是在分组前对数据进行过滤</li>
 <li>having后面可以使用分组函数(统计函数)，where后面不可以使用分组函数</li>
 <li>where 是对分组前记录的条件，如果某行记录没有满足where字句的条件，那么这行记录不会参加分组；而having是对分组后数据的约束</li>
 </ol>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询工资大于2000的，工资总和大于9000的部门名称以及工资和</span></span><br><span class="line"><span class="keyword">select</span> deparmant,GROUP_CONCAT(salary), <span class="built_in">SUM</span>(salary) <span class="keyword">from</span> employee </span><br><span class="line"><span class="keyword">WHERE</span> salary <span class="operator">&gt;</span> <span class="number">2000</span> </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> deparmant </span><br><span class="line"><span class="keyword">HAVING</span> <span class="built_in">sum</span>(salary) <span class="operator">&gt;</span> <span class="number">9000</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="built_in">SUM</span>(salary) <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309113315.png" alt="image-20210309113315352"></p>
-<h3 id="sql语句书写顺序"><a href="#sql语句书写顺序" class="headerlink" title="sql语句书写顺序"></a>sql语句书写顺序</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309113332.png" alt="image-20210309113332101"></p>
-<h2 id="MySQL的多表查询"><a href="#MySQL的多表查询" class="headerlink" title="MySQL的多表查询"></a>MySQL的多表查询</h2><h3 id="准备sql"><a href="#准备sql" class="headerlink" title="准备sql"></a>准备sql</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"># 创建部门表</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> dept(</span><br><span class="line">	id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,</span><br><span class="line">	NAME <span class="type">VARCHAR</span>(<span class="number">20</span>)</span><br><span class="line">);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> dept (NAME) <span class="keyword">VALUES</span> (<span class="string">&#x27;开发部&#x27;</span>),(<span class="string">&#x27;市场部&#x27;</span>),(<span class="string">&#x27;财务部&#x27;</span>);</span><br><span class="line"></span><br><span class="line"># 创建员工表</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> emp (</span><br><span class="line">	id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,</span><br><span class="line">	NAME <span class="type">VARCHAR</span>(<span class="number">10</span>),</span><br><span class="line">	gender <span class="type">CHAR</span>(<span class="number">1</span>), <span class="comment">-- 性别</span></span><br><span class="line">	salary <span class="keyword">DOUBLE</span>, <span class="comment">-- 工资</span></span><br><span class="line">	join_date <span class="type">DATE</span>, <span class="comment">-- 入职日期</span></span><br><span class="line">	dept_id <span class="type">INT</span>,</span><br><span class="line">	<span class="keyword">FOREIGN</span> KEY (dept_id) <span class="keyword">REFERENCES</span> dept(id) <span class="comment">-- 外键，关联部门表(部门表的主键)</span></span><br><span class="line">);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;孙悟空&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">7200</span>,<span class="string">&#x27;2013-02-24&#x27;</span>,<span class="number">1</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;猪八戒&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">3600</span>,<span class="string">&#x27;2010-12-02&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;唐僧&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">9000</span>,<span class="string">&#x27;2008-08-08&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;白骨精&#x27;</span>,<span class="string">&#x27;女&#x27;</span>,<span class="number">5000</span>,<span class="string">&#x27;2015-10-07&#x27;</span>,<span class="number">3</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;蜘蛛精&#x27;</span>,<span class="string">&#x27;女&#x27;</span>,<span class="number">4500</span>,<span class="string">&#x27;2011-03-14&#x27;</span>,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-
-<h3 id="多表查询"><a href="#多表查询" class="headerlink" title="多表查询"></a>多表查询</h3><h4 id="内连接查询"><a href="#内连接查询" class="headerlink" title="内连接查询"></a>内连接查询</h4><h5 id="隐式内连接"><a href="#隐式内连接" class="headerlink" title="隐式内连接"></a>隐式内连接</h5><p> 使用where条件消除无用数据</p>
+<h3 id="sql语句书写顺序">sql语句书写顺序</h3>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309113332.png" alt="image-20210309113332101"></p>
+<h2 id="MySQL的多表查询">MySQL的多表查询</h2>
+<h3 id="准备sql">准备sql</h3>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"># 创建部门表</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> dept(</span><br><span class="line">	id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,</span><br><span class="line">	NAME <span class="type">VARCHAR</span>(<span class="number">20</span>)</span><br><span class="line">);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> dept (NAME) <span class="keyword">VALUES</span> (<span class="string">&#x27;开发部&#x27;</span>),(<span class="string">&#x27;市场部&#x27;</span>),(<span class="string">&#x27;财务部&#x27;</span>);</span><br><span class="line"></span><br><span class="line"># 创建员工表</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> emp (</span><br><span class="line">	id <span class="type">INT</span> <span class="keyword">PRIMARY</span> KEY AUTO_INCREMENT,</span><br><span class="line">	NAME <span class="type">VARCHAR</span>(<span class="number">10</span>),</span><br><span class="line">	gender <span class="type">CHAR</span>(<span class="number">1</span>), <span class="comment">-- 性别</span></span><br><span class="line">	salary <span class="keyword">DOUBLE</span>, <span class="comment">-- 工资</span></span><br><span class="line">	join_date <span class="type">DATE</span>, <span class="comment">-- 入职日期</span></span><br><span class="line">	dept_id <span class="type">INT</span>,</span><br><span class="line">	<span class="keyword">FOREIGN</span> KEY (dept_id) <span class="keyword">REFERENCES</span> dept(id) <span class="comment">-- 外键，关联部门表(部门表的主键)</span></span><br><span class="line">);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;孙悟空&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">7200</span>,<span class="string">&#x27;2013-02-24&#x27;</span>,<span class="number">1</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;猪八戒&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">3600</span>,<span class="string">&#x27;2010-12-02&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;唐僧&#x27;</span>,<span class="string">&#x27;男&#x27;</span>,<span class="number">9000</span>,<span class="string">&#x27;2008-08-08&#x27;</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;白骨精&#x27;</span>,<span class="string">&#x27;女&#x27;</span>,<span class="number">5000</span>,<span class="string">&#x27;2015-10-07&#x27;</span>,<span class="number">3</span>);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp(NAME,gender,salary,join_date,dept_id) <span class="keyword">VALUES</span>(<span class="string">&#x27;蜘蛛精&#x27;</span>,<span class="string">&#x27;女&#x27;</span>,<span class="number">4500</span>,<span class="string">&#x27;2011-03-14&#x27;</span>,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="多表查询">多表查询</h3>
+<h4 id="内连接查询">内连接查询</h4>
+<h5 id="隐式内连接">隐式内连接</h5>
+<p>使用where条件消除无用数据</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询所有员工信息和对应的部门信息</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp,dept <span class="keyword">WHERE</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;</span><br><span class="line">			</span><br><span class="line"><span class="comment">-- 查询员工表的名称，性别。部门表的名称</span></span><br><span class="line"><span class="keyword">SELECT</span> emp.name,emp.gender,dept.name <span class="keyword">FROM</span> emp,dept <span class="keyword">WHERE</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;</span><br><span class="line">			</span><br><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">t1.name, <span class="comment">-- 员工表的姓名</span></span><br><span class="line">t1.gender,<span class="comment">-- 员工表的性别</span></span><br><span class="line">t2.name <span class="comment">-- 部门表的名称</span></span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">emp t1,</span><br><span class="line">dept t2</span><br><span class="line"><span class="keyword">WHERE</span> </span><br><span class="line">t1.`dept_id` <span class="operator">=</span> t2.`id`;</span><br></pre></td></tr></table></figure>
-
-<h5 id="显式内连接"><a href="#显式内连接" class="headerlink" title="显式内连接"></a>显式内连接</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 语法： select 字段列表 from 表名1 [inner] join 表名2 on 条件</span></span><br><span class="line">  <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">INNER</span> <span class="keyword">JOIN</span> dept <span class="keyword">ON</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;	</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">JOIN</span> dept <span class="keyword">ON</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;	</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="外链接查询"><a href="#外链接查询" class="headerlink" title="外链接查询"></a>外链接查询</h4><h5 id="左外连接"><a href="#左外连接" class="headerlink" title="左外连接"></a>左外连接</h5><p>左向外联接的结果集包括 LEFT OUTER子句中指定的左表的所有行，而不仅仅是联接列所匹配的行。如果左表的某行在右表中没有匹配行，则在相关联的结果集行中右表的所有选择列表列均为空值。</p>
+<h5 id="显式内连接">显式内连接</h5>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 语法： select 字段列表 from 表名1 [inner] join 表名2 on 条件</span></span><br><span class="line">  <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">INNER</span> <span class="keyword">JOIN</span> dept <span class="keyword">ON</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;	</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">JOIN</span> dept <span class="keyword">ON</span> emp.`dept_id` <span class="operator">=</span> dept.`id`;	</span><br></pre></td></tr></table></figure>
+<h4 id="外链接查询">外链接查询</h4>
+<h5 id="左外连接">左外连接</h5>
+<p>左向外联接的结果集包括 LEFT OUTER子句中指定的左表的所有行，而不仅仅是联接列所匹配的行。如果左表的某行在右表中没有匹配行，则在相关联的结果集行中右表的所有选择列表列均为空值。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 语法：select 字段列表 from 表1 left [outer] join 表2 on 条件；</span></span><br></pre></td></tr></table></figure>
-
 <p>查询的是左表所有数据以及其交集部分。</p>
 <blockquote>
 <p>效果: 内连接查询与多表联合查询的效果是一样的.</p>
 </blockquote>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询所有员工信息，如果员工有部门，则查询部门名称，没有部门，则不显示部门名称</span></span><br><span class="line"><span class="keyword">SELECT</span> 	t1.<span class="operator">*</span>,t2.`name` <span class="keyword">FROM</span> emp t1 <span class="keyword">LEFT</span> <span class="keyword">JOIN</span> dept t2 <span class="keyword">ON</span> t1.`dept_id` <span class="operator">=</span> t2.`id`;</span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309115012.png" alt="image-20210309115012503"></p>
-<h5 id="右外连接"><a href="#右外连接" class="headerlink" title="右外连接"></a>右外连接</h5><p>右向外联接是左向外联接的反向联接。将返回右表的所有行。如果右表的某行在左表中没有匹配行，则将为左表返回空值。</p>
+<h5 id="右外连接">右外连接</h5>
+<p>右向外联接是左向外联接的反向联接。将返回右表的所有行。如果右表的某行在左表中没有匹配行，则将为左表返回空值。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 语法：select 字段列表 from 表1 right [outer] join 表2 on 条件；</span></span><br></pre></td></tr></table></figure>
-
 <p>查询的是右表所有数据以及其交集部分。</p>
 <blockquote>
 <p>效果:人员表中的数据全部都显示,而 部门表中的数据符合条件的才会显示,不符合条件的会以 null 进行填充.</p>
 </blockquote>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> dept t2 <span class="keyword">RIGHT</span> <span class="keyword">JOIN</span> emp t1 <span class="keyword">ON</span> t1.`dept_id` <span class="operator">=</span> t2.`id`; </span><br></pre></td></tr></table></figure>
-
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210309114953.png" alt="image-20210309114953597"></p>
-<h5 id="子查询"><a href="#子查询" class="headerlink" title="子查询"></a>子查询</h5><p>查询中嵌套查询，称嵌套查询为子查询。    </p>
+<h5 id="子查询">子查询</h5>
+<p>查询中嵌套查询，称嵌套查询为子查询。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询工资最高的员工信息</span></span><br><span class="line"><span class="comment">--  1 查询最高的工资是多少 9000</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">MAX</span>(salary) <span class="keyword">FROM</span> emp;</span><br><span class="line"><span class="comment">--  2 查询员工信息，并且工资等于9000的</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> emp.`salary` <span class="operator">=</span> <span class="number">9000</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 使用子查询</span></span><br><span class="line"><span class="comment">-- 一条sql就完成这个操作。子查询</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> emp.`salary` <span class="operator">=</span> (<span class="keyword">SELECT</span> <span class="built_in">MAX</span>(salary) <span class="keyword">FROM</span> emp);</span><br></pre></td></tr></table></figure>
-
-<h5 id="子查询不同情况"><a href="#子查询不同情况" class="headerlink" title="子查询不同情况"></a>子查询不同情况</h5><h6 id="子查询的结果是单行单列的"><a href="#子查询的结果是单行单列的" class="headerlink" title="子查询的结果是单行单列的"></a>子查询的结果是单行单列的</h6><ul>
-<li><p>子查询可以作为条件，使用运算符去判断。 运算符： &gt; &gt;= &lt; &lt;= =</p>
+<h5 id="子查询不同情况">子查询不同情况</h5>
+<h6 id="子查询的结果是单行单列的">子查询的结果是单行单列的</h6>
+<ul>
+<li>
+<p>子查询可以作为条件，使用运算符去判断。 运算符： &gt; &gt;= &lt; &lt;= =</p>
 </li>
-<li><p>查询员工工资小于平均工资的人</p>
+<li>
+<p>查询员工工资小于平均工资的人</p>
   <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> emp.salary <span class="operator">&lt;</span> (<span class="keyword">SELECT</span> <span class="built_in">AVG</span>(salary) <span class="keyword">FROM</span> emp);</span><br></pre></td></tr></table></figure>
-
 </li>
 </ul>
-<h6 id="子查询的结果是多行单列"><a href="#子查询的结果是多行单列" class="headerlink" title="子查询的结果是多行单列"></a>子查询的结果是多行单列</h6><ul>
-<li><p>查询可以作为条件，使用运算符in来判断</p>
+<h6 id="子查询的结果是多行单列">子查询的结果是多行单列</h6>
+<ul>
+<li>
+<p>查询可以作为条件，使用运算符in来判断</p>
   <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询&#x27;财务部&#x27;和&#x27;市场部&#x27;所有的员工信息</span></span><br><span class="line"><span class="keyword">SELECT</span> id <span class="keyword">FROM</span> dept <span class="keyword">WHERE</span> NAME <span class="operator">=</span> <span class="string">&#x27;财务部&#x27;</span> <span class="keyword">OR</span> NAME <span class="operator">=</span> <span class="string">&#x27;市场部&#x27;</span>;</span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> dept_id <span class="operator">=</span> <span class="number">3</span> <span class="keyword">OR</span> dept_id <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line"><span class="comment">--- 子查询</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> dept_id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> id <span class="keyword">FROM</span> dept <span class="keyword">WHERE</span> NAME <span class="operator">=</span> <span class="string">&#x27;财务部&#x27;</span> <span class="keyword">OR</span> NAME <span class="operator">=</span> <span class="string">&#x27;市场部&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
 </li>
 </ul>
-<h6 id="查询的结果是多行多列的"><a href="#查询的结果是多行多列的" class="headerlink" title="查询的结果是多行多列的"></a>查询的结果是多行多列的</h6><p>子查询可以作为一张虚拟表参与查询</p>
+<h6 id="查询的结果是多行多列的">查询的结果是多行多列的</h6>
+<p>子查询可以作为一张虚拟表参与查询</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查询员工入职日期是2011-11-11日之后的员工信息和部门信息</span></span><br><span class="line"><span class="comment">-- 子查询</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> dept t1 ,(<span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp <span class="keyword">WHERE</span> emp.`join_date` <span class="operator">&gt;</span> <span class="string">&#x27;2011-11-11&#x27;</span>) t2</span><br><span class="line"><span class="keyword">WHERE</span> t1.id <span class="operator">=</span> t2.dept_id;</span><br><span class="line"><span class="comment">-- 普通内连接</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> emp t1,dept t2 <span class="keyword">WHERE</span> t1.`dept_id` <span class="operator">=</span> t2.`id` <span class="keyword">AND</span> t1.`join_date` <span class="operator">&gt;</span>  <span class="string">&#x27;2011-11-11&#x27;</span></span><br></pre></td></tr></table></figure>
-
 
     </div>
 
@@ -716,7 +727,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">252k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>

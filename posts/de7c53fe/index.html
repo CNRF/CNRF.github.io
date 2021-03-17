@@ -274,7 +274,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="Executor框架"><a href="#Executor框架" class="headerlink" title="Executor框架"></a><strong>Executor框架</strong></h3><p>线程池就是<strong>线程的集合</strong>，线程池集中管理线程，以实现线程的重用，降低资源消耗，提高响应速度等。线程用于执行异步任务，单个的线程既是工作单元也是执行机制，从JDK1.5开始，为了把工作单元与执行机制分离开，Executor框架诞生了，他是一个用于统一创建与运行的接口。<strong>Executor框架实现的就是线程池的功能</strong></p>
+        <h3 id="Executor框架"><strong>Executor框架</strong></h3>
+<p>线程池就是<strong>线程的集合</strong>，线程池集中管理线程，以实现线程的重用，降低资源消耗，提高响应速度等。线程用于执行异步任务，单个的线程既是工作单元也是执行机制，从JDK1.5开始，为了把工作单元与执行机制分离开，Executor框架诞生了，他是一个用于统一创建与运行的接口。<strong>Executor框架实现的就是线程池的功能</strong></p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114336.png" alt="img"></p>
 <p>说明：</p>
 <ul>
@@ -285,40 +286,42 @@
 <li><strong>ThreadPoolExecutor</strong> JDK中线程池的具体实现。</li>
 <li><strong>Executors</strong> 线程池工厂类。</li>
 </ul>
-<h3 id="ThreadPoolExecutor（线程池类）"><a href="#ThreadPoolExecutor（线程池类）" class="headerlink" title="ThreadPoolExecutor（线程池类）"></a>ThreadPoolExecutor（<strong>线程池类</strong>）</h3><p>线程池是一个复杂的任务调度工具，它涉及到任务、线程池等的生命周期问题。要配置一个线程池是比较复杂的，尤其是对于线程池的原理不是很清楚的情况下，很有可能配置的线程池不是较优的。</p>
+<h3 id="ThreadPoolExecutor（线程池类）">ThreadPoolExecutor（<strong>线程池类</strong>）</h3>
+<p>线程池是一个复杂的任务调度工具，它涉及到任务、线程池等的生命周期问题。要配置一个线程池是比较复杂的，尤其是对于线程池的原理不是很清楚的情况下，很有可能配置的线程池不是较优的。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ThreadPoolExecutor</span><span class="params">(<span class="keyword">int</span> corePoolSize,</span></span></span><br><span class="line"><span class="function"><span class="params">                         <span class="keyword">int</span> maximumPoolSize,</span></span></span><br><span class="line"><span class="function"><span class="params">                         <span class="keyword">long</span> keepAliveTime,</span></span></span><br><span class="line"><span class="function"><span class="params">                         TimeUnit unit,</span></span></span><br><span class="line"><span class="function"><span class="params">                         BlockingQueue&lt;Runnable&gt; workQueue,</span></span></span><br><span class="line"><span class="function"><span class="params">                         ThreadFactory threadFactory,</span></span></span><br><span class="line"><span class="function"><span class="params">                         RejectedExecutionHandler handler)</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="线程池的七个参数"><a href="#线程池的七个参数" class="headerlink" title="线程池的七个参数"></a>线程池的七个参数</h4><ul>
-<li><p>corePoolSize：核心线程数。</p>
+<h4 id="线程池的七个参数">线程池的七个参数</h4>
+<ul>
+<li>
+<p>corePoolSize：核心线程数。</p>
 </li>
-<li><p>maximumPoolSize：最大线程数。</p>
+<li>
+<p>maximumPoolSize：最大线程数。</p>
 </li>
-<li><p>keepAliveTime：线程存活时间。当线程数大于core数，那么超过该时间的线程将会被终结。</p>
+<li>
+<p>keepAliveTime：线程存活时间。当线程数大于core数，那么超过该时间的线程将会被终结。</p>
 </li>
-<li><p>unit：keepAliveTime的单位。java.util.concurrent.TimeUnit类存在静态静态属性： NANOSECONDS、MICROSECONDS、MILLISECONDS、SECONDS</p>
+<li>
+<p>unit：keepAliveTime的单位。java.util.concurrent.TimeUnit类存在静态静态属性： NANOSECONDS、MICROSECONDS、MILLISECONDS、SECONDS</p>
 </li>
-<li><p>workQueue：Runnable的阻塞队列。若线程池已经被占满，则该队列用于存放无法再放入线程池中的Runnable。</p>
+<li>
+<p>workQueue：Runnable的阻塞队列。若线程池已经被占满，则该队列用于存放无法再放入线程池中的Runnable。</p>
 </li>
-<li><p>threadFactory:创建一个新线程时使用的工厂，可以用来设定线程名、是否为守护线程等等</p>
+<li>
+<p>threadFactory:创建一个新线程时使用的工厂，可以用来设定线程名、是否为守护线程等等</p>
 </li>
-<li><p>handler：拒绝策略</p>
+<li>
+<p>handler：拒绝策略</p>
 </li>
 </ul>
-<h4 id="五种线程池"><a href="#五种线程池" class="headerlink" title="五种线程池"></a>五种线程池</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">   ExecutorService threadPool = <span class="keyword">null</span>;</span><br><span class="line"><span class="comment">//有缓冲的线程池，线程数 JVM 控制，线程太多会导致CUP一直进行切换，阻塞队列使用的是SynchronousQueue(容量为0),不希望任务堆积</span></span><br><span class="line">   threadPool = Executors.newCachedThreadPool();</span><br><span class="line"><span class="comment">//固定大小的线程池，核心线程数和最大线程数保持一致，希望以恒定的处理速度使用线程</span></span><br><span class="line">   threadPool = Executors.newFixedThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="comment">//可创建最大线程为int最大值，线程太多会导致CPU频繁切换</span></span><br><span class="line">   threadPool = Executors.newScheduledThreadPool(<span class="number">2</span>);</span><br><span class="line"><span class="comment">//单线程的线程池，只有一个线程在工作，队列长度为int最大值，可能会堆积大量请求</span></span><br><span class="line">   threadPool = Executors.newSingleThreadExecutor();</span><br><span class="line"><span class="comment">//默认线程池，可控制参数比较多 </span></span><br><span class="line">   threadPool = <span class="keyword">new</span> ThreadPoolExecutor();</span><br><span class="line"><span class="comment">// 基于工作窃取算法，其中任务可以生成其他较小的任务，这些任务将添加到并行处理线程的队列中。如果一个线程完成了工作并且无事可做，则可以从另一线程的队列中“窃取”工作</span></span><br><span class="line">   threadPool = Executors.newWorkStealingPool();</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="阻塞队列"><a href="#阻塞队列" class="headerlink" title="阻塞队列"></a>阻塞队列</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue&lt;Runnable&gt; workQueue = <span class="keyword">null</span>;</span><br><span class="line">workQueue = <span class="keyword">new</span> ArrayBlockingQueue&lt;&gt;(<span class="number">5</span>);<span class="comment">//基于数组的先进先出队列，有界</span></span><br><span class="line">workQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;();<span class="comment">//基于链表的先进先出队列，无界</span></span><br><span class="line">workQueue = <span class="keyword">new</span> SynchronousQueue&lt;&gt;();<span class="comment">//无缓冲的等待队列，无界</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="线程池的拒绝策略"><a href="#线程池的拒绝策略" class="headerlink" title="线程池的拒绝策略"></a>线程池的拒绝策略</h4><blockquote>
+<h4 id="五种线程池">五种线程池</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">   ExecutorService threadPool = <span class="keyword">null</span>;</span><br><span class="line"><span class="comment">//有缓冲的线程池，线程数 JVM 控制，线程太多会导致CUP一直进行切换，阻塞队列使用的是SynchronousQueue(容量为0),不希望任务堆积</span></span><br><span class="line">   threadPool = Executors.newCachedThreadPool();</span><br><span class="line"><span class="comment">//固定大小的线程池，核心线程数和最大线程数保持一致，希望以恒定的处理速度使用线程</span></span><br><span class="line">   threadPool = Executors.newFixedThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="comment">//可创建最大线程为int最大值，线程太多会导致CPU频繁切换</span></span><br><span class="line">   threadPool = Executors.newScheduledThreadPool(<span class="number">2</span>);</span><br><span class="line"><span class="comment">//单线程的线程池，只有一个线程在工作，队列长度为int最大值，可能会堆积大量请求</span></span><br><span class="line">   threadPool = Executors.newSingleThreadExecutor();</span><br><span class="line"><span class="comment">//默认线程池，可控制参数比较多 </span></span><br><span class="line">   threadPool = <span class="keyword">new</span> ThreadPoolExecutor();</span><br><span class="line"><span class="comment">// 基于工作窃取算法，其中任务可以生成其他较小的任务，这些任务将添加到并行处理线程的队列中。如果一个线程完成了工作并且无事可做，则可以从另一线程的队列中“窃取”工作</span></span><br><span class="line">   threadPool = Executors.newWorkStealingPool();</span><br></pre></td></tr></table></figure>
+<h4 id="阻塞队列">阻塞队列</h4>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue&lt;Runnable&gt; workQueue = <span class="keyword">null</span>;</span><br><span class="line">workQueue = <span class="keyword">new</span> ArrayBlockingQueue&lt;&gt;(<span class="number">5</span>);<span class="comment">//基于数组的先进先出队列，有界</span></span><br><span class="line">workQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;();<span class="comment">//基于链表的先进先出队列，无界</span></span><br><span class="line">workQueue = <span class="keyword">new</span> SynchronousQueue&lt;&gt;();<span class="comment">//无缓冲的等待队列，无界</span></span><br></pre></td></tr></table></figure>
+<h4 id="线程池的拒绝策略">线程池的拒绝策略</h4>
+<blockquote>
 <p>阿里出品的规范不建议使用这些拒绝策略，建议自定义策略（可保存到redis，kafaka或日志文件等中）</p>
 </blockquote>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RejectedExecutionHandler rejected = <span class="keyword">null</span>;</span><br><span class="line">rejected = <span class="keyword">new</span> ThreadPoolExecutor.AbortPolicy();<span class="comment">//默认，队列满了丢任务抛出异常</span></span><br><span class="line">rejected = <span class="keyword">new</span> ThreadPoolExecutor.DiscardPolicy();<span class="comment">//队列满了丢任务不异常</span></span><br><span class="line">rejected = <span class="keyword">new</span> ThreadPoolExecutor.DiscardOldestPolicy();<span class="comment">//将最早进入队列的任务删，之后再尝试加入队列</span></span><br><span class="line">rejected = <span class="keyword">new</span> ThreadPoolExecutor.CallerRunsPolicy();<span class="comment">//如果添加到线程池失败，那么主线程会自己去执行该任务</span></span><br></pre></td></tr></table></figure>
-
 
     </div>
 
@@ -547,7 +550,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">252k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>

@@ -291,49 +291,68 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Zab算法描述"><a href="#Zab算法描述" class="headerlink" title="Zab算法描述"></a>Zab算法描述</h1><p>Zab协议 的全称是 <strong>Zookeeper Atomic Broadcast</strong> （Zookeeper原子广播）。</p>
+        <h1>Zab算法描述</h1>
+<p>Zab协议 的全称是 <strong>Zookeeper Atomic Broadcast</strong> （Zookeeper原子广播）。</p>
 <p><strong>Zookeeper 是通过 Zab 协议来保证分布式事务的最终一致性</strong>。</p>
 <ol>
 <li>Zab协议是为分布式协调服务Zookeeper专门设计的一种 <strong>支持崩溃恢复</strong> 的 <strong>原子广播协议</strong> ，是Zookeeper保证数据一致性的核心算法。Zab借鉴了Paxos算法，但又不像Paxos那样，是一种通用的分布式一致性算法。<strong>它是特别为Zookeeper设计的支持崩溃恢复的原子广播协议</strong>。</li>
-<li>在Zookeeper中主要依赖Zab协议来实现数据一致性，基于该协议，zk实现了一种主备模型（即Leader和Follower模型）的系统架构来保证集群中各个副本之间数据的一致性。<br> 这里的主备系统架构模型，就是指只有一台客户端（Leader）负责处理外部的写事务请求，然后Leader客户端将数据同步到其他Follower节点。</li>
+<li>在Zookeeper中主要依赖Zab协议来实现数据一致性，基于该协议，zk实现了一种主备模型（即Leader和Follower模型）的系统架构来保证集群中各个副本之间数据的一致性。<br>
+这里的主备系统架构模型，就是指只有一台客户端（Leader）负责处理外部的写事务请求，然后Leader客户端将数据同步到其他Follower节点。</li>
 </ol>
 <p>Zookeeper 客户端会随机的链接到 zookeeper 集群中的一个节点，如果是<font color=red>读请求，就直接从当前节点中读取数据；如果是写请求，那么节点就会向 Leader 提交事务，Leader 接收到事务提交，会广播该事务，只要超过半数节点写入成功，该事务就会被提交</font>。</p>
-<h1 id="Zab-协议的特性："><a href="#Zab-协议的特性：" class="headerlink" title="Zab 协议的特性："></a><strong>Zab 协议的特性</strong>：</h1><p>1）Zab 协议需要确保那些<strong>已经在 Leader 服务器上提交（Commit）的事务最终被所有的服务器提交</strong>。</p>
+<h1><strong>Zab 协议的特性</strong>：</h1>
+<p>1）Zab 协议需要确保那些<strong>已经在 Leader 服务器上提交（Commit）的事务最终被所有的服务器提交</strong>。</p>
 <p>2）Zab 协议需要确保<strong>丢弃那些只在 Leader 上被提出而没有被提交的事务</strong>。</p>
-<h1 id="Zab-协议的作用"><a href="#Zab-协议的作用" class="headerlink" title="Zab 协议的作用"></a>Zab 协议的作用</h1><ol>
-<li><p><strong>使用一个单一的主进程（Leader）来接收并处理客户端的事务请求</strong>（也就是写请求），并采用了Zab的原子广播协议，将服务器数据的状态变更以 <strong>事务proposal</strong> （事务提议）的形式广播到所有的副本（Follower）进程上去。</p>
+<h1>Zab 协议的作用</h1>
+<ol>
+<li>
+<p><strong>使用一个单一的主进程（Leader）来接收并处理客户端的事务请求</strong>（也就是写请求），并采用了Zab的原子广播协议，将服务器数据的状态变更以 <strong>事务proposal</strong> （事务提议）的形式广播到所有的副本（Follower）进程上去。</p>
 </li>
-<li><p><strong>保证一个全局的变更序列被顺序引用</strong>。<br> Zookeeper是一个树形结构，很多操作都要先检查才能确定是否可以执行，比如P1的事务t1可能是创建节点”/a”，t2可能是创建节点”/a/bb”，只有先创建了父节点”/a”，才能创建子节点”/a/b”。</p>
-<p> 为了保证这一点，Zab要保证同一个Leader发起的事务要按顺序被apply，同时还要保证只有先前Leader的事务被apply之后，新选举出来的Leader才能再次发起事务。</p>
+<li>
+<p><strong>保证一个全局的变更序列被顺序引用</strong>。<br>
+Zookeeper是一个树形结构，很多操作都要先检查才能确定是否可以执行，比如P1的事务t1可能是创建节点&quot;/a&quot;，t2可能是创建节点&quot;/a/bb&quot;，只有先创建了父节点&quot;/a&quot;，才能创建子节点&quot;/a/b&quot;。</p>
+<p>为了保证这一点，Zab要保证同一个Leader发起的事务要按顺序被apply，同时还要保证只有先前Leader的事务被apply之后，新选举出来的Leader才能再次发起事务。</p>
 </li>
-<li><p><strong>当主进程出现异常的时候，整个zk集群依旧能正常工作</strong>。</p>
+<li>
+<p><strong>当主进程出现异常的时候，整个zk集群依旧能正常工作</strong>。</p>
 </li>
 </ol>
-<h2 id="Zab协议原理"><a href="#Zab协议原理" class="headerlink" title="Zab协议原理"></a>Zab协议原理</h2><p>Zab协议要求每个 Leader 都要经历三个阶段：<strong>发现，同步，广播</strong>。</p>
+<h2 id="Zab协议原理">Zab协议原理</h2>
+<p>Zab协议要求每个 Leader 都要经历三个阶段：<strong>发现，同步，广播</strong>。</p>
 <ul>
 <li><strong>发现</strong>：要求zookeeper集群必须选举出一个 Leader 进程，同时 Leader 会维护一个 Follower 可用客户端列表。将来客户端可以和这些 Follower节点进行通信。</li>
 <li><strong>同步</strong>：Leader 要负责将本身的数据与 Follower 完成同步，做到多副本存储。这样也是提现了CAP中的高可用和分区容错。Follower将队列中未处理完的请求消费完成后，写入本地事务日志中。</li>
 <li><strong>广播</strong>：Leader 可以接受客户端新的事务Proposal请求，将新的Proposal请求广播给所有的 Follower。</li>
 </ul>
-<h2 id="Zab协议核心"><a href="#Zab协议核心" class="headerlink" title="Zab协议核心"></a>Zab协议核心</h2><p>Zab协议的核心：<strong>定义了事务请求的处理方式</strong></p>
+<h2 id="Zab协议核心">Zab协议核心</h2>
+<p>Zab协议的核心：<strong>定义了事务请求的处理方式</strong></p>
 <p>1）所有的事务请求必须由一个全局唯一的服务器来协调处理，这样的服务器被叫做 <strong>Leader服务器</strong>。其他剩余的服务器则是 <strong>Follower服务器</strong>。</p>
 <p>2）Leader服务器 负责将一个客户端事务请求，转换成一个 <strong>事务Proposal</strong>，并将该 Proposal 分发给集群中所有的 Follower 服务器，也就是向所有 Follower 节点发送数据广播请求（或数据复制）</p>
 <p>3）分发之后Leader服务器需要等待所有Follower服务器的反馈（Ack请求），<strong>在Zab协议中，只要超过半数的Follower服务器进行了正确的反馈</strong>后（也就是收到半数以上的Follower的Ack请求），那么 Leader 就会再次向所有的 Follower服务器发送 Commit 消息，要求其将上一个 事务proposal 进行提交。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302165537.png" alt="image-20210302165537904"></p>
-<h2 id="Zab协议内容"><a href="#Zab协议内容" class="headerlink" title="Zab协议内容"></a>Zab协议内容</h2><p>Zab 协议包括两种基本的模式：<strong>崩溃恢复</strong> 和 <strong>消息广播</strong></p>
-<h3 id="Zab协议内容-1"><a href="#Zab协议内容-1" class="headerlink" title="Zab协议内容"></a>Zab协议内容</h3><h4 id="协议过程"><a href="#协议过程" class="headerlink" title="协议过程"></a>协议过程</h4><p>当整个集群启动过程中，或者当 Leader 服务器出现网络中弄断、崩溃退出或重启等异常时，Zab协议就会 <strong>进入崩溃恢复模式</strong>，选举产生新的Leader。</p>
+<h2 id="Zab协议内容">Zab协议内容</h2>
+<p>Zab 协议包括两种基本的模式：<strong>崩溃恢复</strong> 和 <strong>消息广播</strong></p>
+<h3 id="Zab协议内容-2">Zab协议内容</h3>
+<h4 id="协议过程">协议过程</h4>
+<p>当整个集群启动过程中，或者当 Leader 服务器出现网络中弄断、崩溃退出或重启等异常时，Zab协议就会 <strong>进入崩溃恢复模式</strong>，选举产生新的Leader。</p>
 <p>当选举产生了新的 Leader，同时集群中有过半的机器与该 Leader 服务器完成了状态同步（即数据同步）之后，Zab协议就会退出崩溃恢复模式，<strong>进入消息广播模式</strong>。</p>
 <p>这时，如果有一台遵守Zab协议的服务器加入集群，因为此时集群中已经存在一个Leader服务器在广播消息，那么该新加入的服务器自动进入恢复模式：找到Leader服务器，并且完成数据同步。同步完成后，作为新的Follower一起参与到消息广播流程中。</p>
-<h4 id="协议状态切换"><a href="#协议状态切换" class="headerlink" title="协议状态切换"></a>协议状态切换</h4><p>当Leader出现崩溃退出或者机器重启，亦或是集群中不存在超过半数的服务器与Leader保存正常通信，Zab就会再一次进入崩溃恢复，发起新一轮Leader选举并实现数据同步。同步完成后又会进入消息广播模式，接收事务请求。</p>
-<h4 id="保证消息有序"><a href="#保证消息有序" class="headerlink" title="保证消息有序"></a>保证消息有序</h4><p>在整个消息广播中，Leader会将每一个事务请求转换成对应的 proposal 来进行广播，并且在广播 事务Proposal 之前，Leader服务器会首先为这个事务Proposal分配一个全局单递增的唯一ID，称之为事务ID（即zxid），由于Zab协议需要保证每一个消息的严格的顺序关系，因此必须将每一个proposal按照其zxid的先后顺序进行排序和处理。</p>
-<h3 id="消息广播"><a href="#消息广播" class="headerlink" title="消息广播"></a>消息广播</h3><ol>
-<li><p>在zookeeper集群中，数据副本的传递策略就是采用消息广播模式。zookeeper中农数据副本的同步方式与二段提交相似，但是却又不同。二段提交要求协调者必须等到所有的参与者全部反馈ACK确认消息后，再发送commit消息。要求所有的参与者要么全部成功，要么全部失败。二段提交会产生严重的阻塞问题。</p>
+<h4 id="协议状态切换">协议状态切换</h4>
+<p>当Leader出现崩溃退出或者机器重启，亦或是集群中不存在超过半数的服务器与Leader保存正常通信，Zab就会再一次进入崩溃恢复，发起新一轮Leader选举并实现数据同步。同步完成后又会进入消息广播模式，接收事务请求。</p>
+<h4 id="保证消息有序">保证消息有序</h4>
+<p>在整个消息广播中，Leader会将每一个事务请求转换成对应的 proposal 来进行广播，并且在广播 事务Proposal 之前，Leader服务器会首先为这个事务Proposal分配一个全局单递增的唯一ID，称之为事务ID（即zxid），由于Zab协议需要保证每一个消息的严格的顺序关系，因此必须将每一个proposal按照其zxid的先后顺序进行排序和处理。</p>
+<h3 id="消息广播">消息广播</h3>
+<ol>
+<li>
+<p>在zookeeper集群中，数据副本的传递策略就是采用消息广播模式。zookeeper中农数据副本的同步方式与二段提交相似，但是却又不同。二段提交要求协调者必须等到所有的参与者全部反馈ACK确认消息后，再发送commit消息。要求所有的参与者要么全部成功，要么全部失败。二段提交会产生严重的阻塞问题。</p>
 </li>
-<li><p>Zab协议中 Leader 等待 Follower 的ACK反馈消息是指“只要半数以上的Follower成功反馈即可，不需要收到全部Follower反馈”</p>
-<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210302170013.png" alt="消息广播流程图"></p>
+<li>
+<p>Zab协议中 Leader 等待 Follower 的ACK反馈消息是指“只要半数以上的Follower成功反馈即可，不需要收到全部Follower反馈”</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302170013.png" alt="消息广播流程图"></p>
 </li>
 </ol>
-<h4 id="消息广播具体步骤"><a href="#消息广播具体步骤" class="headerlink" title="消息广播具体步骤"></a>消息广播具体步骤</h4><ol>
+<h4 id="消息广播具体步骤">消息广播具体步骤</h4>
+<ol>
 <li>客户端发起一个写操作请求。</li>
 <li>Leader 服务器将客户端的请求转化为事务 Proposal 提案，同时为每个 Proposal 分配一个全局的ID，即zxid。</li>
 <li>Leader 服务器为每个 Follower 服务器分配一个单独的队列，然后将需要广播的 Proposal 依次放到队列中取，并且根据 FIFO 策略进行消息发送。</li>
@@ -343,44 +362,55 @@
 </ol>
 <p><strong>zookeeper 采用 Zab 协议的核心，就是只要有一台服务器提交了 Proposal，就要确保所有的服务器最终都能正确提交 Proposal。这也是 CAP/BASE 实现最终一致性的一个体现。</strong></p>
 <p><strong>Leader 服务器与每一个 Follower 服务器之间都维护了一个单独的 FIFO 消息队列进行收发消息，使用队列消息可以做到异步解耦。 Leader 和 Follower 之间只需要往队列中发消息即可。如果使用同步的方式会引起阻塞，性能要下降很多。</strong></p>
-<h3 id="崩溃恢复"><a href="#崩溃恢复" class="headerlink" title="崩溃恢复"></a>崩溃恢复</h3><p><strong>一旦 Leader 服务器出现崩溃或者由于网络原因导致 Leader 服务器失去了与过半 Follower 的联系，那么就会进入崩溃恢复模式。</strong></p>
+<h3 id="崩溃恢复">崩溃恢复</h3>
+<p><strong>一旦 Leader 服务器出现崩溃或者由于网络原因导致 Leader 服务器失去了与过半 Follower 的联系，那么就会进入崩溃恢复模式。</strong></p>
 <p>在 Zab 协议中，为了保证程序的正确运行，整个恢复过程结束后需要选举出一个新的 Leader 服务器。因此 Zab 协议需要一个高效且可靠的 Leader 选举算法，从而确保能够快速选举出新的 Leader 。</p>
 <p>Leader 选举算法不仅仅需要让 Leader 自己知道自己已经被选举为 Leader ，同时还需要让集群中的所有其他机器也能够快速感知到选举产生的新 Leader 服务器。</p>
 <p>崩溃恢复主要包括两部分：<strong>Leader选举</strong> 和 <strong>数据恢复</strong></p>
-<h4 id="Zab-协议保证数据一致性"><a href="#Zab-协议保证数据一致性" class="headerlink" title="Zab 协议保证数据一致性"></a>Zab 协议保证数据一致性</h4><p><strong>Zab 协议崩溃恢复要求满足以下两个要求</strong>：</p>
+<h4 id="Zab-协议保证数据一致性">Zab 协议保证数据一致性</h4>
+<p><strong>Zab 协议崩溃恢复要求满足以下两个要求</strong>：</p>
 <ol>
-<li><p><strong>确保已经被 Leader 提交的 Proposal 必须最终被所有的 Follower 服务器提交</strong>。</p>
+<li>
+<p><strong>确保已经被 Leader 提交的 Proposal 必须最终被所有的 Follower 服务器提交</strong>。</p>
 </li>
-<li><p><strong>确保丢弃已经被 Leader 提出的但是没有被提交的 Proposal</strong>。</p>
+<li>
+<p><strong>确保丢弃已经被 Leader 提出的但是没有被提交的 Proposal</strong>。</p>
 </li>
 </ol>
 <p>根据上述要求</p>
 <p>Zab协议需要保证选举出来的Leader需要满足以下条件：</p>
 <ol>
-<li><p><strong>新选举出来的 Leader 不能包含未提交的 Proposal</strong> 。</p>
-<p> 即新选举的 Leader 必须都是已经提交了 Proposal 的 Follower 服务器节点。</p>
+<li>
+<p><strong>新选举出来的 Leader 不能包含未提交的 Proposal</strong> 。</p>
+<p>即新选举的 Leader 必须都是已经提交了 Proposal 的 Follower 服务器节点。</p>
 </li>
-<li><p><strong>新选举的 Leader 节点中含有最大的 zxid</strong> 。<br> 这样做的好处是可以避免 Leader 服务器检查 Proposal 的提交和丢弃工作。</p>
+<li>
+<p><strong>新选举的 Leader 节点中含有最大的 zxid</strong> 。<br>
+这样做的好处是可以避免 Leader 服务器检查 Proposal 的提交和丢弃工作。</p>
 </li>
 </ol>
-<h4 id="Zab-数据同步"><a href="#Zab-数据同步" class="headerlink" title="Zab 数据同步"></a>Zab 数据同步</h4><ol>
+<h4 id="Zab-数据同步">Zab 数据同步</h4>
+<ol>
 <li>完成 Leader 选举后（新的 Leader 具有最高的zxid），在正式开始工作之前（接收事务请求，然后提出新的 Proposal），Leader 服务器会首先确认事务日志中的所有的 Proposal 是否已经被集群中过半的服务器 Commit。</li>
 <li>Leader 服务器需要确保所有的 Follower 服务器能够接收到每一条事务的 Proposal ，并且能将所有已经提交的事务 Proposal 应用到内存数据中。等到 Follower 将所有尚未同步的事务 Proposal 都从 Leader 服务器上同步过啦并且应用到内存数据中以后，Leader 才会把该 Follower 加入到真正可用的 Follower 列表中。</li>
 </ol>
-<h4 id="Zab-数据同步过程中，如何处理需要丢弃的-Proposal"><a href="#Zab-数据同步过程中，如何处理需要丢弃的-Proposal" class="headerlink" title="Zab 数据同步过程中，如何处理需要丢弃的 Proposal"></a>Zab 数据同步过程中，如何处理需要丢弃的 Proposal</h4><p>在 Zab 的事务编号 zxid 设计中，zxid是一个64位的数字。</p>
+<h4 id="Zab-数据同步过程中，如何处理需要丢弃的-Proposal">Zab 数据同步过程中，如何处理需要丢弃的 Proposal</h4>
+<p>在 Zab 的事务编号 zxid 设计中，zxid是一个64位的数字。</p>
 <p>其中低32位可以看成一个简单的单增计数器，针对客户端每一个事务请求，Leader 在产生新的 Proposal 事务时，都会对该计数器加1。而<font color=red>高32位则代表了 Leader 周期的 epoch 编号</font>。</p>
 <blockquote>
 <p>epoch 编号可以理解为当前集群所处的年代，或者周期。每次Leader变更之后都会在 epoch 的基础上加1，这样旧的 Leader 崩溃恢复之后，其他Follower 也不会听它的了，因为 Follower 只服从epoch最高的 Leader 命令。</p>
 </blockquote>
 <p>每当选举产生一个新的 Leader ，就会从这个 <font color=red>Leader 服务器上取出本地事务日志充最大编号 Proposal 的 zxid，并从 zxid 中解析得到对应的 epoch 编号，然后再对其加1，之后该编号就作为新的 epoch 值，并将低32位数字归零，由0开始重新生成zxid</font>。</p>
 <p><strong>Zab 协议通过 epoch 编号来区分 Leader 变化周期</strong>，能够有效避免不同的 Leader 错误的使用了相同的 zxid 编号提出了不一样的 Proposal 的异常情况。</p>
-<h1 id="Zab实现原理"><a href="#Zab实现原理" class="headerlink" title="Zab实现原理"></a>Zab实现原理</h1><p><strong>Zab 节点有三种状态</strong>：</p>
+<h1>Zab实现原理</h1>
+<p><strong>Zab 节点有三种状态</strong>：</p>
 <ul>
 <li>Following：当前节点是跟随者，服从 Leader 节点的命令。</li>
 <li>Leading：当前节点是 Leader，负责协调事务。</li>
 <li>Election/Looking：节点处于选举状态，正在寻找 Leader。</li>
 </ul>
-<p>代码实现中，多了一种状态：Observing 状态<br>这是 Zookeeper 引入 Observer 之后加入的，Observer 不参与选举，是只读节点，跟 Zab 协议没有关系。</p>
+<p>代码实现中，多了一种状态：Observing 状态<br>
+这是 Zookeeper 引入 Observer 之后加入的，Observer 不参与选举，是只读节点，跟 Zab 协议没有关系。</p>
 <p><strong>节点的持久状态</strong>：</p>
 <ul>
 <li>history：当前节点接收到事务 Proposal 的Log</li>
@@ -388,59 +418,79 @@
 <li>currentEpoch：当前所处的 Leader 年代</li>
 <li>lastZxid：history 中最近接收到的Proposal 的 zxid（最大zxid）</li>
 </ul>
-<h2 id="Zab-的四个阶段"><a href="#Zab-的四个阶段" class="headerlink" title="Zab 的四个阶段"></a>Zab 的四个阶段</h2><h3 id="选举阶段（Leader-Election"><a href="#选举阶段（Leader-Election" class="headerlink" title="选举阶段（Leader Election"></a>选举阶段（Leader Election</h3><p>节点在一开始都处于选举节点，只要有一个节点得到超过半数节点的票数，它就可以当选准 Leader，只有到达第三个阶段（也就是同步阶段），这个准 Leader 才会成为真正的 Leader。<strong>Zookeeper 规定所有有效的投票都必须在同一个 轮次 中，每个服务器在开始新一轮投票时，都会对自己维护的 logicalClock 进行自增操作</strong>。</p>
+<h2 id="Zab-的四个阶段">Zab 的四个阶段</h2>
+<h3 id="选举阶段（Leader-Election">选举阶段（Leader Election</h3>
+<p>节点在一开始都处于选举节点，只要有一个节点得到超过半数节点的票数，它就可以当选准 Leader，只有到达第三个阶段（也就是同步阶段），这个准 Leader 才会成为真正的 Leader。<strong>Zookeeper 规定所有有效的投票都必须在同一个 轮次 中，每个服务器在开始新一轮投票时，都会对自己维护的 logicalClock 进行自增操作</strong>。</p>
 <p>每个服务器在广播自己的选票前，会将自己的投票箱（recvset）清空。该投票箱记录了所受到的选票。</p>
 <p>例如：Server_2 投票给 Server_3，Server_3 投票给 Server_1，则Server_1的投票箱为(2,3)、(3,1)、(1,1)。（每个服务器都会默认给自己投票）</p>
 <p>前一个数字表示投票者，后一个数字表示被选举者。票箱中只会记录每一个投票者的最后一次投票记录，如果投票者更新自己的选票，则其他服务器收到该新选票后会在自己的票箱中更新该服务器的选票。</p>
 <p><strong>这一阶段的目的就是为了选出一个准 Leader ，然后进入下一个阶段。</strong></p>
 <p>协议并没有规定详细的选举算法，后面会提到实现中使用的 Fast Leader Election。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171418.png" alt="选举流程"></p>
-<h3 id="发现阶段（Descovery）"><a href="#发现阶段（Descovery）" class="headerlink" title="发现阶段（Descovery）"></a>发现阶段（Descovery）</h3><p>在这个阶段，Followers 和上一轮选举出的准 Leader 进行通信，同步 Followers 最近接收的事务 Proposal 。</p>
+<h3 id="发现阶段（Descovery）">发现阶段（Descovery）</h3>
+<p>在这个阶段，Followers 和上一轮选举出的准 Leader 进行通信，同步 Followers 最近接收的事务 Proposal 。</p>
 <p>一个 Follower 只会连接一个 Leader，如果一个 Follower 节点连接另一个 Follower 节点，则会在尝试连接时被拒绝。被拒绝之后，该节点就会进入 Leader Election阶段。</p>
 <p><strong>这个阶段的主要目的是发现当前大多数节点接收的最新 Proposal，并且准 Leader 生成新的 epoch ，让 Followers 接收，更新它们的 acceptedEpoch</strong>。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171535.png" alt="发现流程"></p>
-<h3 id="同步阶段（Synchronization）"><a href="#同步阶段（Synchronization）" class="headerlink" title="同步阶段（Synchronization）"></a>同步阶段（Synchronization）</h3><p><strong>同步阶段主要是利用 Leader 前一阶段获得的最新 Proposal 历史，同步集群中所有的副本</strong>。<br>只有当 quorum（超过半数的节点） 都同步完成，准 Leader 才会成为真正的 Leader。Follower 只会接收 zxid 比自己 lastZxid 大的 Proposal。</p>
+<h3 id="同步阶段（Synchronization）">同步阶段（Synchronization）</h3>
+<p><strong>同步阶段主要是利用 Leader 前一阶段获得的最新 Proposal 历史，同步集群中所有的副本</strong>。<br>
+只有当 quorum（超过半数的节点） 都同步完成，准 Leader 才会成为真正的 Leader。Follower 只会接收 zxid 比自己 lastZxid 大的 Proposal。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171702.png" alt="同步流程"></p>
-<h3 id="广播阶段（Broadcast）"><a href="#广播阶段（Broadcast）" class="headerlink" title="广播阶段（Broadcast）"></a>广播阶段（Broadcast）</h3><p>到了这个阶段，Zookeeper 集群才能正式对外提供事务服务，并且 Leader 可以进行消息广播。同时，如果有新的节点加入，还需要对新节点进行同步。</p>
+<h3 id="广播阶段（Broadcast）">广播阶段（Broadcast）</h3>
+<p>到了这个阶段，Zookeeper 集群才能正式对外提供事务服务，并且 Leader 可以进行消息广播。同时，如果有新的节点加入，还需要对新节点进行同步。</p>
 <p>需要注意的是，Zab 提交事务并不像 2PC 一样需要全部 Follower 都 Ack，只需要得到 quorum（超过半数的节点）的Ack 就可以。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302171740.png" alt="广播流程"></p>
-<h1 id="Zab协议实现"><a href="#Zab协议实现" class="headerlink" title="Zab协议实现"></a>Zab协议实现</h1><p>选举阶段使用 java版本实现的是Fast Leader Election算法，实际的实现将<strong>发现和同步阶段合并为 Recovery Phase（恢复阶段）</strong>，所以，Zab 的实现实际上有三个阶段。</p>
+<h1>Zab协议实现</h1>
+<p>选举阶段使用 java版本实现的是Fast Leader Election算法，实际的实现将<strong>发现和同步阶段合并为 Recovery Phase（恢复阶段）</strong>，所以，Zab 的实现实际上有三个阶段。</p>
 <p>Zab协议三个阶段：</p>
 <ol>
 <li><strong>选举（Fast Leader Election）</strong></li>
 <li><strong>恢复（Recovery Phase）</strong></li>
 <li><strong>广播（Broadcast Phase）</strong></li>
 </ol>
-<h2 id="Fast-Leader-Election（快速选举）"><a href="#Fast-Leader-Election（快速选举）" class="headerlink" title="Fast Leader Election（快速选举）"></a>Fast Leader Election（快速选举）</h2><p> FLE 会选举拥有最新Proposal history （lastZxid最大）的节点作为 Leader，这样就省去了发现最新提议的步骤。<strong>这是基于拥有最新提议的节点也拥有最新的提交记录</strong></p>
-<h3 id="成为-Leader-的条件："><a href="#成为-Leader-的条件：" class="headerlink" title="成为 Leader 的条件："></a>成为 Leader 的条件：</h3><ol>
+<h2 id="Fast-Leader-Election（快速选举）">Fast Leader Election（快速选举）</h2>
+<p>FLE 会选举拥有最新Proposal history （lastZxid最大）的节点作为 Leader，这样就省去了发现最新提议的步骤。<strong>这是基于拥有最新提议的节点也拥有最新的提交记录</strong></p>
+<h3 id="成为-Leader-的条件：">成为 Leader 的条件：</h3>
+<ol>
 <li>选 epoch 最大的</li>
 <li>若 epoch 相等，选 zxid 最大的</li>
 <li>若 epoch 和 zxid 相等，选择 server_id 最大的（<strong>zoo.cfg中的myid</strong>）</li>
 </ol>
 <p>节点在选举开始时，都默认投票给自己，当接收其他节点的选票时，会根据上面的 <strong>Leader条件</strong> 判断并且更改自己的选票，然后重新发送选票给其他节点。<strong>当有一个节点的得票超过半数，该节点会设置自己的状态为 Leading ，其他节点会设置自己的状态为 Following</strong>。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302172451.png" alt="选举过程"></p>
-<h2 id="Recovery-Phase（恢复阶段）"><a href="#Recovery-Phase（恢复阶段）" class="headerlink" title="Recovery Phase（恢复阶段）"></a>Recovery Phase（恢复阶段）</h2><p>这一阶段 Follower 发送他们的 <strong>lastZxid</strong> 给 Leader，Leader 根据 lastZxid 决定如何同步数据。这里的实现跟前面的 Phase 2 有所不同：Follower 收到 TRUNC 指令会终止L.lastCommitedZxid 之后的 Proposal ，收到 DIFF 指令会接收新的 Proposal。</p>
+<h2 id="Recovery-Phase（恢复阶段）">Recovery Phase（恢复阶段）</h2>
+<p>这一阶段 Follower 发送他们的 <strong>lastZxid</strong> 给 Leader，Leader 根据 lastZxid 决定如何同步数据。这里的实现跟前面的 Phase 2 有所不同：Follower 收到 TRUNC 指令会终止L.lastCommitedZxid 之后的 Proposal ，收到 DIFF 指令会接收新的 Proposal。</p>
 <blockquote>
 <p>history.lastCommitedZxid：最近被提交的 Proposal zxid</p>
 <p>history.oldThreshold：被认为已经太旧的已经提交的 Proposal zxid</p>
 </blockquote>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302172728.png" alt="恢复阶段"></p>
-<h1 id="Zab特殊情况下需要解决的两个问题："><a href="#Zab特殊情况下需要解决的两个问题：" class="headerlink" title="Zab特殊情况下需要解决的两个问题："></a>Zab特殊情况下需要解决的两个问题：</h1><h2 id="已经被处理的事务请求（proposal）不能丢（commit的）"><a href="#已经被处理的事务请求（proposal）不能丢（commit的）" class="headerlink" title="已经被处理的事务请求（proposal）不能丢（commit的）"></a>已经被处理的事务请求（proposal）不能丢（commit的）</h2><h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>当 leader 收到合法数量 follower 的 ACKs 后，就向各个 follower 广播 COMMIT 命令，同时也会在本地执行 COMMIT 并向连接的客户端返回「成功」。但是如果在各个 follower 在收到COMMIT 命令前 leader 就挂了，导致剩下的服务器并没有执行都这条消息。</p>
-<h3 id="解决方式"><a href="#解决方式" class="headerlink" title="解决方式"></a>解决方式</h3><ol>
-<li><p>选举拥有 proposal 最大值（即 zxid 最大） 的节点作为新的 leader。</p>
+<h1>Zab特殊情况下需要解决的两个问题：</h1>
+<h2 id="已经被处理的事务请求（proposal）不能丢（commit的）">已经被处理的事务请求（proposal）不能丢（commit的）</h2>
+<h3 id="问题描述">问题描述</h3>
+<p>当 leader 收到合法数量 follower 的 ACKs 后，就向各个 follower 广播 COMMIT 命令，同时也会在本地执行 COMMIT 并向连接的客户端返回「成功」。但是如果在各个 follower 在收到COMMIT 命令前 leader 就挂了，导致剩下的服务器并没有执行都这条消息。</p>
+<h3 id="解决方式">解决方式</h3>
+<ol>
+<li>
+<p>选举拥有 proposal 最大值（即 zxid 最大） 的节点作为新的 leader。</p>
 <blockquote>
 <p>由于所有提案被 COMMIT 之前必须有<font color=red>合法数量的 follower ACK，即必须有合法数量的服务器的事务日志上有该提案的 proposal</font>，因此，zxid最大也就是数据最新的节点保存了所有被 COMMIT 消息的 proposal 状态。</p>
 </blockquote>
 </li>
-<li><p>新的 leader 将自己事务日志中 proposal 但未 COMMIT 的消息处理。</p>
+<li>
+<p>新的 leader 将自己事务日志中 proposal 但未 COMMIT 的消息处理。</p>
 </li>
-<li><p>新的 leader 与 follower 建立先进先出的队列， 先将自身有而 follower 没有的 proposal</p>
-<p> 发送给 follower，再将这些 proposal 的 COMMIT 命令发送给 follower，以保证所有的</p>
-<p> follower 都保存了所有的 proposal、所有的 follower 都处理了所有的消息</p>
+<li>
+<p>新的 leader 与 follower 建立先进先出的队列， 先将自身有而 follower 没有的 proposal</p>
+<p>发送给 follower，再将这些 proposal 的 COMMIT 命令发送给 follower，以保证所有的</p>
+<p>follower 都保存了所有的 proposal、所有的 follower 都处理了所有的消息</p>
 </li>
 </ol>
-<h2 id="没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？"><a href="#没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？" class="headerlink" title="没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？"></a>没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</h2><h3 id="问题描述-1"><a href="#问题描述-1" class="headerlink" title="问题描述"></a>问题描述</h3><p>当 leader 接收到消息请求生成 proposal 后就挂了，其他 follower 并没有收到此 proposal，因此经过恢复模式重新选了 leader 后，这条消息是被跳过的。 此时，之前挂了的 leader 重新启动并注册成了 follower，他保留了被跳过消息的 proposal 状态，与整个系统的状态是不一致的，需要将其删除。</p>
-<h3 id="解决方式-1"><a href="#解决方式-1" class="headerlink" title="解决方式"></a>解决方式</h3><p><strong>Zab 通过巧妙的设计 zxid 来实现这一目的。</strong></p>
+<h2 id="没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？">没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</h2>
+<h3 id="问题描述-2">问题描述</h3>
+<p>当 leader 接收到消息请求生成 proposal 后就挂了，其他 follower 并没有收到此 proposal，因此经过恢复模式重新选了 leader 后，这条消息是被跳过的。 此时，之前挂了的 leader 重新启动并注册成了 follower，他保留了被跳过消息的 proposal 状态，与整个系统的状态是不一致的，需要将其删除。</p>
+<h3 id="解决方式-2">解决方式</h3>
+<p><strong>Zab 通过巧妙的设计 zxid 来实现这一目的。</strong></p>
 <p>一个 zxid 是64位，高 32 是纪元（epoch）编号，每经过一次 leader 选举产生一个新的 leader，新 leader 会将 epoch 号 +1。低 32 位是消息计数器，每接收到一条消息这个值 +1，新 leader 选举后这个值重置为 0。</p>
 <p>这样设计的好处是旧的 leader 挂了后重启，它不会被选举为 leader，因为此时它的 zxid 肯定小于当前的新 leader。当旧的 leader 作为 follower 接入新的 leader 后，新的 leader 会让它将所有的拥有旧的 epoch 号的未被 COMMIT 的 proposal 清除。</p>
 
@@ -567,7 +617,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E7%AE%97%E6%B3%95%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">Zab算法描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E7%9A%84%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">Zab 协议的特性：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">Zab 协议的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">3.1.</span> <span class="nav-text">Zab协议原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E6%A0%B8%E5%BF%83"><span class="nav-number">3.2.</span> <span class="nav-text">Zab协议核心</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9"><span class="nav-number">3.3.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.3.1.1.</span> <span class="nav-text">协议过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%8A%B6%E6%80%81%E5%88%87%E6%8D%A2"><span class="nav-number">3.3.1.2.</span> <span class="nav-text">协议状态切换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F"><span class="nav-number">3.3.1.3.</span> <span class="nav-text">保证消息有序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD"><span class="nav-number">3.3.2.</span> <span class="nav-text">消息广播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD%E5%85%B7%E4%BD%93%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">消息广播具体步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B4%A9%E6%BA%83%E6%81%A2%E5%A4%8D"><span class="nav-number">3.3.3.</span> <span class="nav-text">崩溃恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">Zab 协议保证数据一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="nav-number">3.3.3.2.</span> <span class="nav-text">Zab 数据同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E8%BF%87%E7%A8%8B%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E9%9C%80%E8%A6%81%E4%B8%A2%E5%BC%83%E7%9A%84-Proposal"><span class="nav-number">3.3.3.3.</span> <span class="nav-text">Zab 数据同步过程中，如何处理需要丢弃的 Proposal</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">Zab实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab-%E7%9A%84%E5%9B%9B%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="nav-number">4.1.</span> <span class="nav-text">Zab 的四个阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E9%98%B6%E6%AE%B5%EF%BC%88Leader-Election"><span class="nav-number">4.1.1.</span> <span class="nav-text">选举阶段（Leader Election</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E7%8E%B0%E9%98%B6%E6%AE%B5%EF%BC%88Descovery%EF%BC%89"><span class="nav-number">4.1.2.</span> <span class="nav-text">发现阶段（Descovery）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E9%98%B6%E6%AE%B5%EF%BC%88Synchronization%EF%BC%89"><span class="nav-number">4.1.3.</span> <span class="nav-text">同步阶段（Synchronization）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BF%E6%92%AD%E9%98%B6%E6%AE%B5%EF%BC%88Broadcast%EF%BC%89"><span class="nav-number">4.1.4.</span> <span class="nav-text">广播阶段（Broadcast）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">Zab协议实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fast-Leader-Election%EF%BC%88%E5%BF%AB%E9%80%9F%E9%80%89%E4%B8%BE%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">Fast Leader Election（快速选举）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E4%B8%BA-Leader-%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="nav-number">5.1.1.</span> <span class="nav-text">成为 Leader 的条件：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovery-Phase%EF%BC%88%E6%81%A2%E5%A4%8D%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">Recovery Phase（恢复阶段）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Zab%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E4%B8%8B%E9%9C%80%E8%A6%81%E8%A7%A3%E5%86%B3%E7%9A%84%E4%B8%A4%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">Zab特殊情况下需要解决的两个问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%BB%8F%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E4%B8%A2%EF%BC%88commit%E7%9A%84%EF%BC%89"><span class="nav-number">6.1.</span> <span class="nav-text">已经被处理的事务请求（proposal）不能丢（commit的）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">6.1.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F"><span class="nav-number">6.1.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B2%A1%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E5%86%8D%E6%AC%A1%E5%87%BA%E7%8E%B0%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BC%9A%E5%87%BA%E7%8E%B0%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%E8%A2%AB%E4%B8%A2%E5%A4%B1%E5%91%A2%EF%BC%9F"><span class="nav-number">6.2.</span> <span class="nav-text">没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0-1"><span class="nav-number">6.2.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F-1"><span class="nav-number">6.2.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Zab算法描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">Zab 协议的特性：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">3.</span> <span class="nav-text">Zab 协议的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%8E%9F%E7%90%86"><span class="nav-number">3.1.</span> <span class="nav-text">Zab协议原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E6%A0%B8%E5%BF%83"><span class="nav-number">3.2.</span> <span class="nav-text">Zab协议核心</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9"><span class="nav-number">3.3.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Zab%E5%8D%8F%E8%AE%AE%E5%86%85%E5%AE%B9-2"><span class="nav-number">3.3.1.</span> <span class="nav-text">Zab协议内容</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E8%BF%87%E7%A8%8B"><span class="nav-number">3.3.1.1.</span> <span class="nav-text">协议过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8F%E8%AE%AE%E7%8A%B6%E6%80%81%E5%88%87%E6%8D%A2"><span class="nav-number">3.3.1.2.</span> <span class="nav-text">协议状态切换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E6%9C%89%E5%BA%8F"><span class="nav-number">3.3.1.3.</span> <span class="nav-text">保证消息有序</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD"><span class="nav-number">3.3.2.</span> <span class="nav-text">消息广播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B9%BF%E6%92%AD%E5%85%B7%E4%BD%93%E6%AD%A5%E9%AA%A4"><span class="nav-number">3.3.2.1.</span> <span class="nav-text">消息广播具体步骤</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B4%A9%E6%BA%83%E6%81%A2%E5%A4%8D"><span class="nav-number">3.3.3.</span> <span class="nav-text">崩溃恢复</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E5%8D%8F%E8%AE%AE%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7"><span class="nav-number">3.3.3.1.</span> <span class="nav-text">Zab 协议保证数据一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5"><span class="nav-number">3.3.3.2.</span> <span class="nav-text">Zab 数据同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zab-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E8%BF%87%E7%A8%8B%E4%B8%AD%EF%BC%8C%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E9%9C%80%E8%A6%81%E4%B8%A2%E5%BC%83%E7%9A%84-Proposal"><span class="nav-number">3.3.3.3.</span> <span class="nav-text">Zab 数据同步过程中，如何处理需要丢弃的 Proposal</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">4.</span> <span class="nav-text">Zab实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zab-%E7%9A%84%E5%9B%9B%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="nav-number">4.1.</span> <span class="nav-text">Zab 的四个阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%BE%E9%98%B6%E6%AE%B5%EF%BC%88Leader-Election"><span class="nav-number">4.1.1.</span> <span class="nav-text">选举阶段（Leader Election</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E7%8E%B0%E9%98%B6%E6%AE%B5%EF%BC%88Descovery%EF%BC%89"><span class="nav-number">4.1.2.</span> <span class="nav-text">发现阶段（Descovery）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E9%98%B6%E6%AE%B5%EF%BC%88Synchronization%EF%BC%89"><span class="nav-number">4.1.3.</span> <span class="nav-text">同步阶段（Synchronization）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BF%E6%92%AD%E9%98%B6%E6%AE%B5%EF%BC%88Broadcast%EF%BC%89"><span class="nav-number">4.1.4.</span> <span class="nav-text">广播阶段（Broadcast）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">5.</span> <span class="nav-text">Zab协议实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fast-Leader-Election%EF%BC%88%E5%BF%AB%E9%80%9F%E9%80%89%E4%B8%BE%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">Fast Leader Election（快速选举）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E4%B8%BA-Leader-%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="nav-number">5.1.1.</span> <span class="nav-text">成为 Leader 的条件：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovery-Phase%EF%BC%88%E6%81%A2%E5%A4%8D%E9%98%B6%E6%AE%B5%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">Recovery Phase（恢复阶段）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">6.</span> <span class="nav-text">Zab特殊情况下需要解决的两个问题：</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%BB%8F%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E4%B8%A2%EF%BC%88commit%E7%9A%84%EF%BC%89"><span class="nav-number">6.1.</span> <span class="nav-text">已经被处理的事务请求（proposal）不能丢（commit的）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">6.1.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F"><span class="nav-number">6.1.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B2%A1%E8%A2%AB%E5%A4%84%E7%90%86%E7%9A%84%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%EF%BC%88proposal%EF%BC%89%E4%B8%8D%E8%83%BD%E5%86%8D%E6%AC%A1%E5%87%BA%E7%8E%B0%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E4%BC%9A%E5%87%BA%E7%8E%B0%E4%BA%8B%E5%8A%A1%E8%AF%B7%E6%B1%82%E8%A2%AB%E4%B8%A2%E5%A4%B1%E5%91%A2%EF%BC%9F"><span class="nav-number">6.2.</span> <span class="nav-text">没被处理的事务请求（proposal）不能再次出现什么时候会出现事务请求被丢失呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0-2"><span class="nav-number">6.2.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F-2"><span class="nav-number">6.2.2.</span> <span class="nav-text">解决方式</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -670,7 +720,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">251k</span>
+    <span title="站点总字数">252k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
