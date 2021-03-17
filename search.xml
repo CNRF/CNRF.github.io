@@ -3642,7 +3642,7 @@
 <figure class="highlight js"><table><tr><td class="code"><pre><span class="line">npm install hexo-abbrlink --save</span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#x65;&#115;&#x6c;&#105;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;">&#x65;&#115;&#x6c;&#105;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;</a> babel-eslint@8 –save-dev</p>
+<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#101;&#x73;&#108;&#x69;&#x6e;&#116;&#64;&#x34;&#46;&#120;">&#101;&#x73;&#108;&#x69;&#x6e;&#116;&#64;&#x34;&#46;&#120;</a> babel-eslint@8 –save-dev</p>
 </blockquote>
 <p>修改根目录站点配置文件<code>config.yml</code>，改为：</p>
 <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">permalink:</span> <span class="string">posts/:abbrlink/</span></span><br><span class="line"><span class="attr">abbrlink:</span></span><br><span class="line">	<span class="attr">alg:</span> <span class="string">crc32</span>   <span class="comment">#算法： crc16(default) and crc32</span></span><br><span class="line">	<span class="attr">rep:</span> <span class="string">hex</span>     <span class="comment">#进制： dec(default) and hex</span></span><br><span class="line"><span class="number">1234</span></span><br></pre></td></tr></table></figure>
