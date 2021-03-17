@@ -2048,12 +2048,12 @@
 </ol>
 ]]></content>
       <categories>
-        <category>ZooKeeper</category>
         <category>分布式</category>
+        <category>ZooKeeper</category>
       </categories>
       <tags>
-        <tag>ZooKeeper</tag>
         <tag>分布式</tag>
+        <tag>ZooKeeper</tag>
       </tags>
   </entry>
   <entry>
@@ -3320,13 +3320,13 @@
 <p>这样设计的好处是旧的 leader 挂了后重启，它不会被选举为 leader，因为此时它的 zxid 肯定小于当前的新 leader。当旧的 leader 作为 follower 接入新的 leader 后，新的 leader 会让它将所有的拥有旧的 epoch 号的未被 COMMIT 的 proposal 清除。</p>
 ]]></content>
       <categories>
-        <category>ZooKeeper</category>
         <category>分布式</category>
+        <category>ZooKeeper</category>
         <category>Zab</category>
       </categories>
       <tags>
-        <tag>ZooKeeper</tag>
         <tag>分布式</tag>
+        <tag>ZooKeeper</tag>
         <tag>ZAB</tag>
       </tags>
   </entry>
@@ -3376,14 +3376,14 @@
 </ol>
 ]]></content>
       <categories>
-        <category>ZooKeeper</category>
         <category>分布式</category>
+        <category>ZooKeeper</category>
         <category>panxos</category>
       </categories>
       <tags>
-        <tag>ZooKeeper</tag>
         <tag>分布式</tag>
         <tag>panxos</tag>
+        <tag>ZooKeeper</tag>
       </tags>
   </entry>
   <entry>
@@ -3465,12 +3465,12 @@
 <p>命令：<font color=blue>quit</font></p>
 ]]></content>
       <categories>
-        <category>ZooKeeper</category>
         <category>分布式</category>
+        <category>ZooKeeper</category>
       </categories>
       <tags>
-        <tag>ZooKeeper</tag>
         <tag>分布式</tag>
+        <tag>ZooKeeper</tag>
       </tags>
   </entry>
   <entry>
@@ -3515,14 +3515,14 @@
 <h2 id="最终一致性"><a href="#最终一致性" class="headerlink" title="最终一致性"></a>最终一致性</h2><p>最终一致性强调的是<font color=red>系统中所有的数据副本，在经过一段时间的同步后，最终能够达到一个一致的状态</font>。因此，最终一致性的本质是需要系统保证最终数据能够达到一致，而不需要实时保证系统数据的强一致性</p>
 ]]></content>
       <categories>
-        <category>ZooKeeper</category>
         <category>分布式</category>
+        <category>ZooKeeper</category>
         <category>CAP</category>
         <category>BASE理论</category>
       </categories>
       <tags>
-        <tag>ZooKeeper</tag>
         <tag>分布式</tag>
+        <tag>ZooKeeper</tag>
         <tag>CAP</tag>
         <tag>BASE理论</tag>
       </tags>
@@ -3726,7 +3726,7 @@
 <figure class="highlight js"><table><tr><td class="code"><pre><span class="line">npm install hexo-abbrlink --save</span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#101;&#x73;&#108;&#105;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;">&#101;&#x73;&#108;&#105;&#x6e;&#116;&#64;&#x34;&#x2e;&#x78;</a> babel-eslint@8 –save-dev</p>
+<p>执行此命令可能会不成功，提示你缺少相应的依赖，比如babel-eslint、mini-css-extract-plugin、webpack-cli…<br>使用npm命令安装即可，比如npm install <a href="mailto:&#101;&#x73;&#x6c;&#105;&#110;&#x74;&#x40;&#x34;&#x2e;&#120;">&#101;&#x73;&#x6c;&#105;&#110;&#x74;&#x40;&#x34;&#x2e;&#120;</a> babel-eslint@8 –save-dev</p>
 </blockquote>
 <p>修改根目录站点配置文件<code>config.yml</code>，改为：</p>
 <figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">permalink:</span> <span class="string">posts/:abbrlink/</span></span><br><span class="line"><span class="attr">abbrlink:</span></span><br><span class="line">	<span class="attr">alg:</span> <span class="string">crc32</span>   <span class="comment">#算法： crc16(default) and crc32</span></span><br><span class="line">	<span class="attr">rep:</span> <span class="string">hex</span>     <span class="comment">#进制： dec(default) and hex</span></span><br><span class="line"><span class="number">1234</span></span><br></pre></td></tr></table></figure>
