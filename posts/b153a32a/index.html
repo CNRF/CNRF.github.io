@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226153659.png">
 <meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226154729.png">
 <meta property="article:published_time" content="2021-03-05T10:03:28.998Z">
-<meta property="article:modified_time" content="2021-03-05T10:03:28.999Z">
+<meta property="article:modified_time" content="2021-03-20T02:41:19.690Z">
 <meta property="article:author" content="CNRF">
 <meta property="article:tag" content="Redis">
 <meta property="article:tag" content="一致性Hash算法">
@@ -137,17 +137,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">19</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">20</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">19</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">20</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">61</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">63</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -266,7 +266,7 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-file-word-o"></i>
               </span>
-              <span>5.2k</span>
+              <span>5.4k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -314,6 +314,10 @@
 <h5 id="4-Redis的复制（同步）">4. Redis的复制（同步）</h5>
 <p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/replication.html">redis的复制</a></p>
 <p>Redis使用默认的<strong>异步复制</strong>，其特点是低延迟和高性能，是绝大多数 Redis 用例的自然复制模式。但是，从 Redis 服务器会异步地确认其从主 Redis 服务器周期接收到的数据量。</p>
+<blockquote>
+<p>主从模式，从节点不支持写入，如果主节点宕机，这个集群就会失去写的能力，不具备自动容错和恢复功能。</p>
+<p>redis搭建读写分离的时候，<strong>当连接到从节点发生写操作的时候，命令会默认重定向到主节点去</strong></p>
+</blockquote>
 <h6 id="4-1-redis复制的重要细节">4.1. redis复制的重要细节</h6>
 <ul>
 <li>Redis 使用异步复制，slave 和 master 之间异步地确认处理的数据量</li>
@@ -334,9 +338,12 @@
 <ul>
 <li><strong>监控（Monitoring</strong>）： Sentinel 会不断地检查你的主服务器和从服务器是否运作正常。</li>
 <li><strong>提醒（Notification）</strong>： 当被监控的某个 Redis 服务器出现问题时， Sentinel 可以通过 API 向管理员或者其他应用程序发送通知。</li>
-<li><strong>自动故障迁移（Automatic failover）</strong>： 当一个主服务器不能正常工作时， Sentinel 会开始一次自动故障迁移操作， 它会将失效主服务器的其中一个从服务器升级为新的主服务器， 并让失效主服务器的其他从服务器改为复制新的主服务器； 当客户端试图连接失效的主服务器时， 集群也会向客户端返回新主服务器的地址， 使得集群可以使用新主服务器代替失效服务器。</li>
+<li><strong>自动故障迁移（Automatic failover）</strong>： 当一个主服务器不能正常工作时， Sentinel 会开始一次自动故障迁移操作， 它会<strong>将失效主服务器的其中一个从服务器升级为新的主服务器</strong>， 并让失效主服务器的其他从服务器改为复制新的主服务器； 当客户端试图连接失效的主服务器时， 集群也会向客户端返回新主服务器的地址， 使得集群可以使用新主服务器代替失效服务器。</li>
 </ul>
 <p>Redis Sentinel 是一个<strong>分布式系统</strong>， 你可以在一个架构中运行多个 Sentinel 进程（progress）， 这些进程使用<strong>流言协议（gossip protocols)<strong>来接收关于主服务器是否下线的信息， 并使用</strong>投票协议</strong>（agreement protocols）来决定是否执行自动故障迁移， 以及选择哪个从服务器作为新的主服务器</p>
+<blockquote>
+<p>在此时sentinel集群会在内部先选举出一个leader，然后由这个leader对集群中某个出现问题的主master进行故障迁移（选出从节点当master）</p>
+</blockquote>
 <h6 id="客观下线和主观下线">客观下线和主观下线</h6>
 <ul>
 <li>主观下线（Subjectively Down， 简称 SDOWN）指的是单个 Sentinel 实例对服务器做出的下线判断。</li>
@@ -363,12 +370,12 @@
 <p>当只有少量缓存服务器又想尽量保证负载均衡时，我们一般采用下面的办法：将一个缓存服务器节点虚拟成一组，比如某台缓存服务器为192.168.2.1:6379，我们就可以将其虚拟成一个虚拟节点数组，为192.168.2.1:6379-1，192.168.2.1:6379-2，192.168.2.1:6379-3……然后分别计算数组里的元素的hash值并映射到hash环上，每台缓存服务器都如此处理。当不同key的缓存路由到虚拟节点时，最终都是指向真实的缓存服务器节点。通过这样增加节点的方式，可以一定概率上使数据路由均衡</p>
 <h6 id="redis-cluster">redis-cluster</h6>
 <p>Redis-Cluster采用无中心结构，每个节点保存数据和整个集群状态,每个节点都和其他所有节点连接。</p>
-<p>其结构特点：<br>
-1、所有的redis节点彼此互联(PING-PONG机制),内部使用二进制协议优化传输速度和带宽。<br>
-2、节点的fail是通过集群中超过半数的节点检测失效时才生效。<br>
-3、客户端与redis节点直连,不需要中间proxy层.客户端不需要连接集群所有节点,连接集群中任何一个可用节点即可。<br>
-4、redis-cluster把所有的物理节点映射到[0-16383]slot上（不一定是平均分配）,cluster 负责维护node&lt;-&gt;slot&lt;-&gt;value。<br>
-5、Redis集群预分好16384个桶，当需要在 Redis 集群中放置一个 key-value 时，根据 CRC16(key) mod 16384的值，决定将一个key放到哪个桶中。</p>
+<p>其结构特点：</p>
+<p>1、所有的redis节点彼此互联(PING-PONG机制),内部使用二进制协议优化传输速度和带宽。</p>
+<p>2、节点的fail是通过集群中超过半数的节点检测失效时才生效。</p>
+<p>3、客户端与redis节点直连,不需要中间proxy层.客户端不需要连接集群所有节点,连接集群中任何一个可用节点即可。</p>
+<p>4、redis-cluster把所有的物理节点映射到[0-16383]slot上（不一定是平均分配）,cluster 负责维护node&lt;-&gt;slot&lt;-&gt;value。</p>
+<p>5、Redis集群预分好16384个桶，当需要在 Redis 集群中放置一个 key-value 时，根据 CRC16(key) mod 16384的值，决定将一个key放到哪个桶中。</p>
 <p><strong>a.redis cluster节点分配</strong><br>
 现在我们是三个主节点分别是：A, B, C 三个节点，它们可以是一台机器上的三个端口，也可以是三台不同的服务器。那么，采用哈希槽 (hash slot)的方式来分配16384个slot 的话，它们三个节点分别承担的slot 区间是：</p>
 <ul>
@@ -420,6 +427,9 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
   <div class="popular-posts-header">相关文章推荐</div>
   <ul class="popular-posts">
     <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\bfb49b3b\" rel="bookmark">Redis分布式锁实现</a></div>
+    </li>
+    <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="\posts\8f6adc3b\" rel="bookmark">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a></div>
     </li>
     <li class="popular-posts-item">
@@ -430,9 +440,6 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
     </li>
     <li class="popular-posts-item">
       <div class="popular-posts-title"><a href="\posts\400dad18\" rel="bookmark">redis快的原因</a></div>
-    </li>
-    <li class="popular-posts-item">
-      <div class="popular-posts-title"><a href="\posts\eca8b4a8\" rel="bookmark">redis入门</a></div>
     </li>
   </ul>
 <div>
@@ -552,24 +559,32 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">61</span>
+          <span class="site-state-item-count">63</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
 
 
 
@@ -586,6 +601,14 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
         
         
           <li>
+            <a href="/posts/60085ed9/" title="ZooKeeper实现分布式锁" target="_blank">ZooKeeper实现分布式锁</a>
+          </li>
+        
+          <li>
+            <a href="/posts/bfb49b3b/" title="Redis分布式锁实现" target="_blank">Redis分布式锁实现</a>
+          </li>
+        
+          <li>
             <a href="/posts/85c1a08/" title="MySQL的分库分表" target="_blank">MySQL的分库分表</a>
           </li>
         
@@ -595,14 +618,6 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
         
           <li>
             <a href="/posts/c3176455/" title="备忘录模式" target="_blank">备忘录模式</a>
-          </li>
-        
-          <li>
-            <a href="/posts/30cf0cd2/" title="解释器模式" target="_blank">解释器模式</a>
-          </li>
-        
-          <li>
-            <a href="/posts/f5c535ea/" title="适配器模式" target="_blank">适配器模式</a>
           </li>
         
       </ul>
@@ -639,12 +654,12 @@ redis cluster 为了保证数据的高可用性，加入了主从模式，一个
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">252k</span>
+    <span title="站点总字数">268k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:49</span>
+    <span title="站点阅读时长">4:04</span>
 </div>
   <div class="powered-by">
   </div>
