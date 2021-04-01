@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="单例模式">
@@ -274,8 +274,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1>单例模式的定义与特点</h1>
-<p>单例模式（Singleton Pattern）是 Java 中最简单的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
+        <h1 id="单例模式的定义与特点"><a href="#单例模式的定义与特点" class="headerlink" title="单例模式的定义与特点"></a>单例模式的定义与特点</h1><p>单例模式（Singleton Pattern）是 Java 中最简单的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
 <p>这种模式涉及到一个单一的类，该类负责创建自己的对象，同时确保只有单个对象被创建。这个类提供了一种访问其唯一的对象的方式，可以直接访问，不需要实例化该类的对象。</p>
 <p><strong>注意：</strong></p>
 <ul>
@@ -283,22 +282,18 @@
 <li>单例类必须自己创建自己的唯一实例。</li>
 <li>单例类必须给所有其他对象提供这一实例。</li>
 </ul>
-<h1>单例模式的优缺点</h1>
-<h3 id="优点：">优点：</h3>
-<ol>
+<h1 id="单例模式的优缺点"><a href="#单例模式的优缺点" class="headerlink" title="单例模式的优缺点"></a>单例模式的优缺点</h1><h3 id="优点："><a href="#优点：" class="headerlink" title="优点："></a>优点：</h3><ol>
 <li>单例模式可以保证内存里只有一个实例，减少了内存的开销。</li>
 <li>避免对资源的多重占用（比如写文件操作）。</li>
 <li>单例模式设置全局访问点，可以优化和共享资源的访问。</li>
 </ol>
-<h3 id="缺点：">缺点：</h3>
-<ol>
+<h3 id="缺点："><a href="#缺点：" class="headerlink" title="缺点："></a>缺点：</h3><ol>
 <li>单例模式一般没有接口，扩展困难。如果要扩展，则除了修改原来的代码，没有第二种途径，违背开闭原则。</li>
 <li>在并发测试中，单例模式不利于代码调试。在调试过程中，如果单例中的代码没有执行完，也不能模拟生成一个新的对象</li>
 <li>单例模式的功能代码通常写在一个类中，如果功能设计不合理，则很容易违背单一职责原则。</li>
 </ol>
-<p>**注意事项：**getInstance() 方法中需要使用同步锁 synchronized (Singleton.class) 防止多线程同时进入造成 instance 被多次实例化。</p>
-<h1>使用场景</h1>
-<ol start="3">
+<p><strong>注意事项：</strong>getInstance() 方法中需要使用同步锁 synchronized (Singleton.class) 防止多线程同时进入造成 instance 被多次实例化。</p>
+<h1 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h1><ol>
 <li>需要频繁创建的一些类，使用单例可以降低系统的内存压力，减少 GC。</li>
 <li>某类只要求生成一个对象的时候，如一个班中的班长、每个人的身份证号等。</li>
 <li>某些类创建实例时占用资源较多，或实例化耗时较长，且经常使用。</li>
@@ -307,45 +302,34 @@
 <li>频繁访问数据库或文件的对象。</li>
 <li>对于一些控制硬件级别的操作，或者从系统上来讲应当是单一控制逻辑的操作，如果有多个实例，则系统会完全乱套。</li>
 </ol>
-<h1>单例模式的结构与实现</h1>
-<h2 id="单例模式的结构">单例模式的结构</h2>
-<p>单例模式的主要角色如下。</p>
+<h1 id="单例模式的结构与实现"><a href="#单例模式的结构与实现" class="headerlink" title="单例模式的结构与实现"></a>单例模式的结构与实现</h1><h2 id="单例模式的结构"><a href="#单例模式的结构" class="headerlink" title="单例模式的结构"></a>单例模式的结构</h2><p>单例模式的主要角色如下。</p>
 <ul>
-<li>
-<p>单例类：包含一个实例且能自行创建这个实例的类。</p>
+<li><p>单例类：包含一个实例且能自行创建这个实例的类。</p>
 </li>
-<li>
-<p>访问类：使用单例的类。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210304140937.png" alt="image-20210304140937556"></p>
+<li><p>访问类：使用单例的类。</p>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210304140937.png" alt="image-20210304140937556"></p>
 </li>
 </ul>
-<h2 id="单例模式的实现">单例模式的实现</h2>
-<h3 id="饿汉式">饿汉式</h3>
-<p>**是否 Lazy 初始化：**否</p>
-<p>**是否多线程安全：**是</p>
+<h2 id="单例模式的实现"><a href="#单例模式的实现" class="headerlink" title="单例模式的实现"></a>单例模式的实现</h2><h3 id="饿汉式"><a href="#饿汉式" class="headerlink" title="饿汉式"></a>饿汉式</h3><p><strong>是否 Lazy 初始化：</strong>否</p>
+<p><strong>是否多线程安全：</strong>是</p>
 <p><strong>缺点</strong>：类加载时就初始化，浪费内存</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton01</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton01 instance = <span class="keyword">new</span> Singleton01();</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton01</span> <span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton01 <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="懒汉式，线程不安全">懒汉式，线程不安全</h3>
-<p>**是否 Lazy 初始化：**是</p>
-<p>**是否多线程安全：**否</p>
+<h3 id="懒汉式，线程不安全"><a href="#懒汉式，线程不安全" class="headerlink" title="懒汉式，线程不安全"></a>懒汉式，线程不安全</h3><p><strong>是否 Lazy 初始化：</strong>是</p>
+<p><strong>是否多线程安全：</strong>否</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton02</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton02 instance;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton02</span> <span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton02 <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton02();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="懒汉式，线程安全3">懒汉式，线程安全3</h2>
-<p>**是否 Lazy 初始化：**是</p>
-<p>**是否多线程安全：**是</p>
-<p>**缺点：**必须加锁 synchronized 才能保证单例，但加锁会影响效率。</p>
+<h2 id="懒汉式，线程安全3"><a href="#懒汉式，线程安全3" class="headerlink" title="懒汉式，线程安全3"></a>懒汉式，线程安全3</h2><p><strong>是否 Lazy 初始化：</strong>是</p>
+<p><strong>是否多线程安全：</strong>是</p>
+<p><strong>缺点：</strong>必须加锁 synchronized 才能保证单例，但加锁会影响效率。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>  懒汉式，线程安全</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton03</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton03 instance;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton03</span> <span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton03 <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton03();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="懒汉式（双检锁-双重校验锁（DCL）">懒汉式（双检锁/双重校验锁（DCL）)</h3>
-<p>**是否 Lazy 初始化：**是</p>
-<p>**是否多线程安全：**是</p>
-<p>**优点：**采用双锁机制，安全且在多线程情况下能保持高性能。</p>
+<h3 id="懒汉式（双检锁-双重校验锁（DCL）"><a href="#懒汉式（双检锁-双重校验锁（DCL）" class="headerlink" title="懒汉式（双检锁/双重校验锁（DCL）)"></a>懒汉式（双检锁/双重校验锁（DCL）)</h3><p><strong>是否 Lazy 初始化：</strong>是</p>
+<p><strong>是否多线程安全：</strong>是</p>
+<p><strong>优点：</strong>采用双锁机制，安全且在多线程情况下能保持高性能。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span> 懒汉式（双检锁/双重校验锁（DCL）)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton04</span> </span>&#123;</span><br><span class="line">    <span class="comment">//volatile保证了线程间数据的可见性</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton04 singleton;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton04</span> <span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton04 <span class="title">getSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton04.class) &#123;</span><br><span class="line">                <span class="comment">//在此再次检验是为了防止获取锁的过程中，被其他线程实例化</span></span><br><span class="line">                <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    singleton = <span class="keyword">new</span> Singleton04();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="静态内部类">静态内部类</h3>
-<p>**是否 Lazy 初始化：**是</p>
-<p>**是否多线程安全：**是</p>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><p><strong>是否 Lazy 初始化：</strong>是</p>
+<p><strong>是否多线程安全：</strong>是</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton05</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton05 INSTANCE = <span class="keyword">new</span> Singleton05();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton05</span> <span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton05 <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="枚举">枚举</h3>
-<p>**是否 Lazy 初始化：**否</p>
-<p>**是否多线程安全：**是</p>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><p><strong>是否 Lazy 初始化：</strong>否</p>
+<p><strong>是否多线程安全：</strong>是</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Singleton06</span> </span>&#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">whateverMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
     </div>
@@ -472,7 +456,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">单例模式的定义与特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">单例模式的优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="nav-number">2.0.1.</span> <span class="nav-text">优点：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="nav-number">2.0.2.</span> <span class="nav-text">缺点：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">3.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">4.</span> <span class="nav-text">单例模式的结构与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">单例模式的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">单例模式的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">4.2.1.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%8C%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8"><span class="nav-number">4.2.2.</span> <span class="nav-text">懒汉式，线程不安全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%8C%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A83"><span class="nav-number">4.3.</span> <span class="nav-text">懒汉式，线程安全3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%88%E5%8F%8C%E6%A3%80%E9%94%81-%E5%8F%8C%E9%87%8D%E6%A0%A1%E9%AA%8C%E9%94%81%EF%BC%88DCL%EF%BC%89"><span class="nav-number">4.3.1.</span> <span class="nav-text">懒汉式（双检锁&#x2F;双重校验锁（DCL）)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB"><span class="nav-number">4.3.2.</span> <span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE"><span class="nav-number">4.3.3.</span> <span class="nav-text">枚举</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%8E%E7%89%B9%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">单例模式的定义与特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">单例模式的优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="nav-number">2.0.1.</span> <span class="nav-text">优点：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="nav-number">2.0.2.</span> <span class="nav-text">缺点：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">3.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">单例模式的结构与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">单例模式的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">单例模式的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A5%BF%E6%B1%89%E5%BC%8F"><span class="nav-number">4.2.1.</span> <span class="nav-text">饿汉式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%8C%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8"><span class="nav-number">4.2.2.</span> <span class="nav-text">懒汉式，线程不安全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%8C%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A83"><span class="nav-number">4.3.</span> <span class="nav-text">懒汉式，线程安全3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%87%92%E6%B1%89%E5%BC%8F%EF%BC%88%E5%8F%8C%E6%A3%80%E9%94%81-%E5%8F%8C%E9%87%8D%E6%A0%A1%E9%AA%8C%E9%94%81%EF%BC%88DCL%EF%BC%89"><span class="nav-number">4.3.1.</span> <span class="nav-text">懒汉式（双检锁&#x2F;双重校验锁（DCL）)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB"><span class="nav-number">4.3.2.</span> <span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE"><span class="nav-number">4.3.3.</span> <span class="nav-text">枚举</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -588,7 +572,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

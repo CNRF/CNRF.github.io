@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="多线程的强软弱虚四种引用">
@@ -272,22 +272,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="ThreadLocal">ThreadLocal</h3>
-<p>spring的声明式事务会使用到，保证当前线程中数据库连接是同一个连接</p>
-<h3 id="强引用">强引用</h3>
-<p>只要一对象有强引用，垃圾回收机制不会回收</p>
-<h3 id="软引用">软引用</h3>
-<p>在内存不够用时，会优先回收只有软引用的内存空间，主要是做缓存用</p>
-<h3 id="弱引用">弱引用</h3>
-<p>只要是触发垃圾回收机制进行回收，只具有弱引用的对象就会被回收</p>
+        <h3 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h3><p>spring的声明式事务会使用到，保证当前线程中数据库连接是同一个连接</p>
+<h3 id="强引用"><a href="#强引用" class="headerlink" title="强引用"></a>强引用</h3><p>只要一对象有强引用，垃圾回收机制不会回收</p>
+<h3 id="软引用"><a href="#软引用" class="headerlink" title="软引用"></a>软引用</h3><p>在内存不够用时，会优先回收只有软引用的内存空间，主要是做缓存用</p>
+<h3 id="弱引用"><a href="#弱引用" class="headerlink" title="弱引用"></a>弱引用</h3><p>只要是触发垃圾回收机制进行回收，只具有弱引用的对象就会被回收</p>
 <ul>
 <li>tomcat中就是使用的弱应用</li>
 <li>ThreadLocal也是使用弱应用</li>
 </ul>
 <p>weakhashmap</p>
-<h3 id="虚引用">虚引用</h3>
-<p>主要是管理堆外内存的，主要是给写jvm的使用</p>
+<h3 id="虚引用"><a href="#虚引用" class="headerlink" title="虚引用"></a>虚引用</h3><p>主要是管理堆外内存的，主要是给写jvm的使用</p>
 <p>主要检测队列配合使用，虚引用API无法get到值，主要是通知对象已经被回收，去清理堆外的内存</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -324,6 +320,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 
     </div>
 
@@ -565,7 +562,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

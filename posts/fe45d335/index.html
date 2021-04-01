@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="分布式一致性协议——paxos算法">
@@ -288,29 +288,23 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1>paxos目的</h1>
-<p>Paxos算法是<font color=red>基于消息传递且具有高度容错特性的一致性算法</font>，是目前公认的解决分布式一致性问题最有效的算法之一，其<font color=red>解决的问题就是在分布式系统中如何就某个值（决议）达成一致</font>。</p>
+        <h1 id="paxos目的"><a href="#paxos目的" class="headerlink" title="paxos目的"></a>paxos目的</h1><p>Paxos算法是<font color=red>基于消息传递且具有高度容错特性的一致性算法</font>，是目前公认的解决分布式一致性问题最有效的算法之一，其<font color=red>解决的问题就是在分布式系统中如何就某个值（决议）达成一致</font>。</p>
 <p>Paxos算法的前提假设是不存在拜占庭将军问题，即： <font color=red>信道是安全的（信道可靠），发出的信号不会被篡改，因为Paxos算法是基于消息传递的</font>。：如下图所示</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302154508.png" alt="image-20210302154508699"></p>
-<h1>paxos算法角色划分：三种类型</h1>
-<ul>
-<li>
-<p>提议者（Proposer）：提出提案；</p>
+<h1 id="paxos算法角色划分：三种类型"><a href="#paxos算法角色划分：三种类型" class="headerlink" title="paxos算法角色划分：三种类型"></a>paxos算法角色划分：三种类型</h1><ul>
+<li><p>提议者（Proposer）：提出提案；</p>
 </li>
-<li>
-<p>接受者（Acceptor）：对提案作出裁决；</p>
+<li><p>接受者（Acceptor）：对提案作出裁决；</p>
 </li>
-<li>
-<p>告知者（Learner）：被告知投票的结果，<strong>不参与投票过程</strong>。</p>
+<li><p>告知者（Learner）：被告知投票的结果，<strong>不参与投票过程</strong>。</p>
 <blockquote>
 <p><font color=blue>提案（Proposal）</font>。最终要达成一致的value就在提案里。只要Proposer发的提案被Acceptor接受（半数以上的Acceptor同意才行），Proposer就认为该提案里的value被选定了。Acceptor告诉Learner哪个value被选定，Learner就认为那个value被选定。只要Acceptor接受了某个提案，Acceptor就任务该提案里的value被选定了。</p>
 </blockquote>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302155514.png" alt="image-20210302155514766"></p>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210302155514.png" alt="image-20210302155514766"></p>
 </li>
 </ul>
 <p><strong>优势</strong>：为了避免单点问题：会有一个acceptor集合，proposer向该集合发送提案，acceptor集合中所有成员都有可能接受提案，并且只能批准一个提案，当有半数以上的成员同意，那么就同意批准该提案</p>
-<h1>paxos算法过程</h1>
-<ul>
+<h1 id="paxos算法过程"><a href="#paxos算法过程" class="headerlink" title="paxos算法过程"></a>paxos算法过程</h1><ul>
 <li>阶段一（prepare阶段）：</li>
 </ul>
 <p>(a) Proposer选择一个提案编号N，然后向半数以上的Acceptor发送编号为N的Prepare请求。Pareper（N）</p>
@@ -321,18 +315,14 @@
 <p>(a) 如果一个Proposer收到半数以上Acceptor对其发出的编号为N的Prepare请求的响应，那么它就会发送一个针对[N,V]提案的Accept请求给半数以上的Acceptor。注意：V就是收到的响应中编号最大的提案的value（某个acceptor响应的它已经通过的{acceptN，acceptV}），如果响应中不包含任何提案，那么V就由Proposer自己决定。</p>
 <p>(b) 如果Acceptor收到一个针对编号为N的提案的Accept请求，只要该Acceptor没有对编号大于N的Prepare请求做出过响应，它就接受该提案。如果N小于Acceptor以及响应的prepare请求，则拒绝，不回应或回复error（当proposer没有收到过半的回应，那么他会重新进入第一阶段，递增提案号，重新提出prepare请求）。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302154726.png" alt="image-20210302154726554"></p>
-<h1>paxos优缺点</h1>
-<p>优点：paxos算法的优点很明显，按照此方法可以对多个数据值达到一致，收敛较好。</p>
+<h1 id="paxos优缺点"><a href="#paxos优缺点" class="headerlink" title="paxos优缺点"></a>paxos优缺点</h1><p>优点：paxos算法的优点很明显，按照此方法可以对多个数据值达到一致，收敛较好。</p>
 <p>缺点：paxos算法的缺点是会出现活锁问题：考虑到一种极端的情况下，有两个proposer依次提出了一系列编号递增的议案，但是最终paxos无法形成最终的议案。具体场景如下：</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302154914.png" alt=""></p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210302154927.png" alt=""><strong>解决办法</strong>：</p>
 <p>通过<strong>选取主Proposer</strong>，就可以保证Paxos算法的活性。选择一个主Proposer，并规定只有主Proposer才能提出议案。这样一来，<font color=red>只要主Proposer和过半的Acceptor能够正常进行网络通信，那么肯定会有一个提案被批准（第二阶段的accept），则可以解决死循环导致的活锁问题</font>。</p>
-<h5 id="总结：">总结：</h5>
-<p><strong>通过选择一个主Proposer，并规定只能由主Proposer才能提出议案，整个paxos算法就可以保持活性。</strong></p>
-<h1>Paxos算法的过半依据</h1>
-<p>在Paxos算法中，采用了“过半”理念，也就是少数服从多数，这使Paxos算法具有很好的容错性</p>
-<h2 id="Paxos基于的过半数学原理">Paxos基于的过半数学原理</h2>
-<p>大多数（过半）进程组成的集合为法定集合，<font color=red> 两个法定（过半）集合必然存在非空交集，即至少有一个公共进程，称为法定集合性质</font>。 例如A,B,C,D,F进程组成的全集，法定集合Q1包括进程A,B,C，Q2包括进程B,C,D，那么Q1和Q2的交集必然不在空，C就是Q1，Q2的公共进程。如果要说Paxos最根本的原理是什么，那么就是这个简单性质。也就是说：<font color=red>两个过半的集合必然存在交集，也就是肯定是相等的，也就是肯定达成了一致</font>。</p>
+<h5 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h5><p><strong>通过选择一个主Proposer，并规定只能由主Proposer才能提出议案，整个paxos算法就可以保持活性。</strong></p>
+<h1 id="Paxos算法的过半依据"><a href="#Paxos算法的过半依据" class="headerlink" title="Paxos算法的过半依据"></a>Paxos算法的过半依据</h1><p>在Paxos算法中，采用了“过半”理念，也就是少数服从多数，这使Paxos算法具有很好的容错性</p>
+<h2 id="Paxos基于的过半数学原理"><a href="#Paxos基于的过半数学原理" class="headerlink" title="Paxos基于的过半数学原理"></a>Paxos基于的过半数学原理</h2><p>大多数（过半）进程组成的集合为法定集合，<font color=red> 两个法定（过半）集合必然存在非空交集，即至少有一个公共进程，称为法定集合性质</font>。 例如A,B,C,D,F进程组成的全集，法定集合Q1包括进程A,B,C，Q2包括进程B,C,D，那么Q1和Q2的交集必然不在空，C就是Q1，Q2的公共进程。如果要说Paxos最根本的原理是什么，那么就是这个简单性质。也就是说：<font color=red>两个过半的集合必然存在交集，也就是肯定是相等的，也就是肯定达成了一致</font>。</p>
 <p>Paxos是基于消息传递的具有高度容错性的分布式一致性算法。<font color=red>Paxos算法引入了过半的概念，解决了2PC，3PC的太过保守的缺点，且使算法具有了很好的容错性，另外Paxos算法支持分布式节点角色之间的轮换，这极大避免了分布式单点的出现，因此Paxos算法既解决了无限等待问题，也解决了脑裂问题，是目前来说最优秀的分布式一致性算法。其中，Zookeeper的ZAB算法和Raft一致性算法都是基于Paxos的</font></p>
 <p>参考文档：</p>
 <ol>
@@ -466,7 +456,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">paxos目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">paxos算法角色划分：三种类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">3.</span> <span class="nav-text">paxos算法过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">4.</span> <span class="nav-text">paxos优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">4.0.0.0.1.</span> <span class="nav-text">总结：</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">5.</span> <span class="nav-text">Paxos算法的过半依据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Paxos%E5%9F%BA%E4%BA%8E%E7%9A%84%E8%BF%87%E5%8D%8A%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86"><span class="nav-number">5.1.</span> <span class="nav-text">Paxos基于的过半数学原理</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#paxos%E7%9B%AE%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">paxos目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#paxos%E7%AE%97%E6%B3%95%E8%A7%92%E8%89%B2%E5%88%92%E5%88%86%EF%BC%9A%E4%B8%89%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">paxos算法角色划分：三种类型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#paxos%E7%AE%97%E6%B3%95%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">paxos算法过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#paxos%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">paxos优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">4.0.0.0.1.</span> <span class="nav-text">总结：</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Paxos%E7%AE%97%E6%B3%95%E7%9A%84%E8%BF%87%E5%8D%8A%E4%BE%9D%E6%8D%AE"><span class="nav-number">5.</span> <span class="nav-text">Paxos算法的过半依据</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Paxos%E5%9F%BA%E4%BA%8E%E7%9A%84%E8%BF%87%E5%8D%8A%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86"><span class="nav-number">5.1.</span> <span class="nav-text">Paxos基于的过半数学原理</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -582,7 +572,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

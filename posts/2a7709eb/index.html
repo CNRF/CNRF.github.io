@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="桥接模式的定义与特点">
@@ -274,58 +274,53 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1>桥接模式的定义与特点</h1>
-<p>桥接（Bridge）模式的定义如下：将抽象与实现分离，使它们可以独立变化。它是用组合关系代替继承关系来实现，从而降低了抽象和实现这两个可变维度的耦合度。</p>
-<h1>桥接模式的优缺点</h1>
-<h2 id="优点">优点</h2>
-<ol>
+        <h1 id="桥接模式的定义与特点"><a href="#桥接模式的定义与特点" class="headerlink" title="桥接模式的定义与特点"></a>桥接模式的定义与特点</h1><p>桥接（Bridge）模式的定义如下：将抽象与实现分离，使它们可以独立变化。它是用组合关系代替继承关系来实现，从而降低了抽象和实现这两个可变维度的耦合度。</p>
+<h1 id="桥接模式的优缺点"><a href="#桥接模式的优缺点" class="headerlink" title="桥接模式的优缺点"></a>桥接模式的优缺点</h1><h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><ol>
 <li>抽象与实现分离，扩展能力强</li>
 <li>符合开闭原则</li>
 <li>实现细节对客户透明。</li>
 </ol>
-<h3 id="缺点">缺点</h3>
-<ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
 <li>由于聚合关系建立在抽象层，要求开发者针对抽象化进行设计与编程，能正确地识别出系统中两个独立变化的维度，这增加了系统的理解与设计难度。</li>
 </ol>
-<h1>桥接模式的应用场景</h1>
-<p>当一个类内部具备两种或多种变化维度时，使用桥接模式可以解耦这些变化的维度，使高层代码架构稳定。</p>
+<h1 id="桥接模式的应用场景"><a href="#桥接模式的应用场景" class="headerlink" title="桥接模式的应用场景"></a>桥接模式的应用场景</h1><p>当一个类内部具备两种或多种变化维度时，使用桥接模式可以解耦这些变化的维度，使高层代码架构稳定。</p>
 <ol>
 <li>当一个类存在两个独立变化的维度，且这两个维度都需要进行扩展时</li>
 <li>当一个系统不希望使用继承或因为多层次继承导致系统类的个数急剧增加时。</li>
 <li>当一个系统需要在构件的抽象化角色和具体化角色之间增加更多的灵活性时。</li>
 </ol>
 <p>桥接模式的一个常见使用场景就是<strong>替换继承</strong>。我们知道，继承拥有很多优点，比如，抽象、封装、多态等，父类封装共性，子类实现特性。继承可以很好的实现代码复用（封装）的功能，但这也是<strong>继承的一大缺点</strong>。因为父类拥有的方法，子类也会继承得到，无论子类需不需要，这说明<strong>继承具备强侵入性（父类代码侵入子类）</strong>，同时会导致子类臃肿。因此，在设计模式中，有一个原则为优先使用组合/聚合，而不是继承。</p>
-<h1>桥接模式的结构与实现</h1>
-<p>可以将抽象化部分与实现化部分分开，取消二者的继承关系，改用组合关系。</p>
-<h2 id="模式的结构">模式的结构</h2>
-<p>桥接（Bridge）模式包含以下主要角色。</p>
+<h1 id="桥接模式的结构与实现"><a href="#桥接模式的结构与实现" class="headerlink" title="桥接模式的结构与实现"></a>桥接模式的结构与实现</h1><p>可以将抽象化部分与实现化部分分开，取消二者的继承关系，改用组合关系。</p>
+<h2 id="模式的结构"><a href="#模式的结构" class="headerlink" title="模式的结构"></a>模式的结构</h2><p>桥接（Bridge）模式包含以下主要角色。</p>
 <ol>
-<li>**抽象化（Abstraction）角色：**定义抽象类，并包含一个对实现化对象的引用。</li>
-<li>**扩展抽象化（Refined Abstraction）角色：**是抽象化角色的子类，实现父类中的业务方法，并通过组合关系调用实现化角色中的业务方法。</li>
-<li>**实现化（Implementor）角色：**定义实现化角色的接口，供扩展抽象化角色调用。</li>
-<li>**具体实现化（Concrete Implementor）角色：**给出实现化角色接口的具体实现。</li>
+<li><strong>抽象化（Abstraction）角色：</strong>定义抽象类，并包含一个对实现化对象的引用。</li>
+<li><strong>扩展抽象化（Refined Abstraction）角色：</strong>是抽象化角色的子类，实现父类中的业务方法，并通过组合关系调用实现化角色中的业务方法。</li>
+<li><strong>实现化（Implementor）角色：</strong>定义实现化角色的接口，供扩展抽象化角色调用。</li>
+<li><strong>具体实现化（Concrete Implementor）角色：</strong>给出实现化角色接口的具体实现。</li>
 </ol>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210304164850.png" alt=" 桥接模式的结构图"></p>
-<h2 id="模式的实现">模式的实现</h2>
-<ol>
-<li>
-<p><strong>抽象化（Abstraction）角色：</strong></p>
+<h2 id="模式的实现"><a href="#模式的实现" class="headerlink" title="模式的实现"></a>模式的实现</h2><ol>
+<li><p><strong>抽象化（Abstraction）角色：</strong></p>
  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> 桥接模式;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span> 抽象化角色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Abstraction</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> Implementor imple;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">Abstraction</span><span class="params">(Implementor imple)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.imple = imple;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">Operation</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
-<li>
-<p><strong>扩展抽象化（Refined Abstraction）角色：</strong></p>
+</ol>
+<ol>
+<li><p><strong>扩展抽象化（Refined Abstraction）角色：</strong></p>
  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> 桥接模式;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span> 扩展抽象化角色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RefinedAbstraction</span> <span class="keyword">extends</span> <span class="title">Abstraction</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">RefinedAbstraction</span><span class="params">(Implementor imple)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(imple);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Operation</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;扩展抽象化(Refined Abstraction)角色被访问&quot;</span>);</span><br><span class="line">        imple.OperationImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
-<li>
-<p><strong>实现化（Implementor）角色：</strong></p>
+</ol>
+<ol>
+<li><p><strong>实现化（Implementor）角色：</strong></p>
  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> 桥接模式;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Description</span>  实现化角色</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Implementor</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">OperationImpl</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
-<li>
-<p><strong>具体实现化（Concrete Implementor）角色：</strong></p>
+</ol>
+<ol>
+<li><p><strong>具体实现化（Concrete Implementor）角色：</strong></p>
  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> 桥接模式;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConcreteImplementorA</span>  <span class="keyword">implements</span>  <span class="title">Implementor</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">OperationImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;具体实现化(Concrete Implementor)角色被访问&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
-<li>
-<p><strong>测试</strong></p>
+</ol>
+<ol>
+<li><p><strong>测试</strong></p>
  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> 桥接模式;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BridgeTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       Implementor implementor  = <span class="keyword">new</span> ConcreteImplementorA();</span><br><span class="line">       Abstraction A = <span class="keyword">new</span> RefinedAbstraction(implementor);</span><br><span class="line">       A.Operation();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 </li>
 </ol>
@@ -454,7 +449,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">桥接模式的定义与特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">桥接模式的优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.1.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">3.</span> <span class="nav-text">桥接模式的应用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">4.</span> <span class="nav-text">桥接模式的结构与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">模式的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">模式的实现</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9A%E4%B9%89%E4%B8%8E%E7%89%B9%E7%82%B9"><span class="nav-number">1.</span> <span class="nav-text">桥接模式的定义与特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">桥接模式的优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">2.1.1.</span> <span class="nav-text">缺点</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">3.</span> <span class="nav-text">桥接模式的应用场景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">桥接模式的结构与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">4.1.</span> <span class="nav-text">模式的结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">模式的实现</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -570,7 +565,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

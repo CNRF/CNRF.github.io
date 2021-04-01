@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性">
@@ -258,7 +258,7 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-file-word-o"></i>
               </span>
-              <span>3.3k</span>
+              <span>3.2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -277,76 +277,58 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h5 id="1-Redis-的击穿，穿透，雪崩">1. Redis 的击穿，穿透，雪崩</h5>
-<h6 id="1-1-Redis-击穿">1.1 Redis 击穿</h6>
-<p><strong>产生原因</strong>：在高并发的情况下，在某一时间点，<strong>在高频获取的key在此时过期，大量请求直接请求到服务器上</strong>，导致缓存击穿</p>
+        <h5 id="1-Redis-的击穿，穿透，雪崩"><a href="#1-Redis-的击穿，穿透，雪崩" class="headerlink" title="1. Redis 的击穿，穿透，雪崩"></a>1. Redis 的击穿，穿透，雪崩</h5><h6 id="1-1-Redis-击穿"><a href="#1-1-Redis-击穿" class="headerlink" title="1.1 Redis 击穿"></a>1.1 Redis 击穿</h6><p><strong>产生原因</strong>：在高并发的情况下，在某一时间点，<strong>在高频获取的key在此时过期，大量请求直接请求到服务器上</strong>，导致缓存击穿</p>
 <p><strong>解决方案：</strong></p>
 <ul>
-<li>
-<p>可以将<strong>热点数据设置为永远不过期</strong>；</p>
+<li><p>可以将<strong>热点数据设置为永远不过期</strong>；</p>
 </li>
-<li>
-<p>基于 <strong>redis</strong> or <strong>zookeeper</strong> 实现互斥锁，等待第一个请求构建完缓存之后，再释放锁，进而其它请求才能通过该 key 访问数据。</p>
+<li><p>基于 <strong>redis</strong> or <strong>zookeeper</strong> 实现互斥锁，等待第一个请求构建完缓存之后，再释放锁，进而其它请求才能通过该 key 访问数据。</p>
 <blockquote>
 <p>redis的分布式锁主要是通过  setnx 命令，设置锁的过期时间，只有返回是ok的才能去数据库中获取数据</p>
-<p><strong>产生问题</strong>：在db端超时导致锁过期</p>
+<p><strong>产生问题</strong>：在db端超时导致锁过期 </p>
 <p><strong>解决方案</strong>： 通过<strong>zookeeper</strong> 实现分布式锁</p>
 </blockquote>
 </li>
 </ul>
-<h6 id="1-2-Redis穿透">1.2 Redis穿透</h6>
-<p>一般是出现这种情况是因为恶意频繁查询才会对系统造成很大的问题: <strong>key缓存并且数据库不存在</strong>，所以<strong>每次查询都会查询数据库从而导致数据库崩溃</strong>。</p>
-<p>**解决方案：**使用布隆过滤器</p>
+<h6 id="1-2-Redis穿透"><a href="#1-2-Redis穿透" class="headerlink" title="1.2 Redis穿透"></a>1.2 Redis穿透</h6><p>  一般是出现这种情况是因为恶意频繁查询才会对系统造成很大的问题: <strong>key缓存并且数据库不存在</strong>，所以<strong>每次查询都会查询数据库从而导致数据库崩溃</strong>。</p>
+<p><strong>解决方案：</strong>使用布隆过滤器</p>
 <blockquote>
 <p>布隆过滤器缺点：只能增加不能删除</p>
 <p>可使用布谷鸟过滤器 ，设置空key</p>
 </blockquote>
-<h6 id="1-3-Redis雪崩">1.3 Redis雪崩</h6>
-<p>雪崩指的是<strong>多个key</strong>查询并且出现<strong>高并发</strong>，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。</p>
+<h6 id="1-3-Redis雪崩"><a href="#1-3-Redis雪崩" class="headerlink" title="1.3 Redis雪崩"></a>1.3 Redis雪崩</h6><p>雪崩指的是<strong>多个key</strong>查询并且出现<strong>高并发</strong>，缓存中失效或者查不到，然后都去db查询，从而导致db压力突然飙升，从而崩溃。</p>
 <p><strong>解决方案：</strong></p>
 <ul>
-<li>
-<p>时点性无关:<strong>均匀的设计过期时间</strong></p>
+<li><p>时点性无关:<strong>均匀的设计过期时间</strong></p>
 </li>
-<li>
-<p>时点性有关:<strong>强依赖击穿的方案</strong></p>
-<p>​					也可在<strong>程序设计的时候在业务层进行时点进行请求延时操作</strong></p>
-<p>​					当知道<strong>时点之后的数据也可以进行预加载工作</strong></p>
+<li><p>时点性有关:<strong>强依赖击穿的方案</strong></p>
+<p>​                    也可在<strong>程序设计的时候在业务层进行时点进行请求延时操作</strong></p>
+<p>​                    当知道<strong>时点之后的数据也可以进行预加载工作</strong></p>
 </li>
-<li>
-<p>事前：redis 高可用，主从+哨兵，redis cluster，避免全盘崩溃。</p>
+<li><p>事前：redis 高可用，主从+哨兵，redis cluster，避免全盘崩溃。</p>
 </li>
-<li>
-<p>事中：本地 ehcache 缓存 + hystrix 限流&amp;降级，避免 MySQL 被打死。</p>
+<li><p>事中：本地 ehcache 缓存 + hystrix 限流&amp;降级，避免 MySQL 被打死。</p>
 </li>
-<li>
-<p>事后：redis 持久化，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。</p>
+<li><p>事后：redis 持久化，一旦重启，自动从磁盘上加载数据，快速恢复缓存数据。</p>
 <blockquote>
 <p>时点性有关指<strong>某一个时间段某些key必须要过期使用新数据</strong></p>
 </blockquote>
 </li>
 </ul>
-<h5 id="2-Redis-的分布式锁实现">2. Redis  的分布式锁实现</h5>
-<p>最好是使用zookeeper实现分布式锁</p>
+<h5 id="2-Redis-的分布式锁实现"><a href="#2-Redis-的分布式锁实现" class="headerlink" title="2. Redis  的分布式锁实现"></a>2. Redis  的分布式锁实现</h5><p>最好是使用zookeeper实现分布式锁</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原理需要三个关键元素</span><br><span class="line">1. setnx</span><br><span class="line">2.过期时间</span><br><span class="line">3.多线程（守护进程），延长过期</span><br></pre></td></tr></table></figure>
-<h6 id="2-1-Redis加锁实现">2.1 Redis加锁实现</h6>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOCK_SUCCESS = <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_IF_NOT_EXIST = <span class="string">&quot;NX&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_WITH_EXPIRE_TIME = <span class="string">&quot;PX&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 尝试获取分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expireTime 超期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否获取成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">tryGetDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId, <span class="keyword">int</span> expireTime)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (LOCK_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h6 id="2-2-redis-解锁代码">2.2 redis 解锁代码</h6>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Long RELEASE_SUCCESS = <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否释放成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">releaseDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String script = <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (RELEASE_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h6 id="Redis的弊端">Redis的弊端</h6>
-<ul>
+<h6 id="2-1-Redis加锁实现"><a href="#2-1-Redis加锁实现" class="headerlink" title="2.1 Redis加锁实现"></a>2.1 Redis加锁实现</h6><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOCK_SUCCESS = <span class="string">&quot;OK&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_IF_NOT_EXIST = <span class="string">&quot;NX&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SET_WITH_EXPIRE_TIME = <span class="string">&quot;PX&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 尝试获取分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expireTime 超期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否获取成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">tryGetDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId, <span class="keyword">int</span> expireTime)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (LOCK_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="2-2-redis-解锁代码"><a href="#2-2-redis-解锁代码" class="headerlink" title="2.2 redis 解锁代码"></a>2.2 redis 解锁代码</h6><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisTool</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Long RELEASE_SUCCESS = <span class="number">1L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 释放分布式锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> jedis Redis客户端</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lockKey 锁</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> requestId 请求标识</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 是否释放成功</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">releaseDistributedLock</span><span class="params">(Jedis jedis, String lockKey, String requestId)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        String script = <span class="string">&quot;if redis.call(&#x27;get&#x27;, KEYS[1]) == ARGV[1] then return redis.call(&#x27;del&#x27;, KEYS[1]) else return 0 end&quot;</span>;</span><br><span class="line">        Object result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (RELEASE_SUCCESS.equals(result)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="Redis的弊端"><a href="#Redis的弊端" class="headerlink" title="Redis的弊端"></a>Redis的弊端</h6><ul>
 <li>数据库事务超时，导致锁过期</li>
 <li><code>redis cluster</code>集群环境下，假如现在<code>A客户端</code>想要加锁，它会根据路由规则选择一台<code>master</code>节点写入<code>key</code> <code>mylock</code>，在加锁成功后，<code>master</code>节点会把<code>key</code>异步复制给对应的<code>slave</code>节点。如果此时<code>redis master</code>节点宕机，为保证集群可用性，会进行<code>主备切换</code>，<code>slave</code>变为了<code>redis master</code>。<code>B客户端</code>在新的<code>master</code>节点上加锁成功，而<code>A客户端</code>也以为自己还是成功加了锁的。此时就会导致同一时间内多个客户端对一个分布式锁完成了加锁，导致各种脏数据的产生。</li>
 </ul>
-<h5 id="Redis-缓存一致性">Redis 缓存一致性</h5>
-<h6 id="出现场景">出现场景</h6>
-<p>在<strong>高并发的情况</strong>下涉及到数据更新：数据库和缓存更新，就容易出现<strong>缓存(Redis)和数据库（MySQL）间的数据一致性问题</strong>。</p>
+<h5 id="Redis-缓存一致性"><a href="#Redis-缓存一致性" class="headerlink" title="Redis 缓存一致性"></a>Redis 缓存一致性</h5><h6 id="出现场景"><a href="#出现场景" class="headerlink" title="出现场景"></a>出现场景</h6><p>在<strong>高并发的情况</strong>下涉及到数据更新：数据库和缓存更新，就容易出现<strong>缓存(Redis)和数据库（MySQL）间的数据一致性问题</strong>。</p>
 <p>不管是先写MySQL数据库，再删除Redis缓存；还是先删除缓存，再写库，都有可能出现数据不一致的情况。举一个例子：</p>
 <p>1.如果删除了缓存Redis，还没有来得及写库MySQL，另一个线程就来读取，发现缓存为空，则去数据库中读取数据写入缓存，此时缓存中为脏数据。</p>
 <p>2.如果先写了库，在删除缓存前，写库的线程宕机了，没有删除掉缓存，则也会出现数据不一致情况。</p>
 <p>因为<strong>写和读是并发</strong>的，没法保证顺序,就会出现缓存和数据库的数据不一致的问题。</p>
-<h6 id="解决方案">解决方案</h6>
-<p><strong>1.第一种方案：采用延时双删策略</strong></p>
+<h6 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h6><p><strong>1.第一种方案：采用延时双删策略</strong></p>
 <p>在写库前后都进行redis.del(key)操作，并且设定合理的超时时间。</p>
 <p>伪代码如下：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(String key,Object data)</span></span>&#123;</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> db.updateData(data);</span><br><span class="line"> Thread.sleep(<span class="number">500</span>);</span><br><span class="line"> redis.delKey(key);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
@@ -618,7 +600,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="MySQL的主从复制">
@@ -285,48 +285,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="为什么需要主从复制？">为什么需要主从复制？</h2>
-<ol>
+        <h2 id="为什么需要主从复制？"><a href="#为什么需要主从复制？" class="headerlink" title="为什么需要主从复制？"></a>为什么需要主从复制？</h2><ol>
 <li>在业务复杂的系统中，有这么一个情景，有一句sql语句需要锁表，导致暂时不能使用读的服务，那么就很影响运行中的业务，使用主从复制，让主库负责写，从库负责读，这样，即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</li>
 <li>做数据的热备</li>
 <li>架构的扩展。业务量越来越大，I/O访问频率过高，单机无法满足，此时做多库的存储，降低磁盘I/O访问的频率，提高单个机器的I/O性能。</li>
 </ol>
-<h2 id="MySQL-主从复制概念">MySQL 主从复制概念</h2>
-<p>MySQL 主从复制是指数据可以从一个MySQL数据库服务器主节点复制到一个或多个从节点。MySQL 默认采用异步复制方式，这样从节点不用一直访问主服务器来更新自己的数据，数据的更新可以在远程连接上进行，从节点可以复制主数据库中的所有数据库或者特定的数据库，或者特定的表。</p>
-<h2 id="MySQL-主从复制主要用途">MySQL 主从复制主要用途</h2>
-<ul>
-<li>
-<p><strong>读写分离</strong></p>
-<p>在开发工作中，有时候会遇见某个sql 语句需要锁表，导致暂时不能使用读的服务，这样就会影响现有业务，使用主从复制，让主库负责写，从库负责读，这样，<strong>即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</strong></p>
+<h2 id="MySQL-主从复制概念"><a href="#MySQL-主从复制概念" class="headerlink" title="MySQL 主从复制概念"></a>MySQL 主从复制概念</h2><p>MySQL 主从复制是指数据可以从一个MySQL数据库服务器主节点复制到一个或多个从节点。MySQL 默认采用异步复制方式，这样从节点不用一直访问主服务器来更新自己的数据，数据的更新可以在远程连接上进行，从节点可以复制主数据库中的所有数据库或者特定的数据库，或者特定的表。</p>
+<h2 id="MySQL-主从复制主要用途"><a href="#MySQL-主从复制主要用途" class="headerlink" title="MySQL 主从复制主要用途"></a>MySQL 主从复制主要用途</h2><ul>
+<li><p><strong>读写分离</strong></p>
+<p>  在开发工作中，有时候会遇见某个sql 语句需要锁表，导致暂时不能使用读的服务，这样就会影响现有业务，使用主从复制，让主库负责写，从库负责读，这样，<strong>即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</strong></p>
 </li>
-<li>
-<p><strong>数据实时备份，当系统中某个节点出现故障的时候，方便切换</strong></p>
+<li><p><strong>数据实时备份，当系统中某个节点出现故障的时候，方便切换</strong></p>
 </li>
-<li>
-<p><strong>高可用HA</strong></p>
+<li><p><strong>高可用HA</strong></p>
 </li>
-<li>
-<p><strong>架构扩展</strong></p>
-<p>随着系统中业务访问量的增大，如果是单机部署数据库，就会导致I/O访问频率过高。有了主从复制，增加多个数据存储节点，将负载分布在多个从节点上，降低单机磁盘I/O访问的频率，提高单个机器的I/O性能。</p>
+<li><p><strong>架构扩展</strong></p>
+<p>  随着系统中业务访问量的增大，如果是单机部署数据库，就会导致I/O访问频率过高。有了主从复制，增加多个数据存储节点，将负载分布在多个从节点上，降低单机磁盘I/O访问的频率，提高单个机器的I/O性能。</p>
 </li>
 </ul>
-<h2 id="MySQL主从形式">MySQL主从形式</h2>
-<h3 id="一主一从">一主一从</h3>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105532.png" alt="image-20210317105532537"></p>
-<h3 id="一主多从，提高系统的读性能">一主多从，提高系统的读性能</h3>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105558.png" alt="image-20210317105558859"></p>
+<h2 id="MySQL主从形式"><a href="#MySQL主从形式" class="headerlink" title="MySQL主从形式"></a>MySQL主从形式</h2><h3 id="一主一从"><a href="#一主一从" class="headerlink" title="一主一从"></a>一主一从</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105532.png" alt="image-20210317105532537"></p>
+<h3 id="一主多从，提高系统的读性能"><a href="#一主多从，提高系统的读性能" class="headerlink" title="一主多从，提高系统的读性能"></a>一主多从，提高系统的读性能</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105558.png" alt="image-20210317105558859"></p>
 <p>一主一从和一主多从是最常见的主从架构，<strong>实施起来简单并且有效，不仅可以实现HA，而且还能读写分离，进而提升集群的并发能力。</strong></p>
-<h3 id="多主一从-（从5-7开始支持）">多主一从 （从5.7开始支持）</h3>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105629.png" alt="image-20210317105629817"></p>
+<h3 id="多主一从-（从5-7开始支持）"><a href="#多主一从-（从5-7开始支持）" class="headerlink" title="多主一从 （从5.7开始支持）"></a>多主一从 （从5.7开始支持）</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105629.png" alt="image-20210317105629817"></p>
 <p>多主一从可以将多个mysql数据库备份到一台存储性能比较好的服务器上。</p>
-<h3 id="双主复制">双主复制</h3>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105653.png" alt="image-20210317105653639"></p>
+<h3 id="双主复制"><a href="#双主复制" class="headerlink" title="双主复制"></a>双主复制</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105653.png" alt="image-20210317105653639"></p>
 <p>双主复制，也就是互做主从复制，每个master既是master，又是另外一台服务器的slave。这样任何一方所做的变更，都会通过复制应用到另外一方的数据库中。</p>
-<h3 id="级联复制">级联复制</h3>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105716.png" alt="image-20210317105716117"></p>
+<h3 id="级联复制"><a href="#级联复制" class="headerlink" title="级联复制"></a>级联复制</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105716.png" alt="image-20210317105716117"></p>
 <p>级联复制模式下，部分slave的数据同步不连接主节点，而是连接从节点。因为如果主节点有太多的从节点，就会损耗一部分性能用于replication，那么我们可以让3~5个从节点连接主节点，其它从节点作为二级或者三级与从节点连接，这样不仅可以缓解主节点的压力，并且对数据一致性没有负面影响。</p>
-<h2 id="MySQL-主从复制原理">MySQL 主从复制原理</h2>
-<p>MySQL主从复制涉及到三个线程，一个运行在主节点（log dump thread），其余两个(I/O thread, SQL thread)运行在从节点，如下图所示:</p>
+<h2 id="MySQL-主从复制原理"><a href="#MySQL-主从复制原理" class="headerlink" title="MySQL 主从复制原理"></a>MySQL 主从复制原理</h2><p>MySQL主从复制涉及到三个线程，一个运行在主节点（log dump thread），其余两个(I/O thread, SQL thread)运行在从节点，如下图所示:</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105757.png" alt="image-20210317105757055"></p>
 <ul>
 <li><strong>主节点 binary log dump 线程作用</strong></li>
@@ -341,8 +327,7 @@
 </ul>
 <p>SQL线程负责读取relay log中的内容，解析成具体的操作并执行，最终保证主从数据的一致性。</p>
 <p>对于每一个主从连接，都需要三个进程来完成。当主节点有多个从节点时，主节点会为每一个当前连接的从节点建一个binary log dump 进程，而每个从节点都有自己的I/O进程，SQL进程。从节点用两个线程将从主库拉取更新和执行分成独立的任务，这样在执行同步数据任务的时候，不会降低读操作的性能。比如，如果从节点没有运行，此时I/O进程可以很快从主节点获取更新，尽管SQL进程还没有执行。如果在SQL进程执行之前从节点服务停止，至少I/O进程已经从主节点拉取到了最新的变更并且保存在本地relay日志中，当服务再次起来之后，就可以完成数据的同步。</p>
-<h2 id="MySQL主从复制的过程">MySQL主从复制的过程</h2>
-<p>要实施复制，首先必须打开Master 端的binary log（bin-log）功能，否则无法实现。因为整个复制过程实际上就是Slave 从Master 端获取该日志然后再在自己身上完全顺序的执行日志中所记录的各种操作</p>
+<h2 id="MySQL主从复制的过程"><a href="#MySQL主从复制的过程" class="headerlink" title="MySQL主从复制的过程"></a>MySQL主从复制的过程</h2><p>要实施复制，首先必须打开Master 端的binary log（bin-log）功能，否则无法实现。因为整个复制过程实际上就是Slave 从Master 端获取该日志然后再在自己身上完全顺序的执行日志中所记录的各种操作</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317111427.png" alt="image-20210317111427620"></p>
 <ol>
 <li>从库通过手工执行change  master to 语句连接主库，提供了连接的用户一切条件（user 、password、port、ip），<strong>从库并请求从指定日志文件的指定位置（或者从最开始的日志）之后的日志内容；</strong></li>
@@ -352,28 +337,20 @@
 <li>从库IO线程接收binlog  events，并存放到本地relay-log中，传送过来的信息，会记录到master.info中，以便在下一次读取的时候能够清楚的告诉Master“我需要从某个bin-log 的哪个位置开始往后的日志内容，请发给我”；</li>
 <li>从库SQL线程应用relay-log，并且把应用过的记录到relay-log.info中，默认情况下，已经应用过的relay 会自动被清理purge</li>
 </ol>
-<h2 id="MySQL-主从复制模式">MySQL 主从复制模式</h2>
-<p>MySQL 主从复制<strong>默认是异步的模式</strong>。MySQL增删改操作会全部记录在binary log中，当slave节点连接master时，会主动从master处获取最新的bin log文件。并把bin log中的sql relay。</p>
-<h3 id="异步模式（mysql-async-mode）">异步模式（mysql async-mode）</h3>
-<p>异步模式如下图所示，这种模式下，主节点不会主动push bin log到从节点，这样有可能导致failover的情况下，也许从节点没有即时地将最新的bin log同步到本地。</p>
+<h2 id="MySQL-主从复制模式"><a href="#MySQL-主从复制模式" class="headerlink" title="MySQL 主从复制模式"></a>MySQL 主从复制模式</h2><p>MySQL 主从复制<strong>默认是异步的模式</strong>。MySQL增删改操作会全部记录在binary log中，当slave节点连接master时，会主动从master处获取最新的bin log文件。并把bin log中的sql relay。</p>
+<h3 id="异步模式（mysql-async-mode）"><a href="#异步模式（mysql-async-mode）" class="headerlink" title="异步模式（mysql async-mode）"></a>异步模式（mysql async-mode）</h3><p>异步模式如下图所示，这种模式下，主节点不会主动push bin log到从节点，这样有可能导致failover的情况下，也许从节点没有即时地将最新的bin log同步到本地。</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317114402.png" alt="image-20210317114402919"></p>
-<h3 id="半同步模式-mysql-semi-sync">半同步模式(mysql semi-sync)</h3>
-<p>这种模式下<strong>主节点只需要接收到其中一台从节点的返回信息，就会commit；否则需要等待直到超时时间然后切换成异步模式再提交</strong>；这样做的目的可以使主从数据库的数据延迟缩小，可以提高数据安全性，确保了事务提交后，<strong>binlog至少传输到了一个从节点上，不能保证从节点将此事务更新到db中</strong>。性能上会有一定的降低，响应时间会变长。如下图所示：</p>
+<h3 id="半同步模式-mysql-semi-sync"><a href="#半同步模式-mysql-semi-sync" class="headerlink" title="半同步模式(mysql semi-sync)"></a>半同步模式(mysql semi-sync)</h3><p>这种模式下<strong>主节点只需要接收到其中一台从节点的返回信息，就会commit；否则需要等待直到超时时间然后切换成异步模式再提交</strong>；这样做的目的可以使主从数据库的数据延迟缩小，可以提高数据安全性，确保了事务提交后，<strong>binlog至少传输到了一个从节点上，不能保证从节点将此事务更新到db中</strong>。性能上会有一定的降低，响应时间会变长。如下图所示：</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317114614.png" alt="image-20210317114614139"></p>
-<h3 id="全同步模式">全同步模式</h3>
-<p>全同步模式是指主节点和<strong>从节点全部执行了commit并确认</strong>才会向客户端返回成功。</p>
-<h2 id="MySQL的复制机制">MySQL的复制机制</h2>
-<h3 id="binlog记录模式">binlog记录模式</h3>
-<p>MySQL 主从复制有三种方式：基于SQL语句的复制（statement-based replication，SBR），基于行的复制（row-based replication，RBR)，混合模式复制（mixed-based replication,MBR)。对应的binlog文件的格式也有三种：STATEMENT,ROW,MIXED。</p>
+<h3 id="全同步模式"><a href="#全同步模式" class="headerlink" title="全同步模式"></a>全同步模式</h3><p>全同步模式是指主节点和<strong>从节点全部执行了commit并确认</strong>才会向客户端返回成功。</p>
+<h2 id="MySQL的复制机制"><a href="#MySQL的复制机制" class="headerlink" title="MySQL的复制机制"></a>MySQL的复制机制</h2><h3 id="binlog记录模式"><a href="#binlog记录模式" class="headerlink" title="binlog记录模式"></a>binlog记录模式</h3><p>MySQL 主从复制有三种方式：基于SQL语句的复制（statement-based replication，SBR），基于行的复制（row-based replication，RBR)，混合模式复制（mixed-based replication,MBR)。对应的binlog文件的格式也有三种：STATEMENT,ROW,MIXED。</p>
 <ol>
 <li>Statement-base Replication (SBR)就是记录sql语句在bin log中，Mysql 5.1.4 及之前的版本都是使用的这种复制格式。优点是只需要记录会修改数据的sql语句到binlog中，减少了binlog日质量，节约I/O，提高性能。缺点是在某些情况下，会导致主从节点中数据不一致（比如sleep(),now()等）。</li>
 <li>Row-based Relication(RBR)是mysql master将SQL语句分解为基于Row更改的语句并记录在bin log中，也就是只记录哪条数据被修改了，修改成什么样。优点是不会出现某些特定情况下的存储过程、或者函数、或者trigger的调用或者触发无法被正确复制的问题。缺点是会产生大量的日志，尤其是修改table的时候会让日志暴增,同时增加bin log同步时间。也不能通过bin log解析获取执行过的sql语句，只能看到发生的data变更。</li>
 <li>Mixed-format Replication(MBR)，MySQL NDB cluster 7.3 和7.4 使用的MBR。是以上两种模式的混合，对于一般的复制使用STATEMENT模式保存到binlog，对于STATEMENT模式无法复制的操作则使用ROW模式来保存，MySQL会根据执行的SQL语句选择日志保存方式。</li>
 </ol>
-<h3 id="GTID复制模式">GTID复制模式</h3>
-<p>在MySQL 5.6里面，不用再找binlog和pos点，我们只需要知道主节点的ip，端口，以及账号密码就行，因为复制是自动的，<strong>MySQL会通过内部机制GTID自动找点同步。</strong></p>
-<h4 id="基于GTID复制实现的工作原理">基于GTID复制实现的工作原理</h4>
-<ol>
+<h3 id="GTID复制模式"><a href="#GTID复制模式" class="headerlink" title="GTID复制模式"></a>GTID复制模式</h3><p>在MySQL 5.6里面，不用再找binlog和pos点，我们只需要知道主节点的ip，端口，以及账号密码就行，因为复制是自动的，<strong>MySQL会通过内部机制GTID自动找点同步。</strong></p>
+<h4 id="基于GTID复制实现的工作原理"><a href="#基于GTID复制实现的工作原理" class="headerlink" title="基于GTID复制实现的工作原理"></a>基于GTID复制实现的工作原理</h4><ol>
 <li>主节点更新数据时，会在事务前产生GTID，一起记录到binlog日志中。</li>
 <li>从节点的I/O线程将变更的bin log，写入到本地的relay log中。</li>
 <li>SQL线程从relay log中获取GTID，然后对比本地binlog是否有记录（<strong>所以MySQL从节点必须要开启binary log</strong>）。</li>
@@ -381,8 +358,7 @@
 <li>如果没有记录，从节点就会从relay log中执行该GTID的事务，并记录到bin log。</li>
 <li>在解析过程中会判断是否有主键，如果没有就用二级索引，如果有就用全部扫描。</li>
 </ol>
-<h2 id="mysql主从同步延时分析">mysql主从同步延时分析</h2>
-<p>mysql的主从复制都是单线程的操作，主库对所有DDL和DML产生的日志写进binlog，由于binlog是顺序写，所以效率很高，slave的sql thread线程将主库的DDL和DML操作事件在slave中重放。DML和DDL的IO操作是随机的，不是顺序，所以成本要高很多，另一方面，由于sql thread也是单线程的，<strong>当主库的并发较高时，产生的DML数量超过slave的SQL thread所能处理的速度，或者当slave中有大型query语句产生了锁等待，那么延时就产生了。</strong></p>
+<h2 id="mysql主从同步延时分析"><a href="#mysql主从同步延时分析" class="headerlink" title="mysql主从同步延时分析"></a>mysql主从同步延时分析</h2><p>mysql的主从复制都是单线程的操作，主库对所有DDL和DML产生的日志写进binlog，由于binlog是顺序写，所以效率很高，slave的sql thread线程将主库的DDL和DML操作事件在slave中重放。DML和DDL的IO操作是随机的，不是顺序，所以成本要高很多，另一方面，由于sql thread也是单线程的，<strong>当主库的并发较高时，产生的DML数量超过slave的SQL thread所能处理的速度，或者当slave中有大型query语句产生了锁等待，那么延时就产生了。</strong></p>
 <p><strong>解决方案</strong>：</p>
 <ol>
 <li>业务的持久化层的实现采用分库架构，mysql服务可平行扩展，分散压力。</li>
@@ -393,12 +369,10 @@
 <li>使用更加强劲的硬件设备</li>
 </ol>
 <p><strong>mysql5.7之后使用MTS并行复制技术</strong></p>
-<h3 id="多线程复制MTS">多线程复制MTS</h3>
-<p>在MYSQL5.6版本中，多线程复制基于schema来实现，将多个数据库下的事务按照数据库拆分到多个线程上执行，保证数据库级别的事务一致性。</p>
+<h3 id="多线程复制MTS"><a href="#多线程复制MTS" class="headerlink" title="多线程复制MTS"></a>多线程复制MTS</h3><p>在MYSQL5.6版本中，多线程复制基于schema来实现，将多个数据库下的事务按照数据库拆分到多个线程上执行，保证数据库级别的事务一致性。</p>
 <p>在MYSQL5.7版本后，多线程复制基于主库上并发信息来实现，主库上并发提交的事务不存在事务冲突，在从库上拆分到多个线程执行，保证实例级别的事务一致性。</p>
-<h4 id="MySQL5-6-基于schema的并行复制">MySQL5.6 基于schema的并行复制</h4>
-<p>slave-parallel-type=DATABASE(不同库的事务，没有锁冲突),并行复制的目的就是要让slave尽可能的多线程跑起来，当然基于库级别的多线程也是一种方式(不同库的事务，没有锁冲突)。</p>
-<p>**优点：**实现相对来说简单，对用户来说使用起来也简单</p>
+<h4 id="MySQL5-6-基于schema的并行复制"><a href="#MySQL5-6-基于schema的并行复制" class="headerlink" title="MySQL5.6 基于schema的并行复制"></a>MySQL5.6 基于schema的并行复制</h4><p>slave-parallel-type=DATABASE(不同库的事务，没有锁冲突),并行复制的目的就是要让slave尽可能的多线程跑起来，当然基于库级别的多线程也是一种方式(不同库的事务，没有锁冲突)。</p>
+<p><strong>优点：</strong>实现相对来说简单，对用户来说使用起来也简单</p>
 <p><strong>缺点：</strong> 由于是基于库的，那么并行的粒度非常粗，现在很多公司的架构是一库一实例，针对这样的架构，5.6的并行复制无能为力。当然还有就是主从事务的先后顺序，对于5.6也是个大问题</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317143020.png" alt="image-20210317143020298"></p>
 <p>MySQL 5.6版本开启并行复制功能，那么SQL线程就变为了coordinator线程，coordinator线程主要负责以前两部分的内容：</p>
@@ -408,8 +382,7 @@
 </ul>
 <p>这意味着coordinator线程并不是仅将日志发送给worker线程，自己也可以回放日志，但是所有可以并行的操作交付由worker线程完成。coordinator线程与worker是典型的生产者与消费者模型。</p>
 <p>上述机制实现了基于schema的并行复制存在两个问题，首先是crash safe功能不好做，因为可能之后执行的事务由于并行复制的关系先完成执行，那么当发生crash的时候，这部分的处理逻辑是比较复杂的。从代码上看，5.6这里引入了Low-Water-Mark标记来解决该问题，从设计上看（WL#5569），其是希望借助于日志的幂等性来解决该问题，不过5.6的二进制日志回放还不能实现幂等性。另一个最为关键的问题是这样设计的并行复制效果并不高，如果用户实例仅有一个库，那么就无法实现并行回放，甚至性能会比原来的单线程更差。而单库多表是比多库多表更为常见的一种情形。</p>
-<h4 id="MySQL-5-7基于组提交的并行复制">MySQL 5.7基于组提交的并行复制</h4>
-<p>MySQL 5.7才可称为真正的并行复制，这其中最为主要的原因就是slave服务器的回放与主机是一致的即master服务器上是怎么并行执行的slave上就怎样进行并行回放。不再有库的并行复制限制，对于二进制日志格式也无特殊的要求（基于库的并行复制也没有要求）。从MySQL官方来看，其并行复制的原本计划是支持表级的并行复制和行级的并行复制，行级的并行复制通过解析ROW格式的二进制日志的方式来完成，WL#4648。但是最终出现给小伙伴的确是在开发计划中称为：MTS: Prepared transactions slave parallel applier，可见：WL#6314。该并行复制的思想最早是由MariaDB的Kristain提出，并已在MariaDB 10中出现，相信很多选择MariaDB的小伙伴最为看重的功能之一就是并行复制。</p>
+<h4 id="MySQL-5-7基于组提交的并行复制"><a href="#MySQL-5-7基于组提交的并行复制" class="headerlink" title="MySQL 5.7基于组提交的并行复制"></a>MySQL 5.7基于组提交的并行复制</h4><p>MySQL 5.7才可称为真正的并行复制，这其中最为主要的原因就是slave服务器的回放与主机是一致的即master服务器上是怎么并行执行的slave上就怎样进行并行回放。不再有库的并行复制限制，对于二进制日志格式也无特殊的要求（基于库的并行复制也没有要求）。从MySQL官方来看，其并行复制的原本计划是支持表级的并行复制和行级的并行复制，行级的并行复制通过解析ROW格式的二进制日志的方式来完成，WL#4648。但是最终出现给小伙伴的确是在开发计划中称为：MTS: Prepared transactions slave parallel applier，可见：WL#6314。该并行复制的思想最早是由MariaDB的Kristain提出，并已在MariaDB 10中出现，相信很多选择MariaDB的小伙伴最为看重的功能之一就是并行复制。</p>
 <blockquote>
 <p>MySQL 5.7并行复制的思想简单易懂，一言以蔽之：<font color=red>一个组提交的事务都是可以并行回放，因为这些事务都已进入到事务的prepare阶段，则说明事务之间没有任何冲突（否则就不可能提交）。</font></p>
 </blockquote>
@@ -418,8 +391,7 @@
 <li>DATABASE：默认值，基于库的并行复制方式</li>
 <li>LOGICAL_CLOCK：基于组提交的并行复制方式</li>
 </ul>
-<h5 id="支持并行复制的GTID（5-7之后支持）">支持并行复制的GTID（5.7之后支持）</h5>
-<p>在MySQL 5.7版本中，其设计方式是将组提交的信息存放在GTID中。那么如果用户没有开启GTID功能，即将参数gtid_mode设置为OFF，MySQL 5.7又引入了称之为Anonymous_Gtid的二进制日志event类型，意味着在<strong>MySQL 5.7版本中即使不开启GTID，每个事务开始前也是会存在一个Anonymous_Gtid，而这GTID中就存在着组提交的信息。</strong></p>
+<h5 id="支持并行复制的GTID（5-7之后支持）"><a href="#支持并行复制的GTID（5-7之后支持）" class="headerlink" title="支持并行复制的GTID（5.7之后支持）"></a>支持并行复制的GTID（5.7之后支持）</h5><p>在MySQL 5.7版本中，其设计方式是将组提交的信息存放在GTID中。那么如果用户没有开启GTID功能，即将参数gtid_mode设置为OFF，MySQL 5.7又引入了称之为Anonymous_Gtid的二进制日志event类型，意味着在<strong>MySQL 5.7版本中即使不开启GTID，每个事务开始前也是会存在一个Anonymous_Gtid，而这GTID中就存在着组提交的信息。</strong></p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317143937.png" alt="image-20210317143937183"></p>
 <p>然而，通过上述的SHOW BINLOG EVENTS，我们并没有发现有关组提交的任何信息。但是通过mysqlbinlog工具，用户就能发现组提交的内部信息：</p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317144000.png" alt="image-20210317143959999"></p>
@@ -665,7 +637,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>

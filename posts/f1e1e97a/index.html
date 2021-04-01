@@ -20,7 +20,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
   </script>
 
   <meta name="description" content="MySQL的优化">
@@ -287,206 +287,160 @@
 
       
         <p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://dev.mysql.com/doc/refman/8.0/en/optimization.html">MySQL优化官网参考</a></p>
-<h2 id="如何优化">如何优化</h2>
-<ul>
+<h2 id="如何优化"><a href="#如何优化" class="headerlink" title="如何优化"></a>如何优化</h2><ul>
 <li>设计数据库时：数据库表、字段的设计，存储引擎</li>
 <li>利用好MySQL自身提供的功能，如索引等</li>
 <li>横向扩展：MySQL集群、负载均衡、读写分离</li>
 <li>SQL语句的优化（收效甚微）</li>
 </ul>
-<h2 id="字段设计">字段设计</h2>
-<blockquote>
+<h2 id="字段设计"><a href="#字段设计" class="headerlink" title="字段设计"></a>字段设计</h2><blockquote>
 <p>字段类型的选择，设计规范，范式，常见设计案例</p>
 </blockquote>
-<h3 id="存储IP地址">存储IP地址</h3>
-<p><strong>常规做法</strong>： varchar（15）</p>
+<h3 id="存储IP地址"><a href="#存储IP地址" class="headerlink" title="存储IP地址"></a>存储IP地址</h3><p><strong>常规做法</strong>： varchar（15）</p>
 <p><strong>优化选择</strong>：int unsigned，占用4个字节，节省空间，IP运算速度块</p>
 <blockquote>
 <p>inet_aton；</p>
 <p>inet_ntoa;</p>
-<p>a—address,n----number</p>
+<p>a—address,n——number</p>
 </blockquote>
-<h3 id="尽量使用整数去表示字符串">尽量使用整数去表示字符串</h3>
-<p><strong>整型的优势</strong>：存储空间固定。往往是少量空间,运算速度块</p>
+<h3 id="尽量使用整数去表示字符串"><a href="#尽量使用整数去表示字符串" class="headerlink" title="尽量使用整数去表示字符串"></a>尽量使用整数去表示字符串</h3><p><strong>整型的优势</strong>：存储空间固定。往往是少量空间,运算速度块</p>
 <blockquote>
 <p>MySQL 内部的枚举（单选）类型和集合（多选）类型但是，<strong>实操的时候enum和set很少用</strong></p>
 <p><strong>原因</strong>：维护成本高</p>
 <p><strong>使用的替代方案</strong>：关联表</p>
 </blockquote>
-<h3 id="存储金额">存储金额</h3>
-<p><strong>金额，价格，统计数据的存储</strong>：对数据的精度要求高,</p>
+<h3 id="存储金额"><a href="#存储金额" class="headerlink" title="存储金额"></a>存储金额</h3><p><strong>金额，价格，统计数据的存储</strong>：对数据的精度要求高,</p>
 <p><strong>优化选择</strong>：</p>
 <ol>
-<li>
-<p><strong>price decimal（8，2）</strong>；定点数，有两位小数的定点数。</p>
+<li><p><strong>price decimal（8，2）</strong>；定点数，有两位小数的定点数。</p>
 </li>
-<li>
-<p>price int ，bigint，整数，小单位–&gt;大数额，如<strong>9.01   在数据库中存储2为901，在程序中进行相关处理</strong></p>
+<li><p>price int ，bigint，整数，小单位—&gt;大数额，如<strong>9.01   在数据库中存储2为901，在程序中进行相关处理</strong></p>
 <blockquote>
 <p>注意：定点数，支持很大的数，</p>
 <p>转成小单位后，整数存储不了！</p>
 </blockquote>
 </li>
 </ol>
-<h3 id="定长数据类型和变长数据类型的选择">定长数据类型和变长数据类型的选择</h3>
-<p><strong>定点数和浮点数的选择</strong></p>
+<h3 id="定长数据类型和变长数据类型的选择"><a href="#定长数据类型和变长数据类型的选择" class="headerlink" title="定长数据类型和变长数据类型的选择"></a>定长数据类型和变长数据类型的选择</h3><p><strong>定点数和浮点数的选择</strong></p>
 <p><strong>定点数</strong>：不会精度丢失。 占用空间随者数字的增加而增加</p>
 <p><strong>浮点数</strong>：导致精度丢失 。占用固定的存储空间，无论存储多大的数据，占用的空间是固定的（类似于int）</p>
 <p><strong>定长类型</strong>：存储空间固定：int，float,double.char,date,time,datetime,year,timestamp</p>
 <p><strong>变长类型</strong>：存储空间可变：varchar,decimal,text</p>
-<h3 id="字符串类型的选择">字符串类型的选择</h3>
-<p><strong>使用varchar</strong></p>
+<h3 id="字符串类型的选择"><a href="#字符串类型的选择" class="headerlink" title="字符串类型的选择"></a>字符串类型的选择</h3><p><strong>使用varchar</strong></p>
 <blockquote>
 <p>char(10) 如果你存abc，需要空间为10，3个存abc，7个存空字符，因为char是固定长度</p>
 <p>varchar(10)如果你存abc，需要空间为4，3个存abc，1个存长度，varchar是可变长度</p>
 <p><strong>超过10的部分，都会被截断</strong></p>
 </blockquote>
 <p><strong>text,类型独立存储，不占用字段总空间</strong></p>
-<h3 id="尽可能选择小的数据类型和指定短的长度">尽可能选择小的数据类型和指定短的长度</h3>
-<h3 id="尽可能使用-not-null">尽可能使用 not null</h3>
-<p><strong>非<code>null</code>字段的处理要比<code>null</code>字段的处理高效些</strong>！且不需要判断是否为<code>null</code>。</p>
+<h3 id="尽可能选择小的数据类型和指定短的长度"><a href="#尽可能选择小的数据类型和指定短的长度" class="headerlink" title="尽可能选择小的数据类型和指定短的长度"></a>尽可能选择小的数据类型和指定短的长度</h3><h3 id="尽可能使用-not-null"><a href="#尽可能使用-not-null" class="headerlink" title="尽可能使用 not null"></a>尽可能使用 not null</h3><p><strong>非<code>null</code>字段的处理要比<code>null</code>字段的处理高效些</strong>！且不需要判断是否为<code>null</code>。</p>
 <p><code>null</code>在MySQL中，不好处理，<strong>存储需要额外空间，运算也需要特殊的运算符</strong>。如<code>select null = null</code>和<code>select null &lt;&gt; null</code>（<code>&lt;&gt;</code>为不等号）有着同样的结果，只能通过<code>is null</code>和<code>is not null</code>来判断字段是否为<code>null</code>。</p>
 <blockquote>
 <p>MySQL中每条记录都需要额外的存储空间，表示每个字段是否为<code>null</code>。因此通常使用特殊的数据进行占位，比如<code>int not null default 0</code>、<code>string not null default ‘’</code></p>
 </blockquote>
-<h3 id="字段注释要完整，见名知意">字段注释要完整，见名知意</h3>
-<h3 id="单表字段不宜过多">单表字段不宜过多</h3>
-<blockquote>
+<h3 id="字段注释要完整，见名知意"><a href="#字段注释要完整，见名知意" class="headerlink" title="字段注释要完整，见名知意"></a>字段注释要完整，见名知意</h3><h3 id="单表字段不宜过多"><a href="#单表字段不宜过多" class="headerlink" title="单表字段不宜过多"></a>单表字段不宜过多</h3><blockquote>
 <p>当单表字段字段过多，可以考虑拆成多张表，将小长度的字段放在一张表，其余的放在其他表中</p>
 </blockquote>
-<h3 id="可以预留字段">可以预留字段</h3>
-<blockquote>
+<h3 id="可以预留字段"><a href="#可以预留字段" class="headerlink" title="可以预留字段"></a>可以预留字段</h3><blockquote>
 <p>优先满足业务，可以预留一些字段</p>
 </blockquote>
-<h2 id="关联表的设计">关联表的设计</h2>
-<blockquote>
+<h2 id="关联表的设计"><a href="#关联表的设计" class="headerlink" title="关联表的设计"></a>关联表的设计</h2><blockquote>
 <p>外键<code>foreign key</code>只能实现一对一或一对多的映射</p>
 </blockquote>
-<h3 id="一对多">一对多</h3>
-<blockquote>
+<h3 id="一对多"><a href="#一对多" class="headerlink" title="一对多"></a>一对多</h3><blockquote>
 <p>使用外键</p>
 </blockquote>
-<h3 id="多对多">多对多</h3>
-<blockquote>
+<h3 id="多对多"><a href="#多对多" class="headerlink" title="多对多"></a>多对多</h3><blockquote>
 <p>使用中间表存储两表之间的关联关系</p>
 </blockquote>
-<h3 id="一对一">一对一</h3>
-<blockquote>
+<h3 id="一对一"><a href="#一对一" class="headerlink" title="一对一"></a>一对一</h3><blockquote>
 <p>如商品的基本信息（<code>item</code>）和商品的详细信息（<code>item_intro</code>），通常使用相同的主键或者增加一个外键字段（<code>item_id</code>）</p>
 </blockquote>
-<h2 id="索引">索引</h2>
-<blockquote>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><blockquote>
 <p>关键字与数据的映射关系称为索引（==包含关键字和对应的记录在磁盘中的地址==）。关键字是从数据当中提取的用于标识、检索数据的特定内容。</p>
 </blockquote>
-<h3 id="索引检索为什么快">索引检索为什么快</h3>
-<ol>
-<li>
-<p>关键字相对于数据本身，==数据量小==</p>
+<h3 id="索引检索为什么快"><a href="#索引检索为什么快" class="headerlink" title="索引检索为什么快"></a>索引检索为什么快</h3><ol>
+<li><p>关键字相对于数据本身，==数据量小==</p>
 </li>
-<li>
-<p>关键字是==有序==的，二分查找可快速确定位置</p>
+<li><p>关键字是==有序==的，二分查找可快速确定位置</p>
 <blockquote>
 <p>图书馆为每本书都加了索引号（类别-楼层-书架）、字典为词语解释按字母顺序编写目录等都用到了索引。</p>
 </blockquote>
 </li>
 </ol>
-<h3 id="MySQL中索引类型">MySQL中索引类型</h3>
-<ol>
+<h3 id="MySQL中索引类型"><a href="#MySQL中索引类型" class="headerlink" title="MySQL中索引类型"></a>MySQL中索引类型</h3><ol>
 <li><strong>普通索引</strong>（<code>key</code>）</li>
 <li><strong>唯一索引</strong>（<code>unique key</code>）</li>
 <li><strong>主键索引</strong>（<code>primary key</code>）</li>
 <li><strong>全文索引</strong>（<code>fulltext key</code>）</li>
 </ol>
-<h4 id="索引的关键字有不同的限制：">索引的关键字有不同的限制：</h4>
-<ul>
-<li>**普通索引：**对关键字没有限制</li>
-<li>**唯一索引：**要求记录提供的关键字不能重复</li>
-<li>**主键索引：**要求关键字唯一且不为null</li>
+<h4 id="索引的关键字有不同的限制："><a href="#索引的关键字有不同的限制：" class="headerlink" title="索引的关键字有不同的限制："></a>索引的关键字有不同的限制：</h4><ul>
+<li><strong>普通索引：</strong>对关键字没有限制</li>
+<li><strong>唯一索引：</strong>要求记录提供的关键字不能重复</li>
+<li><strong>主键索引：</strong>要求关键字唯一且不为null</li>
 </ul>
-<h3 id="索引管理语法">索引管理语法</h3>
-<h4 id="查看索引">查看索引</h4>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--查看建表语句</span></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">create</span> <span class="keyword">table</span> 表名;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">CREATE</span> <span class="keyword">table</span> `<span class="keyword">user</span>`;</span><br><span class="line"><span class="comment">--查看表中字段</span></span><br><span class="line"><span class="keyword">desc</span> 表名;</span><br><span class="line"><span class="keyword">desc</span> <span class="keyword">user</span>;</span><br><span class="line"><span class="comment">--查看表中所有索引</span></span><br><span class="line"><span class="keyword">SHOW</span> index <span class="keyword">FROM</span> `表名`</span><br><span class="line"><span class="keyword">SHOW</span> keys <span class="keyword">FROM</span> `表名`;</span><br><span class="line"><span class="keyword">SHOW</span> index <span class="keyword">FROM</span> `user_index`;</span><br><span class="line"><span class="keyword">SHOW</span> keys <span class="keyword">FROM</span> `user_index`;</span><br></pre></td></tr></table></figure>
+<h3 id="索引管理语法"><a href="#索引管理语法" class="headerlink" title="索引管理语法"></a>索引管理语法</h3><h4 id="查看索引"><a href="#查看索引" class="headerlink" title="查看索引"></a>查看索引</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--查看建表语句</span></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">create</span> <span class="keyword">table</span> 表名;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> <span class="keyword">CREATE</span> <span class="keyword">table</span> `<span class="keyword">user</span>`;</span><br><span class="line"><span class="comment">--查看表中字段</span></span><br><span class="line"><span class="keyword">desc</span> 表名;</span><br><span class="line"><span class="keyword">desc</span> <span class="keyword">user</span>;</span><br><span class="line"><span class="comment">--查看表中所有索引</span></span><br><span class="line"><span class="keyword">SHOW</span> index <span class="keyword">FROM</span> `表名`</span><br><span class="line"><span class="keyword">SHOW</span> keys <span class="keyword">FROM</span> `表名`;</span><br><span class="line"><span class="keyword">SHOW</span> index <span class="keyword">FROM</span> `user_index`;</span><br><span class="line"><span class="keyword">SHOW</span> keys <span class="keyword">FROM</span> `user_index`;</span><br></pre></td></tr></table></figure>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312094403.png" alt="image-20210312094403347"></p>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312094416.png" alt="image-20210312094416711"></p>
-<h4 id="创建索引">创建索引</h4>
-<h5 id="创建表之后建立索引">创建表之后建立索引</h5>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">TABLE</span> user_index(</span><br><span class="line">	id <span class="type">int</span> auto_increment <span class="keyword">primary</span> key,</span><br><span class="line">	first_name <span class="type">varchar</span>(<span class="number">16</span>),</span><br><span class="line">	last_name <span class="type">VARCHAR</span>(<span class="number">16</span>),</span><br><span class="line">	id_card <span class="type">VARCHAR</span>(<span class="number">18</span>),</span><br><span class="line">	information text</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建一个first_name和last_name的复合索引，并命名为name</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> key name (first_name,last_name),</span><br><span class="line"><span class="comment">-- 创建一个id_card的唯一索引，默认以字段名作为索引名</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> <span class="keyword">UNIQUE</span> KEY (id_card),</span><br><span class="line"><span class="comment">-- 鸡肋，全文索引不支持中文</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> FULLTEXT KEY (information);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h5 id="创建表时指定索引">创建表时指定索引</h5>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> user_index2 (</span><br><span class="line">	id <span class="type">INT</span> auto_increment <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">	first_name <span class="type">VARCHAR</span> (<span class="number">16</span>),</span><br><span class="line">	last_name <span class="type">VARCHAR</span> (<span class="number">16</span>),</span><br><span class="line">	id_card <span class="type">VARCHAR</span> (<span class="number">18</span>),</span><br><span class="line">	information text,</span><br><span class="line">	KEY name (first_name, last_name),</span><br><span class="line">	FULLTEXT KEY (information),</span><br><span class="line">	<span class="keyword">UNIQUE</span> KEY (id_card)</span><br><span class="line">);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h4 id="删除索引">删除索引</h4>
-<h5 id="删除普通索引、唯一索引、全文索引">删除普通索引、唯一索引、全文索引</h5>
-<p>根据索引名删除普通索引、唯一索引、全文索引：<code>alter table 表名 drop KEY 索引名</code></p>
+<h4 id="创建索引"><a href="#创建索引" class="headerlink" title="创建索引"></a>创建索引</h4><h5 id="创建表之后建立索引"><a href="#创建表之后建立索引" class="headerlink" title="创建表之后建立索引"></a>创建表之后建立索引</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">TABLE</span> user_index(</span><br><span class="line">	id <span class="type">int</span> auto_increment <span class="keyword">primary</span> key,</span><br><span class="line">	first_name <span class="type">varchar</span>(<span class="number">16</span>),</span><br><span class="line">	last_name <span class="type">VARCHAR</span>(<span class="number">16</span>),</span><br><span class="line">	id_card <span class="type">VARCHAR</span>(<span class="number">18</span>),</span><br><span class="line">	information text</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建一个first_name和last_name的复合索引，并命名为name</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> key name (first_name,last_name),</span><br><span class="line"><span class="comment">-- 创建一个id_card的唯一索引，默认以字段名作为索引名</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> <span class="keyword">UNIQUE</span> KEY (id_card),</span><br><span class="line"><span class="comment">-- 鸡肋，全文索引不支持中文</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">add</span> FULLTEXT KEY (information);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h5 id="创建表时指定索引"><a href="#创建表时指定索引" class="headerlink" title="创建表时指定索引"></a>创建表时指定索引</h5><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> user_index2 (</span><br><span class="line">	id <span class="type">INT</span> auto_increment <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">	first_name <span class="type">VARCHAR</span> (<span class="number">16</span>),</span><br><span class="line">	last_name <span class="type">VARCHAR</span> (<span class="number">16</span>),</span><br><span class="line">	id_card <span class="type">VARCHAR</span> (<span class="number">18</span>),</span><br><span class="line">	information text,</span><br><span class="line">	KEY name (first_name, last_name),</span><br><span class="line">	FULLTEXT KEY (information),</span><br><span class="line">	<span class="keyword">UNIQUE</span> KEY (id_card)</span><br><span class="line">);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h4><h5 id="删除普通索引、唯一索引、全文索引"><a href="#删除普通索引、唯一索引、全文索引" class="headerlink" title="删除普通索引、唯一索引、全文索引"></a>删除普通索引、唯一索引、全文索引</h5><p>根据索引名删除普通索引、唯一索引、全文索引：<code>alter table 表名 drop KEY 索引名</code></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-----删除普通索引、唯一索引、全文索引</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> 表名 <span class="keyword">drop</span> KEY 索引名</span><br><span class="line"></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">drop</span> KEY name;</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">drop</span> KEY id_card;</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">drop</span> KEY information;</span><br></pre></td></tr></table></figure>
-<h5 id="删除主键索引">删除主键索引</h5>
-<p>删除主键索引：<code>alter table 表名 drop primary key</code>（因为主键只有一个）。这里值得注意的是，如果主键自增长，那么不能直接执行此操作（自增长依赖于主键索引）：</p>
+<h5 id="删除主键索引"><a href="#删除主键索引" class="headerlink" title="删除主键索引"></a>删除主键索引</h5><p>删除主键索引：<code>alter table 表名 drop primary key</code>（因为主键只有一个）。这里值得注意的是，如果主键自增长，那么不能直接执行此操作（自增长依赖于主键索引）：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">---删除主键索引</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> 表名 <span class="keyword">drop</span> <span class="keyword">primary</span> key</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">drop</span> <span class="keyword">primary</span> key</span><br></pre></td></tr></table></figure>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312100733.png" alt="image-20210312100733734"></p>
 <p><strong>需要取消自增长</strong>：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--取消主键自增</span></span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> `表名` MODIFY <span class="keyword">COLUMN</span> 字段名 字段类型（长度） <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">FIRST</span> ;</span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> `user_index` MODIFY <span class="keyword">COLUMN</span> id <span class="type">int</span>(<span class="number">10</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">FIRST</span> ;</span><br><span class="line"><span class="comment">---删除主键索引</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> 表名 <span class="keyword">drop</span> <span class="keyword">primary</span> key</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> user_index <span class="keyword">drop</span> <span class="keyword">primary</span> key</span><br></pre></td></tr></table></figure>
-<h3 id="索引失效">索引失效</h3>
-<ol>
-<li>
-<p><strong>like 以%开头</strong>，索引无效；<strong>当like前缀没有%，后缀有%时，索引有效</strong>。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104045.png" alt="image-20210312104045534"></p>
+<h3 id="索引失效"><a href="#索引失效" class="headerlink" title="索引失效"></a>索引失效</h3><ol>
+<li><p><strong>like 以%开头</strong>，索引无效；<strong>当like前缀没有%，后缀有%时，索引有效</strong>。</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104045.png" alt="image-20210312104045534"></p>
 </li>
-<li>
-<p><strong>or语句前后没有同时使用索引</strong>。当or左右查询字段只有一个是索引，该索引失效，只有当or左右查询字段均为索引时，才会生效</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104107.png" alt="image-20210312104107314"></p>
+<li><p><strong>or语句前后没有同时使用索引</strong>。当or左右查询字段只有一个是索引，该索引失效，只有当or左右查询字段均为索引时，才会生效</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104107.png" alt="image-20210312104107314"></p>
 </li>
-<li>
-<p><strong>组合索引，不是使用第一列索引</strong>，索引失效。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104314.png" alt="image-20210312104314829"></p>
+<li><p><strong>组合索引，不是使用第一列索引</strong>，索引失效。</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104314.png" alt="image-20210312104314829"></p>
 </li>
-<li>
-<p><strong>数据类型出现隐式转化</strong>。如varchar不加单引号的话可能会自动转换为int型，使索引无效，产生全表扫描。</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104329.png" alt="image-20210312104329349"></p>
+<li><p><strong>数据类型出现隐式转化</strong>。如varchar不加单引号的话可能会自动转换为int型，使索引无效，产生全表扫描。</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104329.png" alt="image-20210312104329349"></p>
 </li>
-<li>
-<p><strong><font color=red>在索引列上使用 IS NULL 或 IS NOT NULL操作，索引不一定失效，可能在某些情况会失效</font></strong></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104455.png" alt="image-20210312104455798"></p>
-<p>此处我将重新创建一个emp表（<strong>此处索引为InnoDB类型索引</strong>）</p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104819.png" alt="image-20210312104819712"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312104905.png" alt="image-20210312104905292"></p>
+<li><p><strong><font color=red>在索引列上使用 IS NULL 或 IS NOT NULL操作，索引不一定失效，可能在某些情况会失效</font></strong></p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104455.png" alt="image-20210312104455798"></p>
+<p> 此处我将重新创建一个emp表（<strong>此处索引为InnoDB类型索引</strong>）</p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104819.png" alt="image-20210312104819712"></p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312104905.png" alt="image-20210312104905292"></p>
  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">----创建新索引</span></span><br><span class="line"><span class="keyword">create</span> index test2 <span class="keyword">on</span> emp(name)</span><br></pre></td></tr></table></figure>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312105105.png" alt="image-20210312105105179"></p>
-<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312105210.png" alt="image-20210312105210686"></p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312105105.png" alt="image-20210312105105179"></p>
+<p> <img src="https://gitee.com/CNRF/image/raw/master/img/20210312105210.png" alt="image-20210312105210686"></p>
 </li>
-<li>
-<p><strong>在索引字段上使用not，&lt;&gt;，!=</strong>。不等于操作符是永远不会用到索引的，因此对它的处理只会产生全表扫描。 优化方法： key&lt;&gt;0 改为 key&gt;0 or key&lt;0。</p>
+</ol>
+<ol>
+<li><p><strong>在索引字段上使用not，&lt;&gt;，!=</strong>。不等于操作符是永远不会用到索引的，因此对它的处理只会产生全表扫描。 优化方法： key&lt;&gt;0 改为 key&gt;0 or key&lt;0。</p>
 </li>
-<li>
-<p><strong>当全表扫描速度比索引速度快时，mysql会使用全表扫描，此时索引失效。</strong></p>
+<li><p><strong>当全表扫描速度比索引速度快时，mysql会使用全表扫描，此时索引失效。</strong></p>
 </li>
-<li>
-<p><strong>不要在字段中做运算</strong></p>
+<li><p><strong>不要在字段中做运算</strong></p>
  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">----下面两条SQL语句在语义上相同，(id为主键)但是第一条会使用主键索引而第二条不会。</span></span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">where</span> id <span class="operator">=</span> <span class="number">20</span><span class="number">-1</span>;</span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">where</span> id<span class="operator">+</span><span class="number">1</span> <span class="operator">=</span> <span class="number">20</span>;</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
-<h2 id="索引使用场景（重点）">索引使用场景（重点）</h2>
-<h3 id="where">where</h3>
-<p>根据<code>id</code>查询记录，因为<code>id</code>字段仅建立了主键索引，因此此SQL执行可选的索引只有主键索引，如果有多个，最终会选一个较优的作为检索的依据。</p>
+<h2 id="索引使用场景（重点）"><a href="#索引使用场景（重点）" class="headerlink" title="索引使用场景（重点）"></a>索引使用场景（重点）</h2><h3 id="where"><a href="#where" class="headerlink" title="where"></a>where</h3><p>根据<code>id</code>查询记录，因为<code>id</code>字段仅建立了主键索引，因此此SQL执行可选的索引只有主键索引，如果有多个，最终会选一个较优的作为检索的依据。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 增加一个没有建立索引的字段</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> innodb1 <span class="keyword">add</span> sex <span class="type">char</span>(<span class="number">1</span>);</span><br><span class="line"><span class="comment">-- 按sex检索时可选的索引为null</span></span><br><span class="line">EXPLAIN <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">from</span> innodb1 <span class="keyword">where</span> sex<span class="operator">=</span><span class="string">&#x27;男&#x27;</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p><img src="https://gitee.com/CNRF/image/raw/master/img/20210312103826.png" alt="image-20210312103826193"></p>
 <blockquote>
 <p>可以尝试在一个字段未建立索引时，根据该字段查询的效率，然后对该字段建立索引（<code>alter table 表名 add index(字段名)</code>），同样的SQL执行的效率，你会发现查询效率会有明显的提升（数据量越大越明显）。</p>
 </blockquote>
-<h3 id="order-by">order by</h3>
-<ul>
-<li>
-<p><strong>该字段没有建立索引</strong></p>
-<p>将<strong>查询出的所有数据使用外部排序</strong>（将数据从硬盘分批读取到内存使用内部排序，最后合并排序结果）</p>
+<h3 id="order-by"><a href="#order-by" class="headerlink" title="order by"></a>order by</h3><ul>
+<li><p><strong>该字段没有建立索引</strong></p>
+<p>  将<strong>查询出的所有数据使用外部排序</strong>（将数据从硬盘分批读取到内存使用内部排序，最后合并排序结果）</p>
 </li>
-<li>
-<p><strong>该字段建立索引</strong></p>
-<p>直接<strong>按照索引的顺序和映射关系逐条取出数据</strong>。而且如果分页的，那么只用<strong>取出索引表某个范围内的索引对应的数据</strong></p>
+<li><p><strong>该字段建立索引</strong></p>
+<p>  直接<strong>按照索引的顺序和映射关系逐条取出数据</strong>。而且如果分页的，那么只用<strong>取出索引表某个范围内的索引对应的数据</strong></p>
 </li>
 </ul>
-<h3 id="join">join</h3>
-<blockquote>
+<h3 id="join"><a href="#join" class="headerlink" title="join"></a>join</h3><blockquote>
 <p>对<code>join</code>语句匹配关系（<code>on</code>）涉及的字段建立索引能够提高效率</p>
 </blockquote>
-<h3 id="索引覆盖">索引覆盖</h3>
-<p>如果要查询的字段都建立过索引，那么引擎会直接在索引表中查询而不会访问原始数据（否则只要有一个字段没有建立索引就会做全表扫描），这叫索引覆盖。因此我们需要尽可能的在<code>select</code>后==只写必要的查询字段==，以增加索引覆盖的几率。</p>
+<h3 id="索引覆盖"><a href="#索引覆盖" class="headerlink" title="索引覆盖"></a>索引覆盖</h3><p>如果要查询的字段都建立过索引，那么引擎会直接在索引表中查询而不会访问原始数据（否则只要有一个字段没有建立索引就会做全表扫描），这叫索引覆盖。因此我们需要尽可能的在<code>select</code>后==只写必要的查询字段==，以增加索引覆盖的几率。</p>
 
     </div>
 
@@ -728,7 +682,7 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:04</span>
+    <span title="站点阅读时长">4:03</span>
 </div>
   <div class="powered-by">
   </div>
