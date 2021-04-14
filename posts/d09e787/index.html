@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
+  </script>
+
+  <meta name="description" content="redis的消息订阅，pipeline，事务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis的消息订阅，pipeline，事务">
+<meta property="og:url" content="https://cnrfwang.top/posts/d09e787/index.html">
+<meta property="og:site_name" content="三才生">
+<meta property="og:description" content="redis的消息订阅，pipeline，事务">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113641.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303110111.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303101618.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303102359.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303102525.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303102720.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303094333.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303094514.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210303094057.png">
+<meta property="article:published_time" content="2021-03-05T10:03:28.996Z">
+<meta property="article:modified_time" content="2021-03-05T10:03:28.996Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223113641.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/d09e787/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>redis的消息订阅，pipeline，事务 | 三才生</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">三才生</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三才生</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">19</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">19</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">62</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/d09e787/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          redis的消息订阅，pipeline，事务
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-05 10:03:28" itemprop="dateCreated datePublished" datetime="2021-03-05T10:03:28Z">2021-03-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>2 分钟</span>
+            </span>
+            <div class="post-description">redis的消息订阅，pipeline，事务</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h5 id="1-Redis-管道（Pipelining）"><a href="#1-Redis-管道（Pipelining）" class="headerlink" title="1.Redis 管道（Pipelining）"></a>1.Redis 管道（Pipelining）</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/pipelining.html">Redis 管道（Pipelining）</a></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223113641.png" alt="image-20210220103817162"></p>
+<p>一次请求/响应服务器能实现处理新的请求即使旧的请求还未被响应。这样就可以将<em>多个命令</em>发送到服务器，而不用等待回复，最后在一个步骤中读取该答复。</p>
+<p><strong>重要说明</strong>: 使用管道发送命令时，服务器将被迫回复一个队列答复，占用很多内存。如果需要发送大量的命令，最好是按照合理数量分批次的处理，例如10K的命令，读回复，然后再发送另一个10k的命令，等等。这样速度几乎是相同的，但是在回复这10k命令队列需要非常大量的内存用来组织返回数据内容。</p>
+<h5 id="2-redis的消息订阅"><a href="#2-redis的消息订阅" class="headerlink" title="2. redis的消息订阅"></a>2. redis的消息订阅</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/pubsub.html">redis的消息订阅</a></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303110111.png" alt="redis发布订阅过程"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PUBLISH  &#x2F;&#x2F;发布消息</span><br><span class="line">SUBSCRIBE foo bar</span><br><span class="line">SUBSCRIBE  &#x2F;&#x2F;接收指定队列消息</span><br><span class="line">SUBSCRIBE foo</span><br></pre></td></tr></table></figure>
+<h5 id="3-redis的事务"><a href="#3-redis的事务" class="headerlink" title="3. redis的事务"></a>3. redis的事务</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/transactions.html">redis的事务</a></p>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/multi.html">MULTI</a> 、 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 、 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/discard.html">DISCARD</a> 和 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/watch.html">WATCH</a> 是 Redis 事务相关的命令。事务可以一次执行多个命令， 并且带有以下两个重要的保证：</p>
+<ul>
+<li>事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</li>
+<li>事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。</li>
+</ul>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 命令负责触发并执行事务中的所有命令：</p>
+<ul>
+<li><p>如果客户端在使用 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/multi.html">MULTI</a> 开启了一个事务之后，却因为断线而没有成功执行 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都不会被执行。</p>
+</li>
+<li><p>另一方面，如果客户端成功在开启事务之后执行 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> ，那么事务中的所有命令都会被执行</p>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210303101618.png" alt=""></p>
+<blockquote>
+<p>开启事务，修改k2 的值，但是<font  color=red>没有进行事务的提交，导致修改不成功</font></p>
+</blockquote>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210303102359.png" alt="image-20210303102359486"></p>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210303102525.png" alt=""></p>
+<p>  <img src="https://gitee.com/CNRF/image/raw/master/img/20210303102720.png" alt=""></p>
+<blockquote>
+<p>由于redis是单线程，当<font  color=red>2的事务(exec)先到达，则先回执行2的事务，则事务1无法获取到k1的值</font></p>
+<p>当<font  color=red>1的事务(exec)先到达，则先回执行1的事务，则事务1能获取到k1的值</font></p>
+</blockquote>
+</li>
+</ul>
+<blockquote>
+<p><code>AOF 方式做持久化</code>的时候，Redis 会使用单个 write(2) 命令将事务写入到磁盘中。然而，如果 Redis 服务器因为某些原因被管理员杀死，或者遇上某种硬件故障，那么可能只有部分事务命令会被成功写入到磁盘中。如果 Redis 在重新启动时发现 AOF 文件出了这样的问题，那么它会退出，并汇报一个错误。</p>
+<p>Redis (2.2版本开始)还可以通过乐观锁（optimistic lock）实现 CAS （check-and-set）操作</p>
+</blockquote>
+<h6 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h6><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/multi.html">MULTI</a> 命令用于开启一个事务，它总是返回 <code>OK</code> 。 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/multi.html">MULTI</a> 执行之后， 客户端可以继续向服务器发送任意多条命令， 这些命令不会立即被执行， 而是被放到一个队列中， 当 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a>命令被调用时， 所有队列中的命令才会被执行。</p>
+<p>另一方面， 通过调用 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/discard.html">DISCARD</a> ， 客户端可以清空事务队列， 并放弃执行事务。</p>
+<p>以下是一个事务例子， 它原子地增加了 <code>foo</code> 和 <code>bar</code> 两个键的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt; MULTI</span><br><span class="line">OK</span><br><span class="line">&gt; INCR foo</span><br><span class="line">QUEUED</span><br><span class="line">&gt; INCR bar</span><br><span class="line">QUEUED</span><br><span class="line">&gt; EXEC</span><br><span class="line">1) (integer) 1</span><br><span class="line">2) (integer) 1</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 命令的回复是一个数组， 数组中的每个元素都是执行事务中的命令所产生的回复。 其中， 回复元素的先后顺序和命令发送的先后顺序一致。</p>
+<p>当客户端处于事务状态时， 所有传入的命令都会返回一个内容为 <code>QUEUED</code> 的状态回复（status reply）， 这些被入队的命令将在 EXEC 命令被调用时执行</p>
+<h6 id="事务中的错误"><a href="#事务中的错误" class="headerlink" title="事务中的错误"></a>事务中的错误</h6><ul>
+<li>事务在执行 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 之前，入队的命令可能会出错。比如说，命令可能会产生语法错误（参数数量错误，参数名错误，等等），或者其他更严重的错误，比如内存不足（如果服务器使用 <code>maxmemory</code> 设置了最大内存限制的话）。</li>
+<li>命令可能在 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 调用之后失败。举个例子，事务中的命令可能处理了错误类型的键，比如将列表命令用在了字符串键上面，诸如此类。</li>
+</ul>
+<p>服务器会对命令入队失败的情况进行记录，并在客户端调用 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/commands/exec.html">EXEC</a> 命令时，<strong>拒绝执行并自动放弃这个事务</strong>。</p>
+<h6 id="Redis-不支持回滚（roll-back）原因"><a href="#Redis-不支持回滚（roll-back）原因" class="headerlink" title="Redis 不支持回滚（roll back）原因"></a>Redis 不支持回滚（roll back）原因</h6><ul>
+<li>Redis 命令只会因为错误的语法而失败（并且这些问题不能在入队时发现），或是命令用在了错误类型的键上面：这也就是说，从实用性的角度来说，<strong>失败的命令是由编程错误造成的，而这些错误应该在开发的过程中被发现，而不应该出现在生产环境中</strong>。</li>
+<li>因为<strong>不需要对回滚进行支持</strong>，所以 Redis 的内部可以保持<strong>简单且快速</strong>。</li>
+</ul>
+<h5 id="4-布隆过滤器"><a href="#4-布隆过滤器" class="headerlink" title="4.布隆过滤器"></a>4.布隆过滤器</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/RedisBloom/RedisBloom">第三方实现的redis的布隆过滤器</a></p>
+<h6 id="redis添加过滤器的意义"><a href="#redis添加过滤器的意义" class="headerlink" title="redis添加过滤器的意义"></a>redis添加过滤器的意义</h6><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303094333.png" alt="image-20210303094333858"></p>
+<h6 id="redis的布隆过滤器实现"><a href="#redis的布隆过滤器实现" class="headerlink" title="redis的布隆过滤器实现"></a>redis的布隆过滤器实现</h6><ol>
+<li>Client自己承载，<strong>实现bloom算法并承载bitmap</strong></li>
+<li>Client实现bloom算法，对应redis的bitmap</li>
+<li>redis安装bloom插件</li>
+</ol>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303094514.png" alt="image-20210303094514053"></p>
+<blockquote>
+<p>第三方实现redis的相关功能： <a target="_blank" rel="noopener external nofollow noreferrer" href="https://redis.io/modules">https://redis.io/modules</a></p>
+</blockquote>
+<h5 id="5-redis的LRU（Least-Recently-Used）淘汰策略"><a href="#5-redis的LRU（Least-Recently-Used）淘汰策略" class="headerlink" title="5.redis的LRU（Least Recently Used）淘汰策略"></a>5.redis的LRU（Least Recently Used）淘汰策略</h5><p><a target="_blank" rel="noopener external nofollow noreferrer" href="http://redis.cn/topics/lru-cache.html">将redis当做使用LRU算法的缓存来使用</a></p>
+<p><strong>LRU是Redis唯一支持的回收方法</strong>，Redis的<code>maxmemory</code>指令用于将可用内存限制成一个固定大小，还包括了Redis使用的LRU算法，这个实际上只是近似的LRU。</p>
+<p><strong>Redis的LRU算法并非完整的实现</strong>。这意味着<strong>Redis并没办法选择最佳候选来进行回收</strong>，也就是最久未被访问的键。相反它会尝试运行一个近似LRU的算法，<strong>通过对少量keys进行取样，然后回收其中一个最好的key（被访问时间较早的）</strong>。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210303094057.png" alt=""></p>
+<h6 id="回收策略"><a href="#回收策略" class="headerlink" title="回收策略"></a>回收策略</h6><p>以下的策略是可用的:</p>
+<ul>
+<li><strong>noeviction</strong>:返回错误当内存限制达到并且客户端尝试执行会让更多内存被使用的命令（大部分的写入指令，但DEL和几个例外）</li>
+<li><strong>allkeys-lru</strong>: 尝试回收最少使用的键（LRU），使得新添加的数据有空间存放。</li>
+<li><strong>volatile-lru</strong>: 尝试回收最少使用的键（LRU），但仅限于在过期集合的键,使得新添加的数据有空间存放。</li>
+<li><strong>allkeys-random</strong>: 回收随机的键使得新添加的数据有空间存放。</li>
+<li><strong>volatile-random</strong>: 回收随机的键使得新添加的数据有空间存放，但仅限于在过期集合的键。</li>
+<li><strong>volatile-ttl</strong>: 回收在过期集合的键，并且优先回收存活时间（TTL）较短的键,使得新添加的数据有空间存放。</li>
+</ul>
+<h6 id="回收进程如何工作"><a href="#回收进程如何工作" class="headerlink" title="回收进程如何工作"></a><strong>回收进程如何工作</strong></h6><p>理解回收进程如何工作是非常重要的:</p>
+<ul>
+<li>一个客户端运行了新的命令，添加了新的数据。</li>
+<li>Redi检查内存使用情况，如果大于maxmemory的限制, 则根据设定好的策略进行回收。</li>
+<li>一个新的命令被执行，等等。</li>
+<li>所以我们不断地穿越内存限制的边界，通过不断达到边界然后不断地回收回到边界以下。</li>
+</ul>
+<p>如果一个命令的结果导致大量内存被使用（例如很大的集合的交集保存到一个新的键），不用多久内存限制就会被这个内存使用量超越。</p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\8f6adc3b\" rel="bookmark">Redis 的击穿，穿透，雪崩，分布式锁，缓存一致性</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\b153a32a\" rel="bookmark">redis集群</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\dcfaa904\" rel="bookmark">redis持久化</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\400dad18\" rel="bookmark">redis快的原因</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\eca8b4a8\" rel="bookmark">redis入门</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/d09e787/" title="redis的消息订阅，pipeline，事务">https://cnrfwang.top/posts/d09e787/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/Redis/" rel="tag"><i class="fa fa-tag"></i> Redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/400dad18/" rel="prev" title="redis快的原因">
+      <i class="fa fa-chevron-left"></i> redis快的原因
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/dcfaa904/" rel="next" title="redis持久化">
+      redis持久化 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-Redis-%E7%AE%A1%E9%81%93%EF%BC%88Pipelining%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">1.Redis 管道（Pipelining）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-redis%E7%9A%84%E6%B6%88%E6%81%AF%E8%AE%A2%E9%98%85"><span class="nav-number">2.</span> <span class="nav-text">2. redis的消息订阅</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-redis%E7%9A%84%E4%BA%8B%E5%8A%A1"><span class="nav-number">3.</span> <span class="nav-text">3. redis的事务</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%94%A8%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%E4%B8%AD%E7%9A%84%E9%94%99%E8%AF%AF"><span class="nav-number">3.2.</span> <span class="nav-text">事务中的错误</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Redis-%E4%B8%8D%E6%94%AF%E6%8C%81%E5%9B%9E%E6%BB%9A%EF%BC%88roll-back%EF%BC%89%E5%8E%9F%E5%9B%A0"><span class="nav-number">3.3.</span> <span class="nav-text">Redis 不支持回滚（roll back）原因</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">4.布隆过滤器</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#redis%E6%B7%BB%E5%8A%A0%E8%BF%87%E6%BB%A4%E5%99%A8%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">4.1.</span> <span class="nav-text">redis添加过滤器的意义</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#redis%E7%9A%84%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">redis的布隆过滤器实现</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-redis%E7%9A%84LRU%EF%BC%88Least-Recently-Used%EF%BC%89%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="nav-number">5.</span> <span class="nav-text">5.redis的LRU（Least Recently Used）淘汰策略</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%9B%9E%E6%94%B6%E7%AD%96%E7%95%A5"><span class="nav-number">5.1.</span> <span class="nav-text">回收策略</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%9B%9E%E6%94%B6%E8%BF%9B%E7%A8%8B%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="nav-number">5.2.</span> <span class="nav-text">回收进程如何工作</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">天地人，日月星</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">62</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/0/" title="" target="_blank"></a>
+          </li>
+        
+          <li>
+            <a href="/posts/85c1a08/" title="MySQL的分库分表" target="_blank">MySQL的分库分表</a>
+          </li>
+        
+          <li>
+            <a href="/posts/9ee789ff/" title="MySQL的主从复制" target="_blank">MySQL的主从复制</a>
+          </li>
+        
+          <li>
+            <a href="/posts/c3176455/" title="备忘录模式" target="_blank">备忘录模式</a>
+          </li>
+        
+          <li>
+            <a href="/posts/30cf0cd2/" title="解释器模式" target="_blank">解释器模式</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">251k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:49</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
+<!--崩溃欺骗-->
+<script type="text/javascript" src="/js/src/crash_cheat.js"></script>
