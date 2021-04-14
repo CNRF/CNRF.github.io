@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Java中的容器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java中的容器">
+<meta property="og:url" content="https://cnrfwang.top/posts/5c0b6c7e/index.html">
+<meta property="og:site_name" content="三才生">
+<meta property="og:description" content="Java中的容器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114233.gif">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114252.jpg">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114258.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114301.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114309.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114320.png">
+<meta property="article:published_time" content="2020-12-09T15:11:00.000Z">
+<meta property="article:modified_time" content="2021-03-12T06:33:42.906Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="多线程和高并发">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210223114233.gif">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/5c0b6c7e/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java中的容器 | 三才生</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">三才生</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三才生</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">64</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/5c0b6c7e/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java中的容器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-09 15:11:00" itemprop="dateCreated datePublished" datetime="2020-12-09T15:11:00Z">2020-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%92%8C%E9%AB%98%E5%B9%B6%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">多线程和高并发</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>26k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>23 分钟</span>
+            </span>
+            <div class="post-description">Java中的容器</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="容器的分类"><a href="#容器的分类" class="headerlink" title="容器的分类"></a>容器的分类</h1><p>Collection</p>
+<ul>
+<li><p>List</p>
+<ul>
+<li>Vector</li>
+<li>ArrayList</li>
+<li>LinkList</li>
+<li>CopyOnWriteList</li>
+</ul>
+</li>
+<li><p>Set</p>
+<ul>
+<li><p>HashSet</p>
+<ul>
+<li>LinkedHashSet</li>
+</ul>
+</li>
+<li><p>SortedSet</p>
+<ul>
+<li>TreeSet</li>
+</ul>
+</li>
+<li>EnumSet</li>
+<li>CopyOnwriteArraySet</li>
+<li>ConcurrentSkipListSet</li>
+</ul>
+</li>
+<li><p>Queue（JDK1.5新增，对多线程友好，多线程优先使用）</p>
+<ul>
+<li><p>阻塞队列（BlockingQueue）</p>
+<ul>
+<li><p>TransferQueue</p>
+</li>
+<li><p>PriorityBlockingQueue</p>
+</li>
+<li><p>ArrayBlockingQueue</p>
+</li>
+<li><p>LinkedBlockingQueue</p>
+</li>
+<li><p>SynchonousQueue</p>
+</li>
+<li><p>DelayQueue</p>
+</li>
+</ul>
+</li>
+<li>非阻塞队列<ul>
+<li>Deque（双端队列，两边都可以进出）</li>
+<li>ConcurrentLinkedQueue</li>
+<li>priorityQueue</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Map</p>
+<ul>
+<li>HashTable<ul>
+<li>HashMap</li>
+<li>LinkHashMap</li>
+<li>ConcurrentHashMap</li>
+</ul>
+</li>
+<li>TreeMap</li>
+<li>ConcurrentSkipListMap</li>
+<li>WeakHashMap</li>
+<li>IdentityHashMap</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114233.gif" alt="img"></p>
+<h1 id="List接口"><a href="#List接口" class="headerlink" title="List接口"></a>List接口</h1><p>​    List是用于存放多个元素，能够维护元素的次序，并且允许元素的重复</p>
+<h2 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>ArrayList是最常用的List实现类，内部是通过<strong>数组</strong>实现的，它允许对元素进行<strong>快速随机访问</strong>。数组的缺点是每个元素之间不能有间隔，当数组大小不满足时需要增加存储能力，就要讲已经有<strong>数组的数据复制到新的存储空间</strong>中。当从ArrayList的中间位置插入或者删除元素时，需要对数组进行复制、移动、代价比较高。因此，它<strong>适合随机查找和遍历</strong>，<strong>不适合插入和删除</strong></p>
+<ul>
+<li>继承了AbstractList,此类提供 List 接口的骨干实现，以最大限度地减少实现”随机访问”数据存储（如数组）支持的该接口所需的工作.对于连续的访问数据（如链表），应优先使用 AbstractSequentialList，而不是此类。</li>
+<li>实现了List接口,意味着ArrayList元素是有序的,可以重复的,<strong>可以有null元素</strong>的集合.</li>
+<li>实现了RandomAccess接口标识着其支持随机快速访问,实际上,我们查看RandomAccess源码可以看到,其实里面什么都没有定义.因为ArrayList底层是数组,那么随机快速访问是理所当然的,访问速度O(1)。</li>
+<li>实现了Cloneable接口,标识着可以它可以被复制.注意,ArrayList里面的clone()复制其实是浅复制。</li>
+<li>实现了Serializable 标识着集合可被序列化</li>
+</ul>
+<h3 id="ArrayList的属性"><a href="#ArrayList的属性" class="headerlink" title="ArrayList的属性"></a>ArrayList的属性</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayList</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractList</span>&lt;<span class="title">E</span>&gt;</span></span><br><span class="line"><span class="class">        <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">RandomAccess</span>, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="comment">//JDK1.8版本</span></span><br><span class="line">    <span class="comment">//序列化ID</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">8683452581122892189L</span>;</span><br><span class="line">    <span class="comment">//默认的数组大小</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;</span><br><span class="line">    <span class="comment">//创建空数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line">    <span class="comment">// 一个空对象，如果使用默认构造函数创建，则默认对象内容默认是该值 </span></span><br><span class="line">    <span class="comment">//如果使用的是默认的构造函数创建的对象，则返回DEFAULTCAPACITY_EMPTY_ELEMENTDATA；如果是用户在指定容量的大小为0的时候返回的，则返回的是EMPTY_ELEMENTDATA</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line">    <span class="comment">// 当前数据对象存放地方，当前对象不参与序列化(主要是关键字transient起作用的)  </span></span><br><span class="line">    <span class="keyword">transient</span> Object[] elementData; <span class="comment">// non-private to simplify nested class access</span></span><br><span class="line">    <span class="comment">//当前数组长度</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> size;</span><br><span class="line">    <span class="comment">//数组最大程度为2^32-8为2147483639</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_ARRAY_SIZE = Integer.MAX_VALUE - <span class="number">8</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ArrayList的相关方法"><a href="#ArrayList的相关方法" class="headerlink" title="ArrayList的相关方法"></a>ArrayList的相关方法</h3><h4 id="ArrayList的构造方法"><a href="#ArrayList的构造方法" class="headerlink" title="ArrayList的构造方法"></a>ArrayList的构造方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//无参构造 </span></span><br><span class="line"><span class="comment">//创建的时候elementData长度为0.当进行第一次add之后，会变成默认的长度10</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;  </span><br><span class="line">&#125;  </span><br><span class="line"><span class="comment">//有参构造</span></span><br><span class="line"><span class="comment">//传入参数，则代表指定ArrayList的初始数组长度，传入参数如果是大于等于0，则使用用户的参数初始化，如果用户传入的参数小于0，则抛出异常</span></span><br><span class="line"><span class="comment">//当</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;  </span><br><span class="line">        <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];  </span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;  </span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;  </span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Illegal Capacity: &quot;</span>+  </span><br><span class="line">                                           initialCapacity);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//将Collection&lt;T&gt; c 中保存的数据，首先转换成数组形式（toArray（）方法），然后判断当前数组长度是否为0，为 0 则只想默认数组（EMPTY_ELEMENTDATA）</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">        elementData = c.toArray();</span><br><span class="line">        <span class="keyword">if</span> ((size = elementData.length) != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">            <span class="keyword">if</span> (elementData.getClass() != Object[].class)</span><br><span class="line">                elementData = Arrays.copyOf(elementData, size, Object[].class);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// replace with empty array.</span></span><br><span class="line">            <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：此时我们创建的ArrayList对象中的elementData中的长度是0，size是0,<strong>当进行第一次add的时候，elementData将会变成默认的长度：10.</strong></p>
+<ul>
+<li>ArrayList（）：指向 <strong>DEFAULTCAPACITY_EMPTY_ELEMENTDATA</strong>，当列表使用的时候，才会进行初始化，会通过判断是不是 DEFAULTCAPACITY_EMPTY_ELEMENTDATA 这个对象而设置数组默认大小。</li>
+<li>ArrayList(int initialCapacity)：当 initialCapacity &gt;0 的时候，设置该长度。如果 initialCapacity =0，则指向 <strong>EMPTY_ELEMENTDATA</strong> 在使用的时候，并不会设置默认数组长度 。</li>
+<li>DEFAULTCAPACITY_EMPTY_ELEMENTDATA 与 EMPTY_ELEMENTDATA 的本质区别就在于，会不会设置默认的数组长度</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">//ArrayList的size方法获取的是list中的元素个数</span></span><br><span class="line"> <span class="comment">//通过反射获取list的长度</span></span><br><span class="line"> <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayListCapacity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">getArrayListCapacity</span><span class="params">(ArrayList&lt;?&gt; arrayList)</span> </span>&#123;</span><br><span class="line">        Class&lt;ArrayList&gt; arrayListClass = ArrayList.class;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//获取 elementData 字段</span></span><br><span class="line">            Field field = arrayListClass.getDeclaredField(<span class="string">&quot;elementData&quot;</span>);</span><br><span class="line">            <span class="comment">//开始访问权限</span></span><br><span class="line">            field.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            <span class="comment">//把示例传入get，获取实例字段elementData的值</span></span><br><span class="line">            Object[] objects = (Object[])field.get(arrayList);</span><br><span class="line">            <span class="comment">//返回当前ArrayList实例的容量值</span></span><br><span class="line">            <span class="keyword">return</span> objects.length;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="2-1-3-2-ArrayList的方法"><a href="#2-1-3-2-ArrayList的方法" class="headerlink" title="2.1.3.2 ArrayList的方法"></a>2.1.3.2 ArrayList的方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//新增元素</span></span><br><span class="line">add(E element)</span><br><span class="line">add(<span class="keyword">int</span> i , E element)</span><br><span class="line">addAll(Collection)</span><br><span class="line">addAll(<span class="keyword">int</span> index，Collection)</span><br><span class="line"><span class="comment">//移除元素</span></span><br><span class="line">remove（<span class="keyword">int</span> i）<span class="comment">//移除指定位置元素</span></span><br><span class="line">remove（E element）<span class="comment">//移除数组中第一个与element相同的元素</span></span><br><span class="line">removeRange（<span class="keyword">int</span> start,<span class="keyword">int</span> end）<span class="comment">//移除指定范围的元素</span></span><br><span class="line">clear()<span class="comment">//清除所有元素</span></span><br><span class="line">removeAll(Collection c)<span class="comment">//移除数组中所有和c中有交集的元素</span></span><br><span class="line">size() ;<span class="comment">//获取数组的元素个数（非数组长度）</span></span><br><span class="line">set();<span class="comment">//设置数组中指定位置元素值</span></span><br><span class="line">get(<span class="keyword">int</span> index);  <span class="comment">//index -- 该元素返回的索引值</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-1-4-ArrayList的扩容机制"><a href="#2-1-4-ArrayList的扩容机制" class="headerlink" title="2.1.4 ArrayList的扩容机制"></a>2.1.4 ArrayList的扩容机制</h3><h5 id="扩容步骤"><a href="#扩容步骤" class="headerlink" title="扩容步骤"></a>扩容步骤</h5><p>​     总的来说就是分两步：</p>
+<p>1、扩容</p>
+<p>​      把原来的数组复制到另一个内存空间更大的数组中</p>
+<p> 2、添加元素</p>
+<p>​        把新元素添加到扩容以后的数组中，扩容长度未原数组的1.5倍</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">grow</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// overflow-conscious code</span></span><br><span class="line">      <span class="keyword">int</span> oldCapacity = elementData.length;</span><br><span class="line">    <span class="comment">//右移运算符(提高效率)   原来长度的一半 再加上原长度也就是每次扩容是原来的1.5倍</span></span><br><span class="line">      <span class="keyword">int</span> newCapacity = oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);</span><br><span class="line">      <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>)</span><br><span class="line">          newCapacity = minCapacity;</span><br><span class="line">      <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>)</span><br><span class="line">          newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">      <span class="comment">// minCapacity is usually close to size, so this is a win:</span></span><br><span class="line">      elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-1-5-实现ArrayList线程安全方式"><a href="#2-1-5-实现ArrayList线程安全方式" class="headerlink" title="2.1.5 实现ArrayList线程安全方式"></a>2.1.5 实现ArrayList线程安全方式</h3><ol>
+<li>添加Synchronize关键字（Vector容器）</li>
+<li>使用Collections的Collections.<strong>synchronizedList</strong>(new ArrayList&lt;&gt;());方法</li>
+<li><strong>CopyOnWriteArrayList（详情见下）</strong></li>
+</ol>
+<h2 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h2><p>Vector与ArrayList一样，也是通过数组实现的，不同的是它<strong>支持线程的同步</strong>，即某一时刻只有一个线程能够写Vector，避免多线程同时写而引起的不一致性，但实现同步需要很高的花费，因此，访问它比访问ArrayList慢。<strong>Vector每次请求其大小的双倍空间</strong></p>
+<h2 id="LinkList"><a href="#LinkList" class="headerlink" title="LinkList"></a>LinkList</h2><p>LinkedList是一个<strong>双向循环链表</strong>的，在<strong>添加和删除元素时具有比ArrayList更好的性能</strong>。但在get与set方面弱于ArrayList。<strong>线程非安全</strong>，可以用<strong>Collections的synchronizedList</strong>中相关方法实现线程安全</p>
+<h2 id="CopyOnWriteList"><a href="#CopyOnWriteList" class="headerlink" title="CopyOnWriteList"></a>CopyOnWriteList</h2><p>CopyOnWriteArrayList这是一个ArrayList的<strong>线程安全的变体</strong>，其原理大概可以通俗的理解为:初始化的时候只有一个容器，很常一段时间，这个容器数据、数量等没有发生变化的时候，大家(多个线程)，都是读取(假设这段时间里只发生读取的操作)同一个容器中的数据，所以这样大家读到的数据都是唯一、一致、安全的，但是后来有人往里面增加了一个数据，这个时候<strong>CopyOnWriteArrayList 底层实现添加的原理是先copy出一个容器</strong>(可以简称副本)，<strong>再往新的容器里添加这个新的数据，最后把新的容器的引用地址赋值给了之前那个旧的的容器地址，但是在添加这个数据的期间，其他线程如果要去读取数据，仍然是读取到旧的容器里的数据，这样只能保证数据一致性，但不能保证数据的实时性，并且内存占用多</strong></p>
+<h1 id="Set接口"><a href="#Set接口" class="headerlink" title="Set接口"></a>Set接口</h1><p>Set接口的特点是<strong>无序(没有下标) 集合中的元素不重复</strong>，Set判断两个对象相同不是使用==运算符，而是根据<strong>equals</strong>方法。也就是说，只要两个对象用equals方法比较返回true，Set就不会接受这两个对象。</p>
+<h3 id="HashSet"><a href="#HashSet" class="headerlink" title="HashSet"></a>HashSet</h3><ul>
+<li>它存储唯一元素并允许空值（只能有一个NULL值）</li>
+<li>它由HashMap支持</li>
+<li>它不保持插入顺序</li>
+<li>它不是线程安全的</li>
+</ul>
+<p><strong>HashSet底层声明了一个HashMap，HashSet做了一层包装，操作HashSet里的元素时其实是在操作HashMap里的元素</strong></p>
+<h4 id="LinkedHashSet"><a href="#LinkedHashSet" class="headerlink" title="LinkedHashSet"></a>LinkedHashSet</h4><p>   LinkedHashSet集合同样是根据元素的hashCode值来决定元素的存储位置，但是它同时使用<strong>链表</strong>维护元素的次序。这样使得元素看起 来像是以插入顺 序保存的，也就是说，当遍历该集合时候，LinkedHashSet将会以元素的添加顺序访问集合的元素。<br>   LinkedHashSet在迭代访问Set中的全部元素时，性能比HashSet好，但是插入时性能稍微逊色于HashSet。</p>
+<h3 id="SortedSet（接口）"><a href="#SortedSet（接口）" class="headerlink" title="SortedSet（接口）"></a>SortedSet（接口）</h3><p>SortedSet 是一个有序的接口,集合内元素有2种排序规则,一种是Comparable(自然排序) 另一则是Comparator(比较器排序),</p>
+<h4 id="TreeSet"><a href="#TreeSet" class="headerlink" title="TreeSet"></a>TreeSet</h4><p><strong>TreeSet底层也是声明了一个TreeMap，操作TreeSet里的元素其实是操作TreeMap里的元素</strong></p>
+<p>TreeSet是SortedSet接口的<strong>唯一实现类</strong>，TreeSet可以确保集合元素处于排序状态。TreeSet支持两种排序方式，<strong>自然排序</strong> 和<strong>定制排序</strong>，其中自然排序为默认的排序方式。向 TreeSet中加入的应该是同一个类的对象。</p>
+<p>TreeSet判断两个对象不相等的方式是两个对象通过equals方法返回false，或者通过CompareTo方法比较没有返回0</p>
+<h3 id="EnumSet"><a href="#EnumSet" class="headerlink" title="EnumSet"></a>EnumSet</h3><p><strong>EnumSet 是一个专为枚举设计的集合类，EnumSet中的所有元素都必须是指定枚举类型的枚举值，该枚举类型在创建EnumSet时显式或隐式地指定</strong></p>
+<ol>
+<li>EnumSet的集合元素也是<strong>有序</strong>的，EnumSet以枚举值在Enum类内的定义顺序来决定集合元素的顺序。</li>
+<li>EnumSet在内部以位向量的形式存储，这种存储形式非常紧凑、高效,因此EnumSet对象占用内存很小，而且运行效率很好。尤其是进行批量操作（如调用containsAll()和retainAll()方法）时，如果其参数也是EnumSet集合，则该批量操作的执行速度也非常快。</li>
+<li>EnumSet集合不允许加入null元素，如果试图插入null元素，EnumSet将抛出NullPointerException异常。</li>
+<li>EnumSet类没有暴露任何构造器来创建该类的实例，程序应该通过它提供的类方法来创建EnumSet对象。</li>
+<li>如果只是想判断EnumSet是否包含null元素或试图删除null元素都不会抛出异常，只是删除操作将返回false，因为没有任何null元素被删除。</li>
+</ol>
+<p><strong>方法介绍：</strong></p>
+<ul>
+<li><strong>EnumSet allOf(Class elementType)</strong>: 创建一个包含指定枚举类里所有枚举值的EnumSet集合。</li>
+<li><strong>EnumSet complementOf(EnumSet e)</strong>: 创建一个其元素类型与指定EnumSet里元素类型相同的EnumSet集合，新EnumSet集合包含原EnumSet集合所不包含的、此类枚举类剩下的枚举值（即新EnumSet集合和原EnumSet集合的集合元素加起来是该枚举类的所有枚举值）。</li>
+<li><strong>EnumSet copyOf(Collection c)</strong>: 使用一个普通集合来创建EnumSet集合。</li>
+<li><strong>EnumSet copyOf(EnumSet e)</strong>: 创建一个指定EnumSet具有相同元素类型、相同集合元素的EnumSet集合。</li>
+<li><strong>EnumSet noneOf(Class elementType)</strong>: 创建一个元素类型为指定枚举类型的空EnumSet。</li>
+<li><strong>EnumSet of(E first,E…rest)</strong>: 创建一个包含一个或多个枚举值的EnumSet集合，传入的多个枚举值必须属于同一个枚举类。</li>
+<li><strong>EnumSet range(E from,E to)</strong>: 创建一个包含从from枚举值到to枚举值范围内所有枚举值的EnumSet集合。</li>
+</ul>
+<h3 id="CopyOnwriteArraySet"><a href="#CopyOnwriteArraySet" class="headerlink" title="CopyOnwriteArraySet"></a>CopyOnwriteArraySet</h3><p>类似于<strong>CopyOnWriteArrayList</strong>，只是复制的容器有所不同</p>
+<h3 id="ConcurrentSkipListSet"><a href="#ConcurrentSkipListSet" class="headerlink" title="ConcurrentSkipListSet"></a>ConcurrentSkipListSet</h3><p>ConcurrentSkipListSet是线程安全的有序的集合，适用于高并发的场景。<br>ConcurrentSkipListSet和TreeSet，它们虽然都是有序的集合。但是，第一，它们的线程安全机制不同，TreeSet是非线程安全的，而ConcurrentSkipListSet是线程安全的。第二，ConcurrentSkipListSet是通过ConcurrentSkipListMap实现的，而TreeSet是通过TreeMap实现的。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114252.jpg" alt="ConcurrentSkipListSet的数据结构"></p>
+<p><strong>说明</strong>：<br>(01) ConcurrentSkipListSet继承于AbstractSet。因此，它本质上是一个集合。<br>(02) ConcurrentSkipListSet实现了NavigableSet接口。因此，ConcurrentSkipListSet是一个有序的集合。<br>(03) ConcurrentSkipListSet是通过<strong>ConcurrentSkipListMap</strong>实现的。它包含一个ConcurrentNavigableMap对象m，而m对象实际上是ConcurrentNavigableMap的实现类ConcurrentSkipListMap的实例。ConcurrentSkipListMap中的元素是key-value键值对；而ConcurrentSkipListSet是集合，它只用到了ConcurrentSkipListMap中的key</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造一个新的空 set，该 set 按照元素的自然顺序对其进行排序。</span></span><br><span class="line">ConcurrentSkipListSet()</span><br><span class="line"><span class="comment">// 构造一个包含指定 collection 中元素的新 set，这个新 set 按照元素的自然顺序对其进行排序。</span></span><br><span class="line">ConcurrentSkipListSet(Collection&lt;? extends E&gt; c)</span><br><span class="line"><span class="comment">// 构造一个新的空 set，该 set 按照指定的比较器对其元素进行排序。</span></span><br><span class="line">ConcurrentSkipListSet(Comparator&lt;? <span class="keyword">super</span> E&gt; comparator)</span><br><span class="line"><span class="comment">// 构造一个新 set，该 set 所包含的元素与指定的有序 set 包含的元素相同，使用的顺序也相同。</span></span><br><span class="line">ConcurrentSkipListSet(SortedSet&lt;E&gt; s)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果此 set 中不包含指定元素，则添加指定元素。</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中大于等于给定元素的最小元素；如果不存在这样的元素，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">ceiling</span><span class="params">(E e)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 从此 set 中移除所有元素。</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clear</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 ConcurrentSkipListSet 实例的浅表副本。</span></span></span><br><span class="line"><span class="function">ConcurrentSkipListSet&lt;E&gt; <span class="title">clone</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回对此 set 中的元素进行排序的比较器；如果此 set 使用其元素的自然顺序，则返回 null。</span></span></span><br><span class="line"><span class="function">Comparator&lt;? <span class="keyword">super</span> E&gt; <span class="title">comparator</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 如果此 set 包含指定的元素，则返回 true。</span></span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(Object o)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回在此 set 的元素上以降序进行迭代的迭代器。</span></span></span><br><span class="line"><span class="function">Iterator&lt;E&gt; <span class="title">descendingIterator</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中所包含元素的逆序视图。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">descendingSet</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 比较指定对象与此 set 的相等性。</span></span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中当前第一个（最低）元素。</span></span></span><br><span class="line"><span class="function">E <span class="title">first</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中小于等于给定元素的最大元素；如果不存在这样的元素，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">floor</span><span class="params">(E e)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素严格小于 toElement。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">headSet</span><span class="params">(E toElement)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素小于（或等于，如果 inclusive 为 true）toElement。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">headSet</span><span class="params">(E toElement, <span class="keyword">boolean</span> inclusive)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中严格大于给定元素的最小元素；如果不存在这样的元素，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">higher</span><span class="params">(E e)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 如果此 set 不包含任何元素，则返回 true。</span></span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">isEmpty</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回在此 set 的元素上以升序进行迭代的迭代器。</span></span></span><br><span class="line"><span class="function">Iterator&lt;E&gt; <span class="title">iterator</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中当前最后一个（最高）元素。</span></span></span><br><span class="line"><span class="function">E <span class="title">last</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中严格小于给定元素的最大元素；如果不存在这样的元素，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">lower</span><span class="params">(E e)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 获取并移除第一个（最低）元素；如果此 set 为空，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">pollFirst</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 获取并移除最后一个（最高）元素；如果此 set 为空，则返回 null。</span></span></span><br><span class="line"><span class="function">E <span class="title">pollLast</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 如果此 set 中存在指定的元素，则将其移除。</span></span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">remove</span><span class="params">(Object o)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 从此 set 中移除包含在指定 collection 中的所有元素。</span></span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">removeAll</span><span class="params">(Collection&lt;?&gt; c)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 中的元素数目。</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">size</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素范围从 fromElement 到 toElement。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">subSet</span><span class="params">(E fromElement, <span class="keyword">boolean</span> fromInclusive, E toElement, <span class="keyword">boolean</span> toInclusive)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素从 fromElement（包括）到 toElement（不包括）。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">subSet</span><span class="params">(E fromElement, E toElement)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素大于等于 fromElement。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">tailSet</span><span class="params">(E fromElement)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 返回此 set 的部分视图，其元素大于（或等于，如果 inclusive 为 true）fromElement。</span></span></span><br><span class="line"><span class="function">NavigableSet&lt;E&gt; <span class="title">tailSet</span><span class="params">(E fromElement, <span class="keyword">boolean</span> inclusive)</span></span></span><br></pre></td></tr></table></figure>
+<h1 id="Queue"><a href="#Queue" class="headerlink" title="Queue"></a>Queue</h1><p><strong>Queue（JDK1.5新增，对多线程友好，多线程优先使用，线程安全（底层有CAS操作等等进行同步））</strong></p>
+<p>队列是一种特殊的线性表，是一种先进先出（FIFO）的数据结构。它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作。进行插入操作的端称为队尾，进行删除操作的端称为队头。队列中没有元素时，称为空队列</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114258.png" alt="队列的继承关系"></p>
+<h2 id="阻塞队列（BlockingQueue）"><a href="#阻塞队列（BlockingQueue）" class="headerlink" title="阻塞队列（BlockingQueue）"></a>阻塞队列（BlockingQueue）</h2><p>BlockingQueue即阻塞队列，它是基于<strong>ReentrantLock</strong>实现相关过程，依据它的基本原理，我们可以实现Web中的长连接聊天功能，当然其最常用的还是用于实现生产者与消费者模式，大致如下图所示</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114301.png" alt="img"></p>
+<blockquote>
+<p>在Java中，BlockingQueue是一个接口，它的实现类有<strong>ArrayBlockingQueue</strong>、<strong>DelayQueue</strong>、 <strong>LinkedBlockingDeque</strong>、<strong>PriorityBlockingQueue</strong>、<strong>SynchronousQueue</strong>、<strong>TransferQueue</strong>等，它们的区别主要体现在存储结构上或对元素操作上的不同，但是对于take与put操作的原理，却是类似的。</p>
+</blockquote>
+<p><code>BlockingQueue</code> 方法以四种形式出现，对于不能立即满足但可能在将来某一时刻可以满足的操作，这四种形式的处理方式不同：第一种是抛出一个异常，第二种是返回一个特殊值（<code>null</code> 或 <code>false</code>，具体取决于操作），第三种是在操作可以成功前，无限期地阻塞当前线程，第四种是在放弃前只在给定的最大时间限制内阻塞。下表中总结了这些方法：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>抛出异常</th>
+<th>特殊值</th>
+<th>阻塞</th>
+<th>超时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插入</td>
+<td><code>add(e)</code></td>
+<td><code>offer(e)</code></td>
+<td><code>put(e)</code></td>
+<td><code>offer(e, time, unit)</code></td>
+</tr>
+<tr>
+<td>移除</td>
+<td><code>remove()</code></td>
+<td><code>poll()</code></td>
+<td><code>take()</code></td>
+<td><code>poll(time, unit)</code></td>
+</tr>
+<tr>
+<td>检查</td>
+<td><code>element()</code></td>
+<td><code>peek()</code></td>
+<td>不可用</td>
+<td>不可用</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="LinkedBlockingQueue"><a href="#LinkedBlockingQueue" class="headerlink" title="LinkedBlockingQueue"></a>LinkedBlockingQueue</h3><p>LinkedBlockingQueue和LinkedList一样，内部基于<strong>链表</strong>来存放元素。LinkedBlockingQueue如果不指定容量，默认为<code>Integer.MAX_VALUE</code>，也就是<strong>无界队列</strong>。所以为了<strong>避免队列过大造成机器负载或者内存爆满</strong>的情况出现，我们在使用的时候建议手动传一个队列的大小。</p>
+<p>LinkedBlockingQueue内部由<strong>单链表实现</strong>，只能从head取元素，从tail添加元素。添加元素和获取元素都有独立的锁，也就是说<strong>LinkedBlockingQueue是读写分离的</strong>，读写操作可以并行执行。LinkedBlockingQueue采用可重入锁(<strong>ReentrantLock)</strong>来保证在并发情况下的线程安全。</p>
+<h4 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h4><h5 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 节点类，用于存储数据</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">E</span>&gt; </span>&#123;</span><br><span class="line">    E item;</span><br><span class="line">    Node&lt;E&gt; next;</span><br><span class="line"></span><br><span class="line">    Node(E x) &#123; item = x; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 阻塞队列的大小，默认为Integer.MAX_VALUE */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> capacity;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 当前阻塞队列中的元素个数 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger count = <span class="keyword">new</span> AtomicInteger();</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 阻塞队列的头结点</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> Node&lt;E&gt; head;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 阻塞队列的尾节点</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> Node&lt;E&gt; last;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 获取并移除元素时使用的锁，如take, poll, etc */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ReentrantLock takeLock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** notEmpty条件对象，当队列没有数据时用于挂起执行删除的线程 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Condition notEmpty = takeLock.newCondition();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 添加元素时使用的锁如 put, offer, etc */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ReentrantLock putLock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"></span><br><span class="line"><span class="comment">/** notFull条件对象，当队列数据已满时用于挂起执行添加的线程 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> Condition notFull = putLock.newCondition();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<ol>
+<li>LinkedBlockingQueue队列中的数据都将被封装成Node节点，添加的链表队列中，其中head和last分别指向队列的头结点和尾结点</li>
+<li>LinkedBlockingQueue内部分别使用了takeLock 和 putLock 对并发进行控制，也就是说，添加和删除操作并不是互斥操作，可以同时进行，这样也就可以大大提高吞吐量。</li>
+<li>LinkedBlockingQueue对每一个lock锁都提供了一个Condition用来挂起和唤醒其他线程。</li>
+</ol>
+</blockquote>
+<p>LinkedBlockingQueue常用操作</p>
+<h5 id="取数据"><a href="#取数据" class="headerlink" title="取数据"></a>取数据</h5><p><strong>take()：首选。当队列为空时阻塞</strong></p>
+<p>poll()：弹出队顶元素，队列为空时，返回空</p>
+<p>peek()：和poll烈性，返回队队顶元素，但顶元素不弹出。队列为空时返回null</p>
+<p>remove(Object o)：移除某个元素，队列为空时抛出异常。成功移除返回true</p>
+<h5 id="添加数据"><a href="#添加数据" class="headerlink" title="添加数据"></a>添加数据</h5><p><strong>put()：首选。队满是阻塞</strong></p>
+<p>offer()：队满时返回false</p>
+<h5 id="判断队列是否为空"><a href="#判断队列是否为空" class="headerlink" title="判断队列是否为空"></a>判断队列是否为空</h5><p><strong>size()方法会遍历整个队列，时间复杂度为O(n),所以最好选用isEmtpy</strong></p>
+<h5 id="put元素原理"><a href="#put元素原理" class="headerlink" title="put元素原理"></a>put元素原理</h5><p>基本过程：</p>
+<p>1.判断元素是否为null，为null抛出异常</p>
+<p>2.加锁(可中断锁<strong>ReentrantLock</strong>实现)</p>
+<p>3.判断队列长度是否到达容量，如果到达一直等待</p>
+<p>4.如果没有队满，enqueue()在队尾加入元素</p>
+<p>5.队列长度加1，此时如果队列还没有满，调用signal唤醒其他堵塞队列</p>
+<h3 id="ArrayBlockingQueue"><a href="#ArrayBlockingQueue" class="headerlink" title="ArrayBlockingQueue"></a>ArrayBlockingQueue</h3><p>ArrayBlockingQueue是一个<strong>阻塞式的队列</strong>，继承自AbstractBlockingQueue,间接的实现了Queue接口和Collection接口。底层以数组的形式保存数据(实际上可看作一个循环数组)。常用的操作包括 add，offer，put，remove，poll，take，peek。</p>
+<p>ArrayBlockingQueue 进队操作采用了加锁的方式保证并发安全。源代码里面有一个 <strong>while</strong>() 判断：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">put</span><span class="params">(E e)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    checkNotNull(e); <span class="comment">// 非空判断</span></span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lockInterruptibly(); <span class="comment">// 获取锁</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (count == items.length) &#123;</span><br><span class="line">            <span class="comment">// 一直阻塞，知道队列非满时，被唤醒</span></span><br><span class="line">            notFull.await();</span><br><span class="line">        &#125;</span><br><span class="line">        enqueue(e); <span class="comment">// 进队</span></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offer</span><span class="params">(E e, <span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    checkNotNull(e);</span><br><span class="line">    <span class="keyword">long</span> nanos = unit.toNanos(timeout);</span><br><span class="line">    <span class="keyword">final</span> ReentrantLock lock = <span class="keyword">this</span>.lock;</span><br><span class="line">    lock.lockInterruptibly();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (count == items.length) &#123;</span><br><span class="line">        <span class="comment">// 阻塞，知道队列不满</span></span><br><span class="line">        <span class="comment">// 或者超时时间已过，返回false</span></span><br><span class="line">            <span class="keyword">if</span> (nanos &lt;= <span class="number">0</span>)</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            nanos = notFull.awaitNanos(nanos);</span><br><span class="line">        &#125;</span><br><span class="line">        enqueue(e);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        lock.unlock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过源码分析，我们可以发现下面的规律：</p>
+<ul>
+<li>阻塞调用方式 put(e)或 offer(e, timeout, unit)</li>
+<li>阻塞调用时，唤醒条件为超时或者队列非满（因此，要求在出队时，要发起一个唤醒操作）</li>
+<li>进队成功之后，执行notEmpty.signal()唤起被阻塞的出队线程</li>
+</ul>
+<p>出队的源码类似。ArrayBlockingQueue 队列我们可以在创建线程池时进行使用。</p>
+<blockquote>
+<p>在进行某项业务存储操作时，建议采用<strong>offer</strong>进行添加，可及时获取boolean进行判断，如用put要考虑阻塞情况（队列的出队操作慢于进队操作），资源占用</p>
+</blockquote>
+<h3 id="SynchonousQueue"><a href="#SynchonousQueue" class="headerlink" title="SynchonousQueue"></a>SynchonousQueue</h3><p>SynchronousQueue 是一个很奇怪的队列，感觉都不能叫队列，因为内部没有数据的存储空间，队列不能peek，因为不存在元素，任何入队的线程都会阻塞，直到有线程来出队，也就是这个队列是一组操作，入队和出队要一起离开，出队也是一样，必须等入队，必须结伴而行；队列支持公平和非公平的模式(指的是队列匹配线程的顺序)，<strong>公平模式的数据结构是队列</strong>（FIFO），<strong>非公平模式使用的是栈</strong>（LIFO）。</p>
+<h4 id="UML图"><a href="#UML图" class="headerlink" title="UML图"></a>UML图</h4><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114309.png" alt="image-20200831164258224"></p>
+<h4 id="基本方法"><a href="#基本方法" class="headerlink" title="基本方法"></a>基本方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Transferer</span>&lt;<span class="title">E</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">// 出队入队都是这一个方法</span></span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> E <span class="title">transfer</span><span class="params">(E e, <span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// npu数</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> NCPUS = Runtime.getRuntime().availableProcessors();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 带超时时间的自旋次数</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> maxTimedSpins = (NCPUS &lt; <span class="number">2</span>) ? <span class="number">0</span> : <span class="number">32</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 没有超时的自旋次数</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> maxUntimedSpins = maxTimedSpins * <span class="number">16</span>;</span><br></pre></td></tr></table></figure>
+<h5 id="TransferStack-非公平的实现，主要方法"><a href="#TransferStack-非公平的实现，主要方法" class="headerlink" title="TransferStack 非公平的实现，主要方法"></a>TransferStack 非公平的实现，主要方法</h5><p>TransferStack 继承 Transferer</p>
+<p>注意：<strong>这几个状态很重要，因为继承了Transferer，所以出队和入队都是使用的transfer方法，状态是用来区分的</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">/** 0表示消费者 */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> REQUEST    = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/** 1表示数据的生产者 */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DATA       = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">/** 2 表示数据正在匹配 */</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> FULFILLING = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">SNode</span> </span>&#123;</span><br><span class="line">        <span class="keyword">volatile</span> SNode next;        <span class="comment">// 下一个节点</span></span><br><span class="line">        <span class="keyword">volatile</span> SNode match;       <span class="comment">// 匹配的节点</span></span><br><span class="line">        <span class="keyword">volatile</span> Thread waiter;     <span class="comment">// 等待的线程</span></span><br><span class="line">        Object item;                <span class="comment">// 数据</span></span><br><span class="line">        <span class="keyword">int</span> mode;                   <span class="comment">// 模式 0 ， 1 ， 2</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">/** 头结点 */</span></span><br><span class="line"><span class="keyword">volatile</span> SNode head;</span><br></pre></td></tr></table></figure>
+<h5 id="TransferQueue-公平实现，主要成员"><a href="#TransferQueue-公平实现，主要成员" class="headerlink" title="TransferQueue 公平实现，主要成员"></a>TransferQueue 公平实现，主要成员</h5><p>TransferQueue 继承 Transferer</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">QNode</span> </span>&#123;</span><br><span class="line">          <span class="keyword">volatile</span> QNode next;          <span class="comment">// next 节点</span></span><br><span class="line">          <span class="keyword">volatile</span> Object item;         <span class="comment">// 数据项</span></span><br><span class="line">          <span class="keyword">volatile</span> Thread waiter;       <span class="comment">// 等待线程</span></span><br><span class="line">          <span class="keyword">final</span> <span class="keyword">boolean</span> isData;         <span class="comment">// 区分生产和消费</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/** 头结点 */</span></span><br><span class="line">      <span class="keyword">transient</span> <span class="keyword">volatile</span> QNode head;</span><br><span class="line">      <span class="comment">/** 尾节点 */</span></span><br><span class="line">      <span class="keyword">transient</span> <span class="keyword">volatile</span> QNode tail;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>SynchronousQueue 的实现还是很复杂的，我们可以发现虽然是个阻塞队列，可是没有使用锁；这个队列适合传递的场景，队列没有存储元素的队列，出队和入队必须结伴而行。</p>
+<p>详细的源码解析可看  <a target="_blank" rel="noopener external nofollow noreferrer" href="https://blog.51cto.com/14220760/2416470">https://blog.51cto.com/14220760/2416470</a></p>
+</blockquote>
+<h3 id="PriorityBlockingQueue"><a href="#PriorityBlockingQueue" class="headerlink" title="PriorityBlockingQueue"></a>PriorityBlockingQueue</h3><p>PriorityBlockingQueue是一个支持优先级的无<strong>界阻塞队列</strong>，直到系统资源耗尽。<strong>默认情况下元素采用自然顺序升序排列</strong>。也可以自定义类实现compareTo()方法来指定元素排序规则，或者初始化PriorityBlockingQueue时，指定构造参数Comparator来对元素进行排序。但需要注意的是不能保证同优先级元素的顺序。PriorityBlockingQueue也是基于最小二叉堆实现，使用基于<strong>CAS实现的自旋锁</strong>来控制队列的<strong>动态扩容</strong>，保证了扩容操作不会阻塞take操作的执行<strong>PriorityBlockingQueue有四个构造方法：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 默认的构造方法，该方法会调用this(DEFAULT_INITIAL_CAPACITY, null)，即默认的容量是11</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PriorityBlockingQueue</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="comment">// 根据initialCapacity来设置队列的初始容量</span></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PriorityBlockingQueue</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 根据initialCapacity来设置队列的初始容量，并根据comparator对象来对数据进行排序</span></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PriorityBlockingQueue</span><span class="params">(<span class="keyword">int</span> initialCapacity, Comparator&lt;? <span class="keyword">super</span> E&gt; comparator)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 根据集合来创建队列</span></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PriorityBlockingQueue</span><span class="params">(Collection&lt;? extends E&gt; c)</span></span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>源码解析可看<a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/63801130">https://zhuanlan.zhihu.com/p/63801130</a> </p>
+</blockquote>
+<h3 id="DelayQueue"><a href="#DelayQueue" class="headerlink" title="DelayQueue"></a>DelayQueue</h3><p>DelayQueue是线程安全的，DelayQueue的特点就是插入Queue中的数据可以按照自定义的delay时间进行排序。只有delay时间小于0的元素才能够被取出</p>
+<p>DelayQueue的底层存储是一个PriorityQueue，PriorityQueue是一个可排序的Queue，其中的元素必须实现Comparable方法。而getDelay方法则用来判断排序后的元素是否可以从Queue中取出</p>
+<blockquote>
+<p>源码解析可看 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/138368078">https://zhuanlan.zhihu.com/p/138368078</a></p>
+</blockquote>
+<h3 id="TransferQueue"><a href="#TransferQueue" class="headerlink" title="TransferQueue"></a>TransferQueue</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransferQueue</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">BlockingQueue</span>&lt;<span class="title">E</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>从类的源码可以看到TransferQueue同时也是一个阻塞队列，它具备<strong>阻塞队列的所有特性</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TransferQueue</span>&lt;<span class="title">E</span>&gt; <span class="keyword">extends</span> <span class="title">BlockingQueue</span>&lt;<span class="title">E</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">// 如果可能，立即将元素转移给等待的消费者。 </span></span><br><span class="line">    <span class="comment">// 更确切地说，如果存在消费者已经等待接收它（在 take 或 timed poll（long，TimeUnit）poll）中，则立即传送指定的元素，否则返回 false。</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">tryTransfer</span><span class="params">(E e)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将元素转移给消费者，如果需要的话等待。 </span></span><br><span class="line">    <span class="comment">// 更准确地说，如果存在一个消费者已经等待接收它（在 take 或timed poll（long，TimeUnit）poll）中，则立即传送指定的元素，否则等待直到元素由消费者接收。</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">transfer</span><span class="params">(E e)</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 上面方法的基础上设置超时时间</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">tryTransfer</span><span class="params">(E e, <span class="keyword">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> InterruptedException</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果至少有一位消费者在等待，则返回 true</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">hasWaitingConsumer</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回等待消费者人数的估计值</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getWaitingConsumerCount</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>transfer</strong> 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transfer</span><span class="params">(E e)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (xfer(e, <span class="keyword">true</span>, SYNC, <span class="number">0</span>) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        Thread.interrupted(); <span class="comment">// failure possible only due to interrupt</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>tryTransfer</strong>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">tryTransfer</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> xfer(e, <span class="keyword">true</span>, NOW, <span class="number">0</span>) == <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="1-6-1-xfer-方法分析"><a href="#1-6-1-xfer-方法分析" class="headerlink" title="1.6.1 xfer 方法分析"></a>1.6.1 xfer 方法分析</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> E <span class="title">xfer</span><span class="params">(E e, <span class="keyword">boolean</span> haveData, <span class="keyword">int</span> how, <span class="keyword">long</span> nanos)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (haveData &amp;&amp; (e == <span class="keyword">null</span>))</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    Node s = <span class="keyword">null</span>;                        <span class="comment">// the node to append, if needed</span></span><br><span class="line"></span><br><span class="line">    retry:</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;                            <span class="comment">// restart on append race</span></span><br><span class="line">        <span class="comment">// 从  head 开始</span></span><br><span class="line">        <span class="keyword">for</span> (Node h = head, p = h; p != <span class="keyword">null</span>;) &#123; <span class="comment">// find &amp; match first node</span></span><br><span class="line">            <span class="comment">// head 的类型。</span></span><br><span class="line">            <span class="keyword">boolean</span> isData = p.isData;</span><br><span class="line">            <span class="comment">// head 的数据</span></span><br><span class="line">            Object item = p.item;</span><br><span class="line">            <span class="comment">// item != null 有 2 种情况,一是 put 操作, 二是 take 的 itme 被修改了(匹配成功)</span></span><br><span class="line">            <span class="comment">// (itme != null) == isData 要么表示 p 是一个 put 操作, 要么表示 p 是一个还没匹配成功的 take 操作</span></span><br><span class="line">            <span class="keyword">if</span> (item != p &amp;&amp; (item != <span class="keyword">null</span>) == isData) &#123; </span><br><span class="line">                <span class="comment">// 如果当前操作和 head 操作相同，就没有匹配上，结束循环，进入下面的 if 块。</span></span><br><span class="line">                <span class="keyword">if</span> (isData == haveData)   <span class="comment">// can&#x27;t match</span></span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="comment">// 如果操作不同,匹配成功, 尝试替换 item 成功,</span></span><br><span class="line">                <span class="keyword">if</span> (p.casItem(item, e)) &#123; <span class="comment">// match</span></span><br><span class="line">                    <span class="comment">// 更新 head</span></span><br><span class="line">                    <span class="keyword">for</span> (Node q = p; q != h;) &#123;</span><br><span class="line">                        Node n = q.next;  <span class="comment">// update by 2 unless singleton</span></span><br><span class="line">                        <span class="keyword">if</span> (head == h &amp;&amp; casHead(h, n == <span class="keyword">null</span> ? q : n)) &#123;</span><br><span class="line">                            h.forgetNext();</span><br><span class="line">                            <span class="keyword">break</span>;</span><br><span class="line">                        &#125;                 <span class="comment">// advance and retry</span></span><br><span class="line">                        <span class="keyword">if</span> ((h = head)   == <span class="keyword">null</span> ||</span><br><span class="line">                            (q = h.next) == <span class="keyword">null</span> || !q.isMatched())</span><br><span class="line">                            <span class="keyword">break</span>;        <span class="comment">// unless slack &lt; 2</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// 唤醒原 head 线程.</span></span><br><span class="line">                    LockSupport.unpark(p.waiter);</span><br><span class="line">                    <span class="keyword">return</span> LinkedTransferQueue.&lt;E&gt;cast(item);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 找下一个</span></span><br><span class="line">            Node n = p.next;</span><br><span class="line">            p = (p != n) ? n : (h = head); <span class="comment">// Use head if p offlist</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果这个操作不是立刻就返回的类型    </span></span><br><span class="line">        <span class="keyword">if</span> (how != NOW) &#123;                 <span class="comment">// No matches available</span></span><br><span class="line">            <span class="comment">// 且是第一次进入这里</span></span><br><span class="line">            <span class="keyword">if</span> (s == <span class="keyword">null</span>)</span><br><span class="line">                <span class="comment">// 创建一个 node</span></span><br><span class="line">                s = <span class="keyword">new</span> Node(e, haveData);</span><br><span class="line">            <span class="comment">// 尝试将 node 追加对队列尾部，并返回他的上一个节点。</span></span><br><span class="line">            Node pred = tryAppend(s, haveData);</span><br><span class="line">            <span class="comment">// 如果返回的是 null, 表示不能追加到 tail 节点,因为 tail 节点的模式和当前模式相反.</span></span><br><span class="line">            <span class="keyword">if</span> (pred == <span class="keyword">null</span>)</span><br><span class="line">                <span class="comment">// 重来</span></span><br><span class="line">                <span class="keyword">continue</span> retry;           <span class="comment">// lost race vs opposite mode</span></span><br><span class="line">            <span class="comment">// 如果不是异步操作(即立刻返回结果)</span></span><br><span class="line">            <span class="keyword">if</span> (how != ASYNC)</span><br><span class="line">                <span class="comment">// 阻塞等待匹配值</span></span><br><span class="line">                <span class="keyword">return</span> awaitMatch(s, pred, e, (how == TIMED), nanos);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> e; <span class="comment">// not waiting</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑如下:<br>                        找到 <code>head</code> 节点,如果 <code>head</code> 节点是匹配的操作,就直接赋值,如果不是,添加到队列中。</p>
+<p>​                注意：队列中永远只有一种类型的操作,要么是 <code>put</code> 类型, 要么是 <code>take</code> 类型.</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210223114320.png" alt="img"></p>
+<p>相比较 <code>SynchronousQueue</code> 多了一个可以存储的队列，相比较 <code>LinkedBlockingQueue</code> 多了直接传递元素，少了用锁来同步。</p>
+<p>性能更高，用处更大</p>
+<h4 id="1-6-2-总结"><a href="#1-6-2-总结" class="headerlink" title="1.6.2  总结"></a>1.6.2  总结</h4><p><code>LinkedTransferQueue</code>是 <code>SynchronousQueue</code> 和 <code>LinkedBlockingQueue</code> 的合体，性能比 <code>LinkedBlockingQueue</code> 更高（没有锁操作），比 <code>SynchronousQueue</code>能存储更多的元素。</p>
+<p>当 <code>put</code> 时，如果有等待的线程，就直接将元素 “交给” 等待者， 否则直接进入队列。</p>
+<p><code>put</code>和 <code>transfer</code> 方法的区别是，put 是立即返回的， transfer 是阻塞等待消费者拿到数据才返回。<code>transfer</code>方法和 <code>SynchronousQueue</code>的 put 方法类似。</p>
+<h2 id="非阻塞队列"><a href="#非阻塞队列" class="headerlink" title="非阻塞队列"></a>非阻塞队列</h2><h3 id="Deque（双端队列，两边都可以进出）"><a href="#Deque（双端队列，两边都可以进出）" class="headerlink" title="Deque（双端队列，两边都可以进出）"></a>Deque（双端队列，两边都可以进出）</h3><p>deque容器为一个给定<strong>类型</strong>的元素进行<strong>线性处理</strong>，像向量一样，<strong>能够快速地随机访问任一个元素</strong>，并且能够<strong>高效地插入和删除容器的尾部元素</strong>。但它又与vector不同，<strong>deque支持高效插入和删除容器的头部元素</strong>，因此也叫做<strong>双端队列</strong>。deque类常用的函数如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造函数</span></span><br><span class="line"></span><br><span class="line">deque():创建一个空deque</span><br><span class="line"></span><br><span class="line">deque(<span class="keyword">int</span> nSize):创建一个deque,元素个数为nSize</span><br><span class="line"></span><br><span class="line">deque(<span class="keyword">int</span> nSize,<span class="keyword">const</span> T&amp; t):创建一个deque,元素个数为nSize,且值均为t</span><br><span class="line"></span><br><span class="line">deque(<span class="keyword">const</span> deque &amp;):复制构造函数</span><br><span class="line"></span><br><span class="line"><span class="comment">//  增加函数</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">push_front</span><span class="params">(<span class="keyword">const</span> T&amp; x)</span>:双端队列头部增加一个元素X</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">push_back</span><span class="params">(<span class="keyword">const</span> T&amp; x)</span>:双端队列尾部增加一个元素x</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">iterator <span class="title">insert</span><span class="params">(iterator it,<span class="keyword">const</span> T&amp; x)</span>:双端队列中某一元素前增加一个元素x</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(iterator it,<span class="keyword">int</span> n,<span class="keyword">const</span> T&amp; x)</span>:双端队列中某一元素前增加n个相同的元素x</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(iterator it,const_iterator first,const_iteratorlast)</span>:双端队列中某一元素前插入另一个相同类型向量的[forst,last)间的数据</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">// 删除函数</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">Iterator <span class="title">erase</span><span class="params">(iterator it)</span>:删除双端队列中的某一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">Iterator <span class="title">erase</span><span class="params">(iterator first,iterator last)</span>:删除双端队列中[first,last）中的元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pop_front</span><span class="params">()</span>:删除双端队列中最前一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pop_back</span><span class="params">()</span>:删除双端队列中最后一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clear</span><span class="params">()</span>:删除所有的元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">// 遍历函数</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">reference <span class="title">at</span><span class="params">(<span class="keyword">int</span> pos)</span>:返回pos位置元素的引用</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">reference <span class="title">front</span><span class="params">()</span>:返回首元素的引用</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">reference <span class="title">back</span><span class="params">()</span>:返回尾元素的引用</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">iterator <span class="title">begin</span><span class="params">()</span>:返回向量头指针，指向第一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">iterator <span class="title">end</span><span class="params">()</span>:返回指向向量中最后一个元素下一个元素的指针（不包含在向量中）</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">reverse_iterator <span class="title">rbegin</span><span class="params">()</span>:反向迭代器，指向最后一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">reverse_iterator <span class="title">rend</span><span class="params">()</span>:反向迭代器，指向第一个元素的前一个元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">// 判断函数</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">bool <span class="title">empty</span><span class="params">()</span> <span class="keyword">const</span>:向量是否为空，若<span class="keyword">true</span>,则向量中无元素</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">// 大小函数</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">Int <span class="title">size</span><span class="params">()</span> <span class="keyword">const</span>:返回向量中元素的个数</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">max_size</span><span class="params">()</span> <span class="keyword">const</span>:返回最大可允许的双端对了元素数量值</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">// 其他函数</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(deque&amp;)</span>:交换两个同类型向量的数据</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">assign</span><span class="params">(<span class="keyword">int</span> n,<span class="keyword">const</span> T&amp; x)</span>:向量中第n个元素的值设置为x</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>详细分析  <a target="_blank" rel="noopener external nofollow noreferrer" href="https://blog.csdn.net/u011630575/article/details/79923132">https://blog.csdn.net/u011630575/article/details/79923132</a></p>
+</blockquote>
+<h3 id="ConcurrentLinkedQueue"><a href="#ConcurrentLinkedQueue" class="headerlink" title="ConcurrentLinkedQueue"></a>ConcurrentLinkedQueue</h3><p>ConcurrentLinkedQueue是一个基于<strong>链接节点的无界线程安全队列</strong>，它采用<strong>先进先出的规则对节点进行排序</strong>，当我们添加一个元素的时候，它会添加到队列的尾部，当我们获取一个元素时，它会返回队列头部的元素。它采用了“wait－free”算法来实现</p>
+<p>ConcurrentLinkedQueue由head节点和tail节点组成，每个节点（Node）由节点元素（item）和指向下一个节点的引用(next)组成，节点与节点之间就是通过这个next关联起来，从而组成一张链表结构的队列</p>
+<p> <strong>总结</strong></p>
+<p>ConcurrentLinkedQueue 的非阻塞算法实现可概括为下面 5 点：</p>
+<ul>
+<li>使用 CAS 原子指令来处理对数据的并发访问，这是非阻塞算法得以实现的基础。</li>
+<li>head/tail 并非总是指向队列的头 / 尾节点，也就是说允许队列处于不一致状态。 这个特性把入队 / 出队时，原本需要一起原子化执行的两个步骤分离开来，从而缩小了入队 / 出队时需要原子化更新值的范围到唯一变量。这是非阻塞算法得以实现的关键。</li>
+<li>由于队列有时会处于不一致状态。为此，ConcurrentLinkedQueue 使用<a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.ibm.com/developerworks/cn/java/j-lo-concurrent/index.html">三个不变式</a>来维护非阻塞算法的正确性。</li>
+<li>以批处理方式来更新 head/tail，从整体上减少入队 / 出队操作的开销。</li>
+<li>为了有利于垃圾收集，队列使用特有的 head 更新机制；为了确保从已删除节点向后遍历，可到达所有的非删除节点，队列使用了特有的向后推进策略。</li>
+</ul>
+<blockquote>
+<p>详细分析   <a target="_blank" rel="noopener external nofollow noreferrer" href="https://blog.csdn.net/qq_38293564/article/details/80798310">https://blog.csdn.net/qq_38293564/article/details/80798310</a></p>
+</blockquote>
+<h3 id="priorityQueue"><a href="#priorityQueue" class="headerlink" title="priorityQueue"></a>priorityQueue</h3><p>PriorityQueue 一个基于优先级的<strong>无界优先级队列</strong>。优先级队列的元素按照其自然顺序进行排序，或者根据构造队列时提供的 Comparator 进行排序，具体取决于所使用的构造方法。该队列不允许使用 null 元素也不允许插入不可比较的对象(没有实现Comparable接口的对象)。<br> PriorityQueue 队列的头指排序规则最小那哥元素。如果多个元素都是最小值则随机选一个。<br> PriorityQueue 是一个无界队列，但是初始的容量(实际是一个Object[])，随着不断向优先级队列添加元素，其容量会自动扩容，无需指定容量增加策略的细节</p>
+<ol>
+<li>PriorityQueue是一种无界的，线程不安全的队列</li>
+<li>PriorityQueue是一种通过数组实现的，并拥有优先级的队列</li>
+<li>PriorityQueue存储的元素要求必须是可比较的对象， 如果不是就必须明确指定比较器</li>
+</ol>
+<blockquote>
+<p>详细分析    <a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.jianshu.com/p/f1fd9b82cb72">https://www.jianshu.com/p/f1fd9b82cb72</a></p>
+</blockquote>
+<h1 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h1><p>Map用于保存具有映射关系的数据，Map集合里保存着两组值，一组用于保存Map的ley，另一组保存着Map的value</p>
+<p><strong>Map中的常用方法</strong>：</p>
+<ul>
+<li><code>void clear()</code>:删除该Map对象中所有键值对；</li>
+<li><code>boolean containsKey(Object key)</code>:查询Map中是否包含指定的key值；</li>
+<li><code>boolean containsValue(Object value)</code>:查询Map中是否包含一个或多个value;</li>
+<li><code>Set entrySet()</code>:返回map中包含的键值对所组成的Set集合，每个集合都是Map.Entry对象。</li>
+<li><code>Object get()</code>：返回指定key对应的value，如果不包含key则返回null；</li>
+<li><code>boolean isEmpty()</code>:查询该Map是否为空；</li>
+<li><code>Set keySet()</code>:返回Map中所有key组成的集合；</li>
+<li><code>Collection values()</code>:返回该Map里所有value组成的Collection。</li>
+<li><code>Object put(Object key,Object value)</code>:添加一个键值对，如果集合中的key重复，则覆盖原来的键值对；</li>
+<li><code>void putAll(Map m)</code>:将Map中的键值对复制到本Map中；</li>
+<li><code>Object remove(Object key)</code>:删除指定的key对应的键值对，并返回被删除键值对的value，如果不存在，则返回null；</li>
+<li><code>boolean remove(Object key,Object value)</code>:删除指定键值对，删除成功返回true；</li>
+<li><code>int size()</code>:返回该Map里的键值对个数</li>
+</ul>
+<p><strong>内部类Entry</strong></p>
+<p>Map中包括一个内部类Entry,该类封装一个键值对，常用方法：</p>
+<ul>
+<li><code>Object getKey()</code>:返回该Entry里包含的key值；</li>
+<li><code>Object getvalue()</code>:返回该Entry里包含的value值；</li>
+<li><code>Object setValue(V value)</code>:设置该Entry里包含的value值，并设置新的value值。</li>
+</ul>
+<p><strong>Map的遍历四种方法</strong></p>
+<p>在java中所有的map都实现了Map接口，因此所有的Map（如HashMap, TreeMap, LinkedHashMap, Hashtable等）都可以用以下的方式去遍历。</p>
+<p>方法一：在for循环中使用entries实现Map的遍历：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 最常见也是大多数情况下用的最多的，一般在键值对都需要使用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">Map &lt;String,String&gt;map = <span class="keyword">new</span> HashMap&lt;String,String&gt;();</span><br><span class="line">map.put(<span class="string">&quot;熊大&quot;</span>, <span class="string">&quot;棕色&quot;</span>);</span><br><span class="line">map.put(<span class="string">&quot;熊二&quot;</span>, <span class="string">&quot;黄色&quot;</span>);</span><br><span class="line"><span class="keyword">for</span>(Map.Entry&lt;String, String&gt; entry : map.entrySet())&#123;</span><br><span class="line">    String mapKey = entry.getKey();</span><br><span class="line">    String mapValue = entry.getValue();</span><br><span class="line">    System.out.println(mapKey+<span class="string">&quot;:&quot;</span>+mapValue);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法二：在for循环中遍历key或者values，一般适用于只需要map中的key或者value时使用，在性能上比使用entrySet较好；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Map &lt;String,String&gt;map = <span class="keyword">new</span> HashMap&lt;String,String&gt;();</span><br><span class="line">map.put(<span class="string">&quot;熊大&quot;</span>, <span class="string">&quot;棕色&quot;</span>);</span><br><span class="line">map.put(<span class="string">&quot;熊二&quot;</span>, <span class="string">&quot;黄色&quot;</span>);</span><br><span class="line"><span class="comment">//key</span></span><br><span class="line"><span class="keyword">for</span>(String key : map.keySet())&#123;</span><br><span class="line">    System.out.println(key);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//value</span></span><br><span class="line"><span class="keyword">for</span>(String value : map.values())&#123;</span><br><span class="line">    System.out.println(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法三：通过Iterator遍历；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Iterator&lt;Entry&lt;String, String&gt;&gt; entries = map.entrySet().iterator();</span><br><span class="line"><span class="keyword">while</span>(entries.hasNext())&#123;</span><br><span class="line">    Entry&lt;String, String&gt; entry = entries.next();</span><br><span class="line">    String key = entry.getKey();</span><br><span class="line">    String value = entry.getValue();</span><br><span class="line">    System.out.println(key+<span class="string">&quot;:&quot;</span>+value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法四：通过键找值遍历，这种方式的效率比较低，因为本身从键取值是耗时的操作；</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(String key : map.keySet())&#123;</span><br><span class="line">    String value = map.get(key);</span><br><span class="line">    System.out.println(key+<span class="string">&quot;:&quot;</span>+value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="HashTable和HashMap"><a href="#HashTable和HashMap" class="headerlink" title="HashTable和HashMap"></a>HashTable和HashMap</h2><h3 id="HashMap的工作原理"><a href="#HashMap的工作原理" class="headerlink" title="HashMap的工作原理"></a>HashMap的工作原理</h3><p>HashMap基于hashing原理，我们通过put()和get()方法储存和获取对象。当我们将键值对传递给put()方法时，它调用键对象的hashCode()方法来计算hashcode，让后找到bucket位置来储存值对象。当获取对象时，通过键对象的equals()方法找到正确的键值对，然后返回值对象。HashMap使用链表来解决碰撞问题，当发生碰撞了，对象将会储存在链表的下一个节点中。 HashMap在每个链表节点中储存键值对对象。<strong>HashMap最多只允许一条记录的键为null</strong>，允许多条记录的值为null</p>
+<p>当两个不同的键对象的hashcode相同时会发生什么？ 它们会储存在同一个bucket位置的链表中。键对象的equals()方法用来找到键值对。</p>
+<h3 id="HashMap和Hashtable的区别"><a href="#HashMap和Hashtable的区别" class="headerlink" title="HashMap和Hashtable的区别"></a>HashMap和Hashtable的区别</h3><p>HashMap和Hashtable都实现了Map接口，但决定用哪一个之前先要弄清楚它们之间的分别。主要的区别有：线程安全性，同步(synchronization)，以及速度。</p>
+<ol>
+<li>HashMap几乎可以等价于Hashtable，除了<strong>HashMap是非synchronized的，并可以接受null</strong>(HashMap可以接受为null的键值(key)和值(value)，而<strong>Hashtable不能接受null的key</strong>)。</li>
+<li>HashMap是非synchronized，而Hashtable是synchronized，这意味着<strong>Hashtable是线程安全的</strong>，多个线程可以共享一个Hashtable；而如果没有正确的同步的话，<strong>HashMap不是线程安全的</strong>。Java 5提供了<strong>ConcurrentHashMap</strong>，<strong>它是HashTable的替代</strong>，比HashTable的扩展性更好。</li>
+<li>另一个区别是<strong>HashMap的迭代器(Iterator)是fail-fast迭代器</strong>，而Hashtable的enumerator迭代器不是fail-fast的。所以当有其它线程改变了HashMap的结构（增加或者移除元素），将会抛出ConcurrentModificationException，但迭代器本身的remove()方法移除元素则不会抛出ConcurrentModificationException异常。但这并不是一个一定发生的行为，要看JVM。这条同样也是Enumeration和Iterator的区别。</li>
+<li>由于Hashtable是线程安全的也是synchronized，所以在单线程环境下它比HashMap要慢。如果你不需要同步，只需要单一线程，那么使用HashMap性能要好过Hashtable。</li>
+<li>HashMap不能保证随着时间的推移Map中的元素次序是不变的。</li>
+</ol>
+<h3 id="解决Hsah冲突的方法"><a href="#解决Hsah冲突的方法" class="headerlink" title="解决Hsah冲突的方法"></a>解决Hsah冲突的方法</h3><p>HashMap就是使用哈希表来存储的。哈希表为解决冲突，可以采用<strong>开放地址法和链地址法</strong>等来解决问题，Java中HashMap采用了<strong>链地址法</strong></p>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/21673805">https://zhuanlan.zhihu.com/p/21673805</a></p>
+<p>HashMap就是使用<strong>哈希表来存储</strong>的。哈希表为解决冲突，可以采用开放地址法和链地址法等来解决问题，<strong>Java中HashMap采用了链地址法</strong>。链地址法，简单来说，就是数组加链表的结合。在每个数组元素上都一个链表结构，当数据被Hash后，得到数组下标，把数据放在对应下标元素的链表上</p>
+<p>例如程序执行下面代码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">map.put(&quot;美团&quot;,&quot;小美&quot;);</span><br></pre></td></tr></table></figure>
+<p>系统将调用”美团”这个key的hashCode()方法得到其<strong>hashCode</strong> 值（该方法适用于每个Java对象），然后再<strong>通过Hash算法的后两步运算（高位运算和取模运算，下文有介绍）来定位该键值对的存储位置，有时两个key会定位到相同的位置，表示发生了Hash碰撞</strong>。当然Hash算法计算结果越分散均匀，Hash碰撞的概率就越小，map的存取效率就会越高。</p>
+<p>如果哈希桶数组很大，即使较差的Hash算法也会比较分散，如果哈希桶数组数组很小，即使好的Hash算法也会出现较多碰撞，所以就需要在空间成本和时间成本之间权衡，其实就是在根据实际情况确定哈希桶数组的大小，并在此基础上设计好的hash算法减少Hash碰撞。那么通过什么方式来控制map使得Hash碰撞的概率又小，哈希桶数组（Node[] table）占用空间又少呢？答案就是好的Hash算法和扩容机制。</p>
+<h3 id="HashMap的扩容"><a href="#HashMap的扩容" class="headerlink" title="HashMap的扩容"></a>HashMap的扩容</h3><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/92481037">https://zhuanlan.zhihu.com/p/92481037</a></p>
+<p>初始化大小为16，扩展因子为0.75（泊松分布）</p>
+<h3 id="LinkHashMap"><a href="#LinkHashMap" class="headerlink" title="LinkHashMap"></a>LinkHashMap</h3><p>LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。（转list的时候可以按照顺序转化）</p>
+<h3 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a>ConcurrentHashMap</h3><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/35668936">https://zhuanlan.zhihu.com/p/35668936</a></p>
+<h2 id="TreeMap"><a href="#TreeMap" class="headerlink" title="TreeMap"></a>TreeMap</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/35598760">https://zhuanlan.zhihu.com/p/35598760</a></p>
+<h2 id="ConcurrentSkipListMap"><a href="#ConcurrentSkipListMap" class="headerlink" title="ConcurrentSkipListMap"></a>ConcurrentSkipListMap</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/138021927">https://zhuanlan.zhihu.com/p/138021927</a></p>
+<h2 id="WeakHashMap"><a href="#WeakHashMap" class="headerlink" title="WeakHashMap"></a>WeakHashMap</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/24887482">https://zhuanlan.zhihu.com/p/24887482</a></p>
+<h2 id="IdentityHashMap"><a href="#IdentityHashMap" class="headerlink" title="IdentityHashMap"></a>IdentityHashMap</h2><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://zhuanlan.zhihu.com/p/125093062">https://zhuanlan.zhihu.com/p/125093062</a></p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\ca94e89b\" rel="bookmark">ThreadPoolExecutor源码解析</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\de7c53fe\" rel="bookmark">线程池</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d6b7922e\" rel="bookmark">多线程的强软弱虚四种引用</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\1008f972\" rel="bookmark">多线程的AQS</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\e8a097d2\" rel="bookmark">多线程常见的同步机制</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/5c0b6c7e/" title="Java中的容器">https://cnrfwang.top/posts/5c0b6c7e/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%92%8C%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag"><i class="fa fa-tag"></i> 多线程和高并发</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/d6b7922e/" rel="prev" title="多线程的强软弱虚四种引用">
+      <i class="fa fa-chevron-left"></i> 多线程的强软弱虚四种引用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/de7c53fe/" rel="next" title="线程池">
+      线程池 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%B9%E5%99%A8%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-number">1.</span> <span class="nav-text">容器的分类</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#List%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.</span> <span class="nav-text">List接口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ArrayList"><span class="nav-number">2.1.</span> <span class="nav-text">ArrayList</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">2.1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ArrayList%E7%9A%84%E5%B1%9E%E6%80%A7"><span class="nav-number">2.1.2.</span> <span class="nav-text">ArrayList的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ArrayList%E7%9A%84%E7%9B%B8%E5%85%B3%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.3.</span> <span class="nav-text">ArrayList的相关方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ArrayList%E7%9A%84%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.3.1.</span> <span class="nav-text">ArrayList的构造方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-3-2-ArrayList%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">2.1.3.2.</span> <span class="nav-text">2.1.3.2 ArrayList的方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-4-ArrayList%E7%9A%84%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.4.</span> <span class="nav-text">2.1.4 ArrayList的扩容机制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%89%A9%E5%AE%B9%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.1.4.0.1.</span> <span class="nav-text">扩容步骤</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-5-%E5%AE%9E%E7%8E%B0ArrayList%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">2.1.5.</span> <span class="nav-text">2.1.5 实现ArrayList线程安全方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Vector"><span class="nav-number">2.2.</span> <span class="nav-text">Vector</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LinkList"><span class="nav-number">2.3.</span> <span class="nav-text">LinkList</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CopyOnWriteList"><span class="nav-number">2.4.</span> <span class="nav-text">CopyOnWriteList</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Set%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">Set接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HashSet"><span class="nav-number">3.0.1.</span> <span class="nav-text">HashSet</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LinkedHashSet"><span class="nav-number">3.0.1.1.</span> <span class="nav-text">LinkedHashSet</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SortedSet%EF%BC%88%E6%8E%A5%E5%8F%A3%EF%BC%89"><span class="nav-number">3.0.2.</span> <span class="nav-text">SortedSet（接口）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TreeSet"><span class="nav-number">3.0.2.1.</span> <span class="nav-text">TreeSet</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EnumSet"><span class="nav-number">3.0.3.</span> <span class="nav-text">EnumSet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CopyOnwriteArraySet"><span class="nav-number">3.0.4.</span> <span class="nav-text">CopyOnwriteArraySet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConcurrentSkipListSet"><span class="nav-number">3.0.5.</span> <span class="nav-text">ConcurrentSkipListSet</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Queue"><span class="nav-number">4.</span> <span class="nav-text">Queue</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%EF%BC%88BlockingQueue%EF%BC%89"><span class="nav-number">4.1.</span> <span class="nav-text">阻塞队列（BlockingQueue）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LinkedBlockingQueue"><span class="nav-number">4.1.1.</span> <span class="nav-text">LinkedBlockingQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">4.1.1.1.</span> <span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7"><span class="nav-number">4.1.1.1.1.</span> <span class="nav-text">属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="nav-number">4.1.1.1.2.</span> <span class="nav-text">取数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%95%B0%E6%8D%AE"><span class="nav-number">4.1.1.1.3.</span> <span class="nav-text">添加数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%A4%E6%96%AD%E9%98%9F%E5%88%97%E6%98%AF%E5%90%A6%E4%B8%BA%E7%A9%BA"><span class="nav-number">4.1.1.1.4.</span> <span class="nav-text">判断队列是否为空</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#put%E5%85%83%E7%B4%A0%E5%8E%9F%E7%90%86"><span class="nav-number">4.1.1.1.5.</span> <span class="nav-text">put元素原理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ArrayBlockingQueue"><span class="nav-number">4.1.2.</span> <span class="nav-text">ArrayBlockingQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SynchonousQueue"><span class="nav-number">4.1.3.</span> <span class="nav-text">SynchonousQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UML%E5%9B%BE"><span class="nav-number">4.1.3.1.</span> <span class="nav-text">UML图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%96%B9%E6%B3%95"><span class="nav-number">4.1.3.2.</span> <span class="nav-text">基本方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#TransferStack-%E9%9D%9E%E5%85%AC%E5%B9%B3%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%8C%E4%B8%BB%E8%A6%81%E6%96%B9%E6%B3%95"><span class="nav-number">4.1.3.2.1.</span> <span class="nav-text">TransferStack 非公平的实现，主要方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#TransferQueue-%E5%85%AC%E5%B9%B3%E5%AE%9E%E7%8E%B0%EF%BC%8C%E4%B8%BB%E8%A6%81%E6%88%90%E5%91%98"><span class="nav-number">4.1.3.2.2.</span> <span class="nav-text">TransferQueue 公平实现，主要成员</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PriorityBlockingQueue"><span class="nav-number">4.1.4.</span> <span class="nav-text">PriorityBlockingQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DelayQueue"><span class="nav-number">4.1.5.</span> <span class="nav-text">DelayQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TransferQueue"><span class="nav-number">4.1.6.</span> <span class="nav-text">TransferQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-6-1-xfer-%E6%96%B9%E6%B3%95%E5%88%86%E6%9E%90"><span class="nav-number">4.1.6.1.</span> <span class="nav-text">1.6.1 xfer 方法分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-6-2-%E6%80%BB%E7%BB%93"><span class="nav-number">4.1.6.2.</span> <span class="nav-text">1.6.2  总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%9E%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97"><span class="nav-number">4.2.</span> <span class="nav-text">非阻塞队列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Deque%EF%BC%88%E5%8F%8C%E7%AB%AF%E9%98%9F%E5%88%97%EF%BC%8C%E4%B8%A4%E8%BE%B9%E9%83%BD%E5%8F%AF%E4%BB%A5%E8%BF%9B%E5%87%BA%EF%BC%89"><span class="nav-number">4.2.1.</span> <span class="nav-text">Deque（双端队列，两边都可以进出）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConcurrentLinkedQueue"><span class="nav-number">4.2.2.</span> <span class="nav-text">ConcurrentLinkedQueue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#priorityQueue"><span class="nav-number">4.2.3.</span> <span class="nav-text">priorityQueue</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Map"><span class="nav-number">5.</span> <span class="nav-text">Map</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HashTable%E5%92%8CHashMap"><span class="nav-number">5.1.</span> <span class="nav-text">HashTable和HashMap</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HashMap%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">5.1.1.</span> <span class="nav-text">HashMap的工作原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HashMap%E5%92%8CHashtable%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">5.1.2.</span> <span class="nav-text">HashMap和Hashtable的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3Hsah%E5%86%B2%E7%AA%81%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">5.1.3.</span> <span class="nav-text">解决Hsah冲突的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HashMap%E7%9A%84%E6%89%A9%E5%AE%B9"><span class="nav-number">5.1.4.</span> <span class="nav-text">HashMap的扩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LinkHashMap"><span class="nav-number">5.1.5.</span> <span class="nav-text">LinkHashMap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ConcurrentHashMap"><span class="nav-number">5.1.6.</span> <span class="nav-text">ConcurrentHashMap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TreeMap"><span class="nav-number">5.2.</span> <span class="nav-text">TreeMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ConcurrentSkipListMap"><span class="nav-number">5.3.</span> <span class="nav-text">ConcurrentSkipListMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WeakHashMap"><span class="nav-number">5.4.</span> <span class="nav-text">WeakHashMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IdentityHashMap"><span class="nav-number">5.5.</span> <span class="nav-text">IdentityHashMap</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">天地人，日月星</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/bfb49b3b/" title="Redis分布式锁实现" target="_blank">Redis分布式锁实现</a>
+          </li>
+        
+          <li>
+            <a href="/posts/60085ed9/" title="ZooKeeper实现分布式锁" target="_blank">ZooKeeper实现分布式锁</a>
+          </li>
+        
+          <li>
+            <a href="/posts/ce83d112/" title="博客文章汇总" target="_blank">博客文章汇总</a>
+          </li>
+        
+          <li>
+            <a href="/posts/85c1a08/" title="MySQL的分库分表" target="_blank">MySQL的分库分表</a>
+          </li>
+        
+          <li>
+            <a href="/posts/9ee789ff/" title="MySQL的主从复制" target="_blank">MySQL的主从复制</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">268k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:04</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
+<!--崩溃欺骗-->
+<script type="text/javascript" src="/js/src/crash_cheat.js"></script>
