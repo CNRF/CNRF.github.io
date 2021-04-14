@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xmlinline.js"};
+  </script>
+
+  <meta name="description" content="MySQL的主从复制">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL的主从复制">
+<meta property="og:url" content="https://cnrfwang.top/posts/9ee789ff/index.html">
+<meta property="og:site_name" content="三才生">
+<meta property="og:description" content="MySQL的主从复制">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105532.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105558.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105629.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105653.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105716.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105757.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317111427.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317114402.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317114614.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317143020.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317143937.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317144000.png">
+<meta property="article:published_time" content="2021-03-17T10:41:00.000Z">
+<meta property="article:modified_time" content="2021-03-17T07:06:05.007Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210317105532.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/9ee789ff/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MySQL的主从复制 | 三才生</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">三才生</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三才生</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">20</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">64</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/9ee789ff/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="天地人，日月星">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三才生">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL的主从复制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-17 10:41:00" itemprop="dateCreated datePublished" datetime="2021-03-17T10:41:00Z">2021-03-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>6 分钟</span>
+            </span>
+            <div class="post-description">MySQL的主从复制</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="为什么需要主从复制？"><a href="#为什么需要主从复制？" class="headerlink" title="为什么需要主从复制？"></a>为什么需要主从复制？</h2><ol>
+<li>在业务复杂的系统中，有这么一个情景，有一句sql语句需要锁表，导致暂时不能使用读的服务，那么就很影响运行中的业务，使用主从复制，让主库负责写，从库负责读，这样，即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</li>
+<li>做数据的热备</li>
+<li>架构的扩展。业务量越来越大，I/O访问频率过高，单机无法满足，此时做多库的存储，降低磁盘I/O访问的频率，提高单个机器的I/O性能。</li>
+</ol>
+<h2 id="MySQL-主从复制概念"><a href="#MySQL-主从复制概念" class="headerlink" title="MySQL 主从复制概念"></a>MySQL 主从复制概念</h2><p>MySQL 主从复制是指数据可以从一个MySQL数据库服务器主节点复制到一个或多个从节点。MySQL 默认采用异步复制方式，这样从节点不用一直访问主服务器来更新自己的数据，数据的更新可以在远程连接上进行，从节点可以复制主数据库中的所有数据库或者特定的数据库，或者特定的表。</p>
+<h2 id="MySQL-主从复制主要用途"><a href="#MySQL-主从复制主要用途" class="headerlink" title="MySQL 主从复制主要用途"></a>MySQL 主从复制主要用途</h2><ul>
+<li><p><strong>读写分离</strong></p>
+<p>  在开发工作中，有时候会遇见某个sql 语句需要锁表，导致暂时不能使用读的服务，这样就会影响现有业务，使用主从复制，让主库负责写，从库负责读，这样，<strong>即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</strong></p>
+</li>
+<li><p><strong>数据实时备份，当系统中某个节点出现故障的时候，方便切换</strong></p>
+</li>
+<li><p><strong>高可用HA</strong></p>
+</li>
+<li><p><strong>架构扩展</strong></p>
+<p>  随着系统中业务访问量的增大，如果是单机部署数据库，就会导致I/O访问频率过高。有了主从复制，增加多个数据存储节点，将负载分布在多个从节点上，降低单机磁盘I/O访问的频率，提高单个机器的I/O性能。</p>
+</li>
+</ul>
+<h2 id="MySQL主从形式"><a href="#MySQL主从形式" class="headerlink" title="MySQL主从形式"></a>MySQL主从形式</h2><h3 id="一主一从"><a href="#一主一从" class="headerlink" title="一主一从"></a>一主一从</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105532.png" alt="image-20210317105532537"></p>
+<h3 id="一主多从，提高系统的读性能"><a href="#一主多从，提高系统的读性能" class="headerlink" title="一主多从，提高系统的读性能"></a>一主多从，提高系统的读性能</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105558.png" alt="image-20210317105558859"></p>
+<p>一主一从和一主多从是最常见的主从架构，<strong>实施起来简单并且有效，不仅可以实现HA，而且还能读写分离，进而提升集群的并发能力。</strong></p>
+<h3 id="多主一从-（从5-7开始支持）"><a href="#多主一从-（从5-7开始支持）" class="headerlink" title="多主一从 （从5.7开始支持）"></a>多主一从 （从5.7开始支持）</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105629.png" alt="image-20210317105629817"></p>
+<p>多主一从可以将多个mysql数据库备份到一台存储性能比较好的服务器上。</p>
+<h3 id="双主复制"><a href="#双主复制" class="headerlink" title="双主复制"></a>双主复制</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105653.png" alt="image-20210317105653639"></p>
+<p>双主复制，也就是互做主从复制，每个master既是master，又是另外一台服务器的slave。这样任何一方所做的变更，都会通过复制应用到另外一方的数据库中。</p>
+<h3 id="级联复制"><a href="#级联复制" class="headerlink" title="级联复制"></a>级联复制</h3><p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105716.png" alt="image-20210317105716117"></p>
+<p>级联复制模式下，部分slave的数据同步不连接主节点，而是连接从节点。因为如果主节点有太多的从节点，就会损耗一部分性能用于replication，那么我们可以让3~5个从节点连接主节点，其它从节点作为二级或者三级与从节点连接，这样不仅可以缓解主节点的压力，并且对数据一致性没有负面影响。</p>
+<h2 id="MySQL-主从复制原理"><a href="#MySQL-主从复制原理" class="headerlink" title="MySQL 主从复制原理"></a>MySQL 主从复制原理</h2><p>MySQL主从复制涉及到三个线程，一个运行在主节点（log dump thread），其余两个(I/O thread, SQL thread)运行在从节点，如下图所示:</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317105757.png" alt="image-20210317105757055"></p>
+<ul>
+<li><strong>主节点 binary log dump 线程作用</strong></li>
+</ul>
+<p>当从节点连接主节点时，主节点会创建一个log dump 线程，用于发送bin-log的内容。在读取bin-log中的操作时，此线程会对主节点上的bin-log加锁，当读取完成，甚至在发动给从节点之前，锁会被释放。</p>
+<ul>
+<li><strong>从节点I/O线程作用</strong></li>
+</ul>
+<p>当从节点上执行<code>start slave</code>命令之后，从节点会创建一个I/O线程用来连接主节点，请求主库中更新的bin-log。I/O线程接收到主节点binlog dump 进程发来的更新之后，保存在本地relay-log中。</p>
+<ul>
+<li><strong>从节点SQL线程作用</strong></li>
+</ul>
+<p>SQL线程负责读取relay log中的内容，解析成具体的操作并执行，最终保证主从数据的一致性。</p>
+<p>对于每一个主从连接，都需要三个进程来完成。当主节点有多个从节点时，主节点会为每一个当前连接的从节点建一个binary log dump 进程，而每个从节点都有自己的I/O进程，SQL进程。从节点用两个线程将从主库拉取更新和执行分成独立的任务，这样在执行同步数据任务的时候，不会降低读操作的性能。比如，如果从节点没有运行，此时I/O进程可以很快从主节点获取更新，尽管SQL进程还没有执行。如果在SQL进程执行之前从节点服务停止，至少I/O进程已经从主节点拉取到了最新的变更并且保存在本地relay日志中，当服务再次起来之后，就可以完成数据的同步。</p>
+<h2 id="MySQL主从复制的过程"><a href="#MySQL主从复制的过程" class="headerlink" title="MySQL主从复制的过程"></a>MySQL主从复制的过程</h2><p>要实施复制，首先必须打开Master 端的binary log（bin-log）功能，否则无法实现。因为整个复制过程实际上就是Slave 从Master 端获取该日志然后再在自己身上完全顺序的执行日志中所记录的各种操作</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317111427.png" alt="image-20210317111427620"></p>
+<ol>
+<li>从库通过手工执行change  master to 语句连接主库，提供了连接的用户一切条件（user 、password、port、ip），<strong>从库并请求从指定日志文件的指定位置（或者从最开始的日志）之后的日志内容；</strong></li>
+<li>从库的IO线程和主库的dump线程建立连接。</li>
+<li>从库根据change  master  to 语句提供的file名和position号，IO线程向主库发起binlog的请求。</li>
+<li>主库dump线程根据从库的请求，将本地binlog以events的方式发给从库IO线程。返回信息中除了日志所包含的信息之外，还包括本次返回的信息的bin-log file 的以及bin-log position；</li>
+<li>从库IO线程接收binlog  events，并存放到本地relay-log中，传送过来的信息，会记录到master.info中，以便在下一次读取的时候能够清楚的告诉Master“我需要从某个bin-log 的哪个位置开始往后的日志内容，请发给我”；</li>
+<li>从库SQL线程应用relay-log，并且把应用过的记录到relay-log.info中，默认情况下，已经应用过的relay 会自动被清理purge</li>
+</ol>
+<h2 id="MySQL-主从复制模式"><a href="#MySQL-主从复制模式" class="headerlink" title="MySQL 主从复制模式"></a>MySQL 主从复制模式</h2><p>MySQL 主从复制<strong>默认是异步的模式</strong>。MySQL增删改操作会全部记录在binary log中，当slave节点连接master时，会主动从master处获取最新的bin log文件。并把bin log中的sql relay。</p>
+<h3 id="异步模式（mysql-async-mode）"><a href="#异步模式（mysql-async-mode）" class="headerlink" title="异步模式（mysql async-mode）"></a>异步模式（mysql async-mode）</h3><p>异步模式如下图所示，这种模式下，主节点不会主动push bin log到从节点，这样有可能导致failover的情况下，也许从节点没有即时地将最新的bin log同步到本地。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317114402.png" alt="image-20210317114402919"></p>
+<h3 id="半同步模式-mysql-semi-sync"><a href="#半同步模式-mysql-semi-sync" class="headerlink" title="半同步模式(mysql semi-sync)"></a>半同步模式(mysql semi-sync)</h3><p>这种模式下<strong>主节点只需要接收到其中一台从节点的返回信息，就会commit；否则需要等待直到超时时间然后切换成异步模式再提交</strong>；这样做的目的可以使主从数据库的数据延迟缩小，可以提高数据安全性，确保了事务提交后，<strong>binlog至少传输到了一个从节点上，不能保证从节点将此事务更新到db中</strong>。性能上会有一定的降低，响应时间会变长。如下图所示：</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317114614.png" alt="image-20210317114614139"></p>
+<h3 id="全同步模式"><a href="#全同步模式" class="headerlink" title="全同步模式"></a>全同步模式</h3><p>全同步模式是指主节点和<strong>从节点全部执行了commit并确认</strong>才会向客户端返回成功。</p>
+<h2 id="MySQL的复制机制"><a href="#MySQL的复制机制" class="headerlink" title="MySQL的复制机制"></a>MySQL的复制机制</h2><h3 id="binlog记录模式"><a href="#binlog记录模式" class="headerlink" title="binlog记录模式"></a>binlog记录模式</h3><p>MySQL 主从复制有三种方式：基于SQL语句的复制（statement-based replication，SBR），基于行的复制（row-based replication，RBR)，混合模式复制（mixed-based replication,MBR)。对应的binlog文件的格式也有三种：STATEMENT,ROW,MIXED。</p>
+<ol>
+<li>Statement-base Replication (SBR)就是记录sql语句在bin log中，Mysql 5.1.4 及之前的版本都是使用的这种复制格式。优点是只需要记录会修改数据的sql语句到binlog中，减少了binlog日质量，节约I/O，提高性能。缺点是在某些情况下，会导致主从节点中数据不一致（比如sleep(),now()等）。</li>
+<li>Row-based Relication(RBR)是mysql master将SQL语句分解为基于Row更改的语句并记录在bin log中，也就是只记录哪条数据被修改了，修改成什么样。优点是不会出现某些特定情况下的存储过程、或者函数、或者trigger的调用或者触发无法被正确复制的问题。缺点是会产生大量的日志，尤其是修改table的时候会让日志暴增,同时增加bin log同步时间。也不能通过bin log解析获取执行过的sql语句，只能看到发生的data变更。</li>
+<li>Mixed-format Replication(MBR)，MySQL NDB cluster 7.3 和7.4 使用的MBR。是以上两种模式的混合，对于一般的复制使用STATEMENT模式保存到binlog，对于STATEMENT模式无法复制的操作则使用ROW模式来保存，MySQL会根据执行的SQL语句选择日志保存方式。</li>
+</ol>
+<h3 id="GTID复制模式"><a href="#GTID复制模式" class="headerlink" title="GTID复制模式"></a>GTID复制模式</h3><p>在MySQL 5.6里面，不用再找binlog和pos点，我们只需要知道主节点的ip，端口，以及账号密码就行，因为复制是自动的，<strong>MySQL会通过内部机制GTID自动找点同步。</strong></p>
+<h4 id="基于GTID复制实现的工作原理"><a href="#基于GTID复制实现的工作原理" class="headerlink" title="基于GTID复制实现的工作原理"></a>基于GTID复制实现的工作原理</h4><ol>
+<li>主节点更新数据时，会在事务前产生GTID，一起记录到binlog日志中。</li>
+<li>从节点的I/O线程将变更的bin log，写入到本地的relay log中。</li>
+<li>SQL线程从relay log中获取GTID，然后对比本地binlog是否有记录（<strong>所以MySQL从节点必须要开启binary log</strong>）。</li>
+<li>如果有记录，说明该GTID的事务已经执行，从节点会忽略。</li>
+<li>如果没有记录，从节点就会从relay log中执行该GTID的事务，并记录到bin log。</li>
+<li>在解析过程中会判断是否有主键，如果没有就用二级索引，如果有就用全部扫描。</li>
+</ol>
+<h2 id="mysql主从同步延时分析"><a href="#mysql主从同步延时分析" class="headerlink" title="mysql主从同步延时分析"></a>mysql主从同步延时分析</h2><p>mysql的主从复制都是单线程的操作，主库对所有DDL和DML产生的日志写进binlog，由于binlog是顺序写，所以效率很高，slave的sql thread线程将主库的DDL和DML操作事件在slave中重放。DML和DDL的IO操作是随机的，不是顺序，所以成本要高很多，另一方面，由于sql thread也是单线程的，<strong>当主库的并发较高时，产生的DML数量超过slave的SQL thread所能处理的速度，或者当slave中有大型query语句产生了锁等待，那么延时就产生了。</strong></p>
+<p><strong>解决方案</strong>：</p>
+<ol>
+<li>业务的持久化层的实现采用分库架构，mysql服务可平行扩展，分散压力。</li>
+<li>单个库读写分离，一主多从，主写从读，分散压力。这样从库压力比主库高，保护主库</li>
+<li>服务的基础架构在业务和mysql之间加入memcache或者redis的cache层。降低mysql的读压力。</li>
+<li>不同业务的mysql物理上放在不同机器，分散压力。</li>
+<li>使用比主库更好的硬件设备作为slave，mysql压力小，延迟自然会变小。</li>
+<li>使用更加强劲的硬件设备</li>
+</ol>
+<p><strong>mysql5.7之后使用MTS并行复制技术</strong></p>
+<h3 id="多线程复制MTS"><a href="#多线程复制MTS" class="headerlink" title="多线程复制MTS"></a>多线程复制MTS</h3><p>在MYSQL5.6版本中，多线程复制基于schema来实现，将多个数据库下的事务按照数据库拆分到多个线程上执行，保证数据库级别的事务一致性。</p>
+<p>在MYSQL5.7版本后，多线程复制基于主库上并发信息来实现，主库上并发提交的事务不存在事务冲突，在从库上拆分到多个线程执行，保证实例级别的事务一致性。</p>
+<h4 id="MySQL5-6-基于schema的并行复制"><a href="#MySQL5-6-基于schema的并行复制" class="headerlink" title="MySQL5.6 基于schema的并行复制"></a>MySQL5.6 基于schema的并行复制</h4><p>slave-parallel-type=DATABASE(不同库的事务，没有锁冲突),并行复制的目的就是要让slave尽可能的多线程跑起来，当然基于库级别的多线程也是一种方式(不同库的事务，没有锁冲突)。</p>
+<p><strong>优点：</strong>实现相对来说简单，对用户来说使用起来也简单</p>
+<p><strong>缺点：</strong> 由于是基于库的，那么并行的粒度非常粗，现在很多公司的架构是一库一实例，针对这样的架构，5.6的并行复制无能为力。当然还有就是主从事务的先后顺序，对于5.6也是个大问题</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317143020.png" alt="image-20210317143020298"></p>
+<p>MySQL 5.6版本开启并行复制功能，那么SQL线程就变为了coordinator线程，coordinator线程主要负责以前两部分的内容：</p>
+<ul>
+<li>若判断可以并行执行，那么选择worker线程执行事务的二进制日志</li>
+<li>若判断不可以并行执行，如该操作是DDL，亦或者是事务跨schema操作，则等待所有的worker线程执行完成之后，再执行当前的日志</li>
+</ul>
+<p>这意味着coordinator线程并不是仅将日志发送给worker线程，自己也可以回放日志，但是所有可以并行的操作交付由worker线程完成。coordinator线程与worker是典型的生产者与消费者模型。</p>
+<p>上述机制实现了基于schema的并行复制存在两个问题，首先是crash safe功能不好做，因为可能之后执行的事务由于并行复制的关系先完成执行，那么当发生crash的时候，这部分的处理逻辑是比较复杂的。从代码上看，5.6这里引入了Low-Water-Mark标记来解决该问题，从设计上看（WL#5569），其是希望借助于日志的幂等性来解决该问题，不过5.6的二进制日志回放还不能实现幂等性。另一个最为关键的问题是这样设计的并行复制效果并不高，如果用户实例仅有一个库，那么就无法实现并行回放，甚至性能会比原来的单线程更差。而单库多表是比多库多表更为常见的一种情形。</p>
+<h4 id="MySQL-5-7基于组提交的并行复制"><a href="#MySQL-5-7基于组提交的并行复制" class="headerlink" title="MySQL 5.7基于组提交的并行复制"></a>MySQL 5.7基于组提交的并行复制</h4><p>MySQL 5.7才可称为真正的并行复制，这其中最为主要的原因就是slave服务器的回放与主机是一致的即master服务器上是怎么并行执行的slave上就怎样进行并行回放。不再有库的并行复制限制，对于二进制日志格式也无特殊的要求（基于库的并行复制也没有要求）。从MySQL官方来看，其并行复制的原本计划是支持表级的并行复制和行级的并行复制，行级的并行复制通过解析ROW格式的二进制日志的方式来完成，WL#4648。但是最终出现给小伙伴的确是在开发计划中称为：MTS: Prepared transactions slave parallel applier，可见：WL#6314。该并行复制的思想最早是由MariaDB的Kristain提出，并已在MariaDB 10中出现，相信很多选择MariaDB的小伙伴最为看重的功能之一就是并行复制。</p>
+<blockquote>
+<p>MySQL 5.7并行复制的思想简单易懂，一言以蔽之：<font color=red>一个组提交的事务都是可以并行回放，因为这些事务都已进入到事务的prepare阶段，则说明事务之间没有任何冲突（否则就不可能提交）。</font></p>
+</blockquote>
+<p>为了兼容MySQL 5.6基于库的并行复制，5.7引入了新的变量slave-parallel-type，其可以配置的值有：</p>
+<ul>
+<li>DATABASE：默认值，基于库的并行复制方式</li>
+<li>LOGICAL_CLOCK：基于组提交的并行复制方式</li>
+</ul>
+<h5 id="支持并行复制的GTID（5-7之后支持）"><a href="#支持并行复制的GTID（5-7之后支持）" class="headerlink" title="支持并行复制的GTID（5.7之后支持）"></a>支持并行复制的GTID（5.7之后支持）</h5><p>在MySQL 5.7版本中，其设计方式是将组提交的信息存放在GTID中。那么如果用户没有开启GTID功能，即将参数gtid_mode设置为OFF，MySQL 5.7又引入了称之为Anonymous_Gtid的二进制日志event类型，意味着在<strong>MySQL 5.7版本中即使不开启GTID，每个事务开始前也是会存在一个Anonymous_Gtid，而这GTID中就存在着组提交的信息。</strong></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317143937.png" alt="image-20210317143937183"></p>
+<p>然而，通过上述的SHOW BINLOG EVENTS，我们并没有发现有关组提交的任何信息。但是通过mysqlbinlog工具，用户就能发现组提交的内部信息：</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210317144000.png" alt="image-20210317143959999"></p>
+<p>可以发现较之原来的二进制日志内容多了last_committed和sequence_number，last_committed表示事务提交的时候，上次事务提交的编号，如果<strong>事务具有相同的last_committed，表示这些事务都在一组内，可以进行并行的回放。例如上述last_committed为0的事务有6个，表示组提交时提交了6个事务，而这6个事务在从机是可以进行并行回放的。</strong></p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\85c1a08\" rel="bookmark">MySQL的分库分表</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d2eae622\" rel="bookmark">MySQL的事务</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\f1e1e97a\" rel="bookmark">MySQL的优化</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d1898e04\" rel="bookmark">MySQL优化分析思路</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\9edcaf99\" rel="bookmark">MySQL的索引</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/9ee789ff/" title="MySQL的主从复制">https://cnrfwang.top/posts/9ee789ff/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/MySQL/" rel="tag"><i class="fa fa-tag"></i> MySQL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/c3176455/" rel="prev" title="备忘录模式">
+      <i class="fa fa-chevron-left"></i> 备忘录模式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/85c1a08/" rel="next" title="MySQL的分库分表">
+      MySQL的分库分表 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">为什么需要主从复制？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">MySQL 主从复制概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E4%B8%BB%E8%A6%81%E7%94%A8%E9%80%94"><span class="nav-number">3.</span> <span class="nav-text">MySQL 主从复制主要用途</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E4%B8%BB%E4%BB%8E%E5%BD%A2%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">MySQL主从形式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%BB%E4%B8%80%E4%BB%8E"><span class="nav-number">4.1.</span> <span class="nav-text">一主一从</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%BB%E5%A4%9A%E4%BB%8E%EF%BC%8C%E6%8F%90%E9%AB%98%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AF%BB%E6%80%A7%E8%83%BD"><span class="nav-number">4.2.</span> <span class="nav-text">一主多从，提高系统的读性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E4%B8%BB%E4%B8%80%E4%BB%8E-%EF%BC%88%E4%BB%8E5-7%E5%BC%80%E5%A7%8B%E6%94%AF%E6%8C%81%EF%BC%89"><span class="nav-number">4.3.</span> <span class="nav-text">多主一从 （从5.7开始支持）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8C%E4%B8%BB%E5%A4%8D%E5%88%B6"><span class="nav-number">4.4.</span> <span class="nav-text">双主复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%A7%E8%81%94%E5%A4%8D%E5%88%B6"><span class="nav-number">4.5.</span> <span class="nav-text">级联复制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%8E%9F%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">MySQL 主从复制原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">MySQL主从复制的过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.</span> <span class="nav-text">MySQL 主从复制模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E6%A8%A1%E5%BC%8F%EF%BC%88mysql-async-mode%EF%BC%89"><span class="nav-number">7.1.</span> <span class="nav-text">异步模式（mysql async-mode）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%8A%E5%90%8C%E6%AD%A5%E6%A8%A1%E5%BC%8F-mysql-semi-sync"><span class="nav-number">7.2.</span> <span class="nav-text">半同步模式(mysql semi-sync)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%A8%E5%90%8C%E6%AD%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">7.3.</span> <span class="nav-text">全同步模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E7%9A%84%E5%A4%8D%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="nav-number">8.</span> <span class="nav-text">MySQL的复制机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#binlog%E8%AE%B0%E5%BD%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.1.</span> <span class="nav-text">binlog记录模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GTID%E5%A4%8D%E5%88%B6%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">GTID复制模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8EGTID%E5%A4%8D%E5%88%B6%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="nav-number">8.2.1.</span> <span class="nav-text">基于GTID复制实现的工作原理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E5%BB%B6%E6%97%B6%E5%88%86%E6%9E%90"><span class="nav-number">9.</span> <span class="nav-text">mysql主从同步延时分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%A4%8D%E5%88%B6MTS"><span class="nav-number">9.1.</span> <span class="nav-text">多线程复制MTS</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL5-6-%E5%9F%BA%E4%BA%8Eschema%E7%9A%84%E5%B9%B6%E8%A1%8C%E5%A4%8D%E5%88%B6"><span class="nav-number">9.1.1.</span> <span class="nav-text">MySQL5.6 基于schema的并行复制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL-5-7%E5%9F%BA%E4%BA%8E%E7%BB%84%E6%8F%90%E4%BA%A4%E7%9A%84%E5%B9%B6%E8%A1%8C%E5%A4%8D%E5%88%B6"><span class="nav-number">9.1.2.</span> <span class="nav-text">MySQL 5.7基于组提交的并行复制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E5%B9%B6%E8%A1%8C%E5%A4%8D%E5%88%B6%E7%9A%84GTID%EF%BC%885-7%E4%B9%8B%E5%90%8E%E6%94%AF%E6%8C%81%EF%BC%89"><span class="nav-number">9.1.2.1.</span> <span class="nav-text">支持并行复制的GTID（5.7之后支持）</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">天地人，日月星</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">64</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/bfb49b3b/" title="Redis分布式锁实现" target="_blank">Redis分布式锁实现</a>
+          </li>
+        
+          <li>
+            <a href="/posts/60085ed9/" title="ZooKeeper实现分布式锁" target="_blank">ZooKeeper实现分布式锁</a>
+          </li>
+        
+          <li>
+            <a href="/posts/0/" title="博客文章汇总" target="_blank">博客文章汇总</a>
+          </li>
+        
+          <li>
+            <a href="/posts/85c1a08/" title="MySQL的分库分表" target="_blank">MySQL的分库分表</a>
+          </li>
+        
+          <li>
+            <a href="/posts/9ee789ff/" title="MySQL的主从复制" target="_blank">MySQL的主从复制</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">268k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:04</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
+<!--崩溃欺骗-->
+<script type="text/javascript" src="/js/src/crash_cheat.js"></script>
