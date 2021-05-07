@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Hexo+NexT博客归档&#x2F;标签&#x2F;分类页美化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo+NexT博客归档&#x2F;标签&#x2F;分类页美化">
+<meta property="og:url" content="https://cnrfwang.top/posts/be9758cd/index.html">
+<meta property="og:site_name" content="知白守黑，和光同尘">
+<meta property="og:description" content="Hexo+NexT博客归档&#x2F;标签&#x2F;分类页美化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226130811.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200720163209724.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200720172136778.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2021-03-05T10:01:25.032Z">
+<meta property="article:modified_time" content="2021-03-12T06:34:10.368Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="Next">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210226130811.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/be9758cd/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Hexo+NexT博客归档/标签/分类页美化 | 知白守黑，和光同尘</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">知白守黑，和光同尘</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">知白守黑，和光同尘</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">22</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">22</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">71</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/be9758cd/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="知白守黑，和光同尘">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="知白守黑，和光同尘">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hexo+NexT博客归档/标签/分类页美化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-05 10:01:25" itemprop="dateCreated datePublished" datetime="2021-03-05T10:01:25Z">2021-03-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hexo/" itemprop="url" rel="index"><span itemprop="name">Hexo</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hexo/Next/" itemprop="url" rel="index"><span itemprop="name">Next</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>8.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>8 分钟</span>
+            </span>
+            <div class="post-description">Hexo+NexT博客归档/标签/分类页美化</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>NexT自带的<code>归档</code>、<code>标签</code>、<code>分类</code>页的样式比较单一，我们可以在样式文件中添加一些<code>css</code>配置来将我们想要的样式添加到这些页面中，本文就来介绍如何添加或修改这些页面的样式。</p>
+<h1 id="彩色标签页"><a href="#彩色标签页" class="headerlink" title="彩色标签页"></a>彩色标签页</h1><ol>
+<li>在 /themes/next/layout/ 目录下，新增 tag-color.swig 文件，填入如下内容:</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type&#x3D;&quot;text&#x2F;javascript&quot;&gt;</span><br><span class="line">     var alltags &#x3D; document.getElementsByClassName(&#39;tag-cloud-tags&#39;);</span><br><span class="line">     var tags &#x3D; alltags[0].getElementsByTagName(&#39;a&#39;);</span><br><span class="line">     for (var i &#x3D; tags.length - 1; i &gt;&#x3D; 0; i--) &#123;</span><br><span class="line">       var r&#x3D;Math.floor(Math.random()*75+130);</span><br><span class="line">       var g&#x3D;Math.floor(Math.random()*75+100);</span><br><span class="line">       var b&#x3D;Math.floor(Math.random()*75+80);</span><br><span class="line">       tags[i].style.background &#x3D; &quot;rgb(&quot;+r+&quot;,&quot;+g+&quot;,&quot;+b+&quot;)&quot;;</span><br><span class="line">     &#125;</span><br><span class="line">&lt;&#x2F;script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">  .tag-cloud-tags&#123;</span><br><span class="line">    &#x2F;*font-family: Helvetica, Tahoma, Arial;*&#x2F;</span><br><span class="line">    &#x2F;*font-weight: 100;*&#x2F;</span><br><span class="line">    text-align: center;</span><br><span class="line">    counter-reset: tags;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a&#123;</span><br><span class="line">    border-radius: 6px;</span><br><span class="line">    padding-right: 5px;</span><br><span class="line">    padding-left: 5px;</span><br><span class="line">    margin: 8px 5px 0px 0px;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a:before&#123;</span><br><span class="line">    content: &quot;🔖&quot;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  .tag-cloud-tags a:hover&#123;</span><br><span class="line">     box-shadow: 0px 5px 15px 0px rgba(0,0,0,.4);</span><br><span class="line">     transform: scale(1.1);</span><br><span class="line">     &#x2F;*box-shadow: 10px 10px 15px 2px rgba(0,0,0,.12), 0 0 6px 0 rgba(104, 104, 105, 0.1);*&#x2F;</span><br><span class="line">     transition-duration: 0.15s;</span><br><span class="line">  &#125;</span><br><span class="line">&lt;&#x2F;style&gt;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>在同级目录的 page.swig 中引入 tag-color.swig</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">    &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;tag-cloud&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!-- 目前共计xxx个标签</span><br><span class="line">        &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;tag-cloud-title&quot;</span>&gt;</span><br><span class="line">            &#123;&#123; _p(<span class="string">&#x27;counter.tag_cloud&#x27;</span>, site.tags.length) &#125;&#125;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">        --&gt;</span><br><span class="line">    </span><br><span class="line">        &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;tag-cloud-tags&quot;</span>&gt;</span><br><span class="line">          &#123;&#123; tagcloud(&#123;<span class="attr">min_font</span>: <span class="number">10</span>, <span class="attr">max_font</span>: <span class="number">15</span>, <span class="attr">amount</span>: <span class="number">300</span>, <span class="attr">color</span>: <span class="literal">true</span>, <span class="attr">start_color</span>: <span class="string">&#x27;#ccc&#x27;</span>, <span class="attr">end_color</span>: <span class="string">&#x27;#111&#x27;</span>&#125;) &#125;&#125;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    </span><br><span class="line">+     &#123;% include <span class="string">&#x27;tag-color.swig&#x27;</span> %&#125;</span><br><span class="line">    </span><br><span class="line">    &#123;% elif page.type === <span class="string">&#x27;categories&#x27;</span> %&#125;</span><br><span class="line">      &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;category-all-page&quot;</span>&gt;</span><br><span class="line">        &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;category-all-title&quot;</span>&gt;</span><br><span class="line">            &#123;&#123; _p(<span class="string">&#x27;counter.categories&#x27;</span>, site.categories.length) &#125;&#125;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">        &lt;div <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;category-all&quot;</span>&gt;</span><br><span class="line">          &#123;&#123; list_categories() &#125;&#125;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">      &lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>以下是文章底部的标签样式（代码拷入 /themes/next/source/css/_schemes/(自己选择的主题)/index.styl 即可）：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;*文章底部标签样式*&#x2F;</span><br><span class="line">.posts-expand .post-tags a &#123;</span><br><span class="line">  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);</span><br><span class="line">  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);</span><br><span class="line">  box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);</span><br><span class="line">  font-family: &#39;Comic Sans MS&#39;, sans-serif;</span><br><span class="line">  transition: .2s ease-out;</span><br><span class="line">  padding: 3px 5px;</span><br><span class="line">  margin: 5px;</span><br><span class="line">  background: #f5f5f5;</span><br><span class="line">  border-bottom: none;</span><br><span class="line">  border-radius: 15px;</span><br><span class="line"></span><br><span class="line">  +mobile()&#123;</span><br><span class="line">    padding: 1px 3px;</span><br><span class="line">    font-size: 8px;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  &amp;:hover &#123;</span><br><span class="line">    background: rgba(100,154,182,0.902);</span><br><span class="line">    color: #fff;</span><br><span class="line">    -webkit-box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);</span><br><span class="line">    -moz-box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);</span><br><span class="line">    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现效果如下：</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210226130811.png" alt="image-20210226130811067"></p>
+<h1 id="归档页美化"><a href="#归档页美化" class="headerlink" title="归档页美化"></a>归档页美化</h1><ol>
+<li>修改 /themes/next/ layout/_ macro/post collapse.swig 后的代码如下:</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">&#123;% macro render(posts) %&#125;</span><br><span class="line">&#123;%- set current_year &#x3D; &#39;1970&#39; %&#125;</span><br><span class="line">&#123;%- for post in posts.toArray() %&#125;</span><br><span class="line"></span><br><span class="line">  &#123;%- set year &#x3D; date(post.date, &#39;YYYY&#39;) %&#125;</span><br><span class="line"></span><br><span class="line">  &#123;%- if year !&#x3D;&#x3D; current_year %&#125;</span><br><span class="line">    &#123;%- set current_year &#x3D; year %&#125;</span><br><span class="line">    &lt;div class&#x3D;&quot;collection-year&quot;&gt;</span><br><span class="line">      &lt;&#123;%- if theme.seo %&#125;h2&#123;% else %&#125;h1&#123;%- endif %&#125; class&#x3D;&quot;collection-header&quot;&gt;&#123;&#123; current_year &#125;&#125;&lt;&#x2F;&#123;%- if theme.seo %&#125;h2&#123;% else %&#125;h1&#123;%- endif %&#125;&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">  &#123;%- endif %&#125;</span><br><span class="line"></span><br><span class="line">  &lt;article class&#x3D;&quot;my-post post-type-&#123;&#123; post.type | default(&#39;normal&#39;) &#125;&#125;&quot; itemscope itemtype&#x3D;&quot;http:&#x2F;&#x2F;schema.org&#x2F;Article&quot;&gt;</span><br><span class="line">    &lt;header class&#x3D;&quot;my-post-header&quot;&gt;</span><br><span class="line"></span><br><span class="line">      &lt;div class&#x3D;&quot;my-post-meta&quot;&gt;</span><br><span class="line">        &lt;time class&#x3D;&quot;my-post-time&quot; itemprop&#x3D;&quot;dateCreated&quot;</span><br><span class="line">              datetime&#x3D;&quot;&#123;&#123; moment(post.date).format() &#125;&#125;&quot;</span><br><span class="line">              content&#x3D;&quot;&#123;&#123; date(post.date, config.date_format) &#125;&#125;&quot;&gt;</span><br><span class="line">          &#123;&#123; date(post.date, &#39;MM-DD&#39;) &#125;&#125;</span><br><span class="line">        &lt;&#x2F;time&gt;</span><br><span class="line">      &lt;&#x2F;div&gt;</span><br><span class="line"></span><br><span class="line">      &lt;&#123;%- if theme.seo %&#125;h3&#123;% else %&#125;h2&#123;%- endif %&#125; class&#x3D;&quot;my-post-title&quot;&gt;</span><br><span class="line">        &#123;%- if post.link %&#125;&#123;# Link posts #&#125;</span><br><span class="line">          &lt;a class&#x3D;&quot;my-post-title-link post-title-link-external&quot; target&#x3D;&quot;_blank&quot; href&#x3D;&quot;&#123;&#123; url_for(post.link) &#125;&#125;&quot; itemprop&#x3D;&quot;url&quot;&gt;</span><br><span class="line">            &#123;&#123; post.title or post.link &#125;&#125;</span><br><span class="line">            &lt;i class&#x3D;&quot;fa fa-external-link&quot;&gt;&lt;&#x2F;i&gt;</span><br><span class="line">          &lt;&#x2F;a&gt;</span><br><span class="line">        &#123;% else %&#125;</span><br><span class="line">          &lt;a class&#x3D;&quot;my-post-title-link&quot; href&#x3D;&quot;&#123;&#123; url_for(post.path) &#125;&#125;&quot; itemprop&#x3D;&quot;url&quot;&gt;</span><br><span class="line">            &#123;% if post.type &#x3D;&#x3D;&#x3D; &#39;picture&#39; %&#125;</span><br><span class="line">              &#123;&#123; post.content &#125;&#125;</span><br><span class="line">            &#123;% else %&#125;</span><br><span class="line">              &lt;span itemprop&#x3D;&quot;name&quot;&gt;&#123;&#123; post.title or __(&#39;post.untitled&#39;) &#125;&#125;&lt;&#x2F;span&gt;</span><br><span class="line">            &#123;% endif %&#125;</span><br><span class="line">          &lt;&#x2F;a&gt;</span><br><span class="line">        &#123;%- endif %&#125;</span><br><span class="line">      &lt;&#x2F;&#123;%- if theme.seo %&#125;h3&#123;% else %&#125;h2&#123;%- endif %&#125;&gt;</span><br><span class="line"></span><br><span class="line">    &lt;&#x2F;header&gt;</span><br><span class="line">  &lt;&#x2F;article&gt;</span><br><span class="line"></span><br><span class="line">&#123;%- endfor %&#125;</span><br><span class="line">&#123;% endmacro %&#125;</span><br></pre></td></tr></table></figure>
+<p>主要修改：一是将 post-meta这个div移到前面header 标签下；二是将所有的 class 属性都加上 my-，例如 my-post-meta，这样改动是为了不影响其它页面引用的样式。</p>
+<ol>
+<li>在 /themes/next/source/css/_schemes/(自己选择的主题)/index.styl 新增如下样式：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 归档页样式 began *&#x2F;</span><br><span class="line">.page-archive .archive-page-counter &#123;</span><br><span class="line">  font-size: 18px;</span><br><span class="line">  background-color: #49b1f5;</span><br><span class="line">  padding-left: 10px;</span><br><span class="line">  padding-right: 10px;</span><br><span class="line">  border-radius: 8px;</span><br><span class="line">  color: #fff;</span><br><span class="line">  +mobile() &#123;</span><br><span class="line">    font-size: 16px;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">.my-post-time&#123;</span><br><span class="line">  font-size: 11px;</span><br><span class="line">  position: absolute;</span><br><span class="line">  color: #fff;</span><br><span class="line">  background-color: #49b1f5;</span><br><span class="line">  border-radius: 5px;</span><br><span class="line">  padding-left: 5px;</span><br><span class="line">  padding-right: 5px;</span><br><span class="line">  margin-left: 15px;</span><br><span class="line">&#125;</span><br><span class="line">.mypost&#123;</span><br><span class="line">  position: relative;</span><br><span class="line">  margin-bottom: 1rem;</span><br><span class="line">  -webkit-transition: all .2s ease-in-out;</span><br><span class="line">  -moz-transition: all .2s ease-in-out;</span><br><span class="line">  -o-transition: all .2s ease-in-out;</span><br><span class="line">  -ms-transition: all .2s ease-in-out;</span><br><span class="line">  transition: all .2s ease-in-out;</span><br><span class="line">&#125;</span><br><span class="line">a.my-post-title-link:before&#123;</span><br><span class="line">  top: 10px;</span><br><span class="line">  width: 18px;</span><br><span class="line">  height: 18px;</span><br><span class="line">  content: &quot;📚&quot;;</span><br><span class="line">  margin-right: 5px;</span><br><span class="line">  font: normal normal normal 14px&#x2F;1 FontAwesome;</span><br><span class="line">  font-size: 15px;</span><br><span class="line">  line-height: 18px;</span><br><span class="line">&#125;</span><br><span class="line">.my-post:hover&#123;</span><br><span class="line">  transform: scale(1.1);</span><br><span class="line">  box-shadow: 10px 10px 15px 2px rgba(0,0,0,.12), 0 0 6px 0 rgba(104, 104, 105, 0.1);</span><br><span class="line">  border-radius: 30px;</span><br><span class="line">  width: 400px;</span><br><span class="line">  padding: 1px 10px;</span><br><span class="line">  margin-left: 25px;</span><br><span class="line">  font-size: 16px;</span><br><span class="line">  transition-duration: 0.15s;</span><br><span class="line">  +mobile()&#123;</span><br><span class="line">    width: 260px;</span><br><span class="line">    margin-left: 18px;</span><br><span class="line">  &#125;</span><br><span class="line">  &#x2F;&#x2F;display:flex;</span><br><span class="line">&#125;</span><br><span class="line">a.my-post-title-link&#123;</span><br><span class="line">  text-decoration: none;</span><br><span class="line">  font-size: 15px;</span><br><span class="line">  font-weight: 400;</span><br><span class="line">  +mobile() &#123;</span><br><span class="line">    font-size: 14px;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">.my-post-title&#123;</span><br><span class="line">  display: block;</span><br><span class="line">  margin-left: 4.5rem;</span><br><span class="line">  color: #4c4948;</span><br><span class="line">  text-decoration: none;</span><br><span class="line">  font-size: .8rem;</span><br><span class="line">  cursor: pointer;</span><br><span class="line">  +mobile() &#123;</span><br><span class="line">    &#x2F;&#x2F;margin-left: 4rem;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">.my-post-header&#123;</span><br><span class="line">  position: top;</span><br><span class="line">  margin-bottom: 1rem;</span><br><span class="line">  -webkit-transition: all .2s ease-in-out;</span><br><span class="line">  -moz-transition: all .2s ease-in-out;</span><br><span class="line">  -o-transition: all .2s ease-in-out;</span><br><span class="line">  -ms-transition: all .2s ease-in-out;</span><br><span class="line">  transition: all .2s ease-in-out;</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;&#x2F;.my-post-title-link&#123;</span><br><span class="line">&#x2F;&#x2F;  font-size: 16px;</span><br><span class="line">&#x2F;&#x2F;  font-weight: 500;</span><br><span class="line">&#x2F;&#x2F;&#125;</span><br><span class="line">.my-post-meta&#123;</span><br><span class="line">  position: absolute;</span><br><span class="line">  color: #99a9bf;</span><br><span class="line">  width: 80px;</span><br><span class="line">  color: #114142;</span><br><span class="line">&#125;</span><br><span class="line">div.post-block.tag .collection-title h2 &#123;</span><br><span class="line">  border-width: 1px;</span><br><span class="line">  border-style: solid;</span><br><span class="line">  border-color: #3f3f3f;</span><br><span class="line">  border-radius: 20px;</span><br><span class="line">  font-size: 22px;</span><br><span class="line">  background-color: #b4e8fa;</span><br><span class="line">  padding: 2px 15px;</span><br><span class="line">  letter-spacing: 1.5px;</span><br><span class="line">  box-sizing: border-box;</span><br><span class="line">  color: #3f3f3f;</span><br><span class="line">  display: inline-block;</span><br><span class="line">  margin: 10px 0 10px;</span><br><span class="line">  text-align: center;</span><br><span class="line">  +mobile()&#123;</span><br><span class="line">    font-size: 18px;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;* 归档页样式 end *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>实现效果如下：</p>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://img-blog.csdnimg.cn/20200720163209724.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70"><img src="https://img-blog.csdnimg.cn/20200720163209724.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70" alt="img"></a></p>
+<h1 id="分类页美化"><a href="#分类页美化" class="headerlink" title="分类页美化"></a>分类页美化</h1><p>在 /themes/next/source/css/_schemes/(自己选择的主题)/index.styl 新增如下样式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;* 分类页样式 began *&#x2F;</span><br><span class="line">.category-list-link:hover&#123;</span><br><span class="line">  transform: scale(1.1);</span><br><span class="line">  box-shadow: 10px 10px 15px 2px rgba(0,0,0,.12), 0 0 6px 0 rgba(104, 104, 105, 0.1);</span><br><span class="line">  border-radius: 15px;</span><br><span class="line">  padding: 6px 16px;</span><br><span class="line">  margin-left: 0px;</span><br><span class="line">  font-size: 16px;</span><br><span class="line">  transition-duration: 0.15s;</span><br><span class="line">  &#x2F;&#x2F;display:flex;</span><br><span class="line">&#125;</span><br><span class="line">a.category-list-link:before&#123;</span><br><span class="line">  top: 10px;</span><br><span class="line">  width: 18px;</span><br><span class="line">  height: 18px;</span><br><span class="line">  content: &quot;📚&quot;;</span><br><span class="line">  margin-right: 5px;</span><br><span class="line">  font: normal normal normal 14px&#x2F;1 FontAwesome;</span><br><span class="line">  font-size: 15px;</span><br><span class="line">  line-height: 18px;</span><br><span class="line">&#125;</span><br><span class="line">&#x2F;* 分类页样式 end *&#x2F;</span><br></pre></td></tr></table></figure>
+<p>实现效果如下：</p>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://img-blog.csdnimg.cn/20200720172136778.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70"><img src="https://img-blog.csdnimg.cn/20200720172136778.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTY5Mzgz,size_16,color_FFFFFF,t_70" alt="img"></a></p>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\33ffdf26\" rel="bookmark">hexo博客优化Next7主题优化</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d23fb963\" rel="bookmark">hexo部署第三方主题next 7.8版本</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\14f8dec7\" rel="bookmark">修复点击目录无法跳转</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\1bab7c20\" rel="bookmark">win10的搭建hexo博客</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/be9758cd/" title="Hexo+NexT博客归档&#x2F;标签&#x2F;分类页美化">https://cnrfwang.top/posts/be9758cd/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/Hexo/" rel="tag"><i class="fa fa-tag"></i> Hexo</a>
+               <a href="/tags/Next/" rel="tag"><i class="fa fa-tag"></i> Next</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/f7de8aa8/" rel="prev" title="外观模式">
+      <i class="fa fa-chevron-left"></i> 外观模式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/558e0cc4/" rel="next" title="win10添加新建文件md方式以及设置md模版">
+      win10添加新建文件md方式以及设置md模版 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BD%A9%E8%89%B2%E6%A0%87%E7%AD%BE%E9%A1%B5"><span class="nav-number">1.</span> <span class="nav-text">彩色标签页</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BD%92%E6%A1%A3%E9%A1%B5%E7%BE%8E%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">归档页美化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E7%B1%BB%E9%A1%B5%E7%BE%8E%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">分类页美化</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">知白守黑，和光同尘</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">71</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/a716b72/" title="RocketMQ高级功能" target="_blank">RocketMQ高级功能</a>
+          </li>
+        
+          <li>
+            <a href="/posts/bf1c4a65/" title="SpringBoot集成RocketMQ" target="_blank">SpringBoot集成RocketMQ</a>
+          </li>
+        
+          <li>
+            <a href="/posts/1369e54/" title="RocketMQ消息" target="_blank">RocketMQ消息</a>
+          </li>
+        
+          <li>
+            <a href="/posts/220c8d88/" title="RocketMQ相关错误" target="_blank">RocketMQ相关错误</a>
+          </li>
+        
+          <li>
+            <a href="/posts/186db956/" title="RocketMQ的角色" target="_blank">RocketMQ的角色</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">310k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:42</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
+<!--崩溃欺骗-->
+<script type="text/javascript" src="/js/src/crash_cheat.js"></script>
