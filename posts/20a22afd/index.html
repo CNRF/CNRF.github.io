@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"cnrfwang.top","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SpringCloud Netflix组件之服务注册中心Eureka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringCloud Netflix（一）服务注册中心Eureka">
+<meta property="og:url" content="https://cnrfwang.top/posts/20a22afd/index.html">
+<meta property="og:site_name" content="知白守黑，和光同尘">
+<meta property="og:description" content="SpringCloud Netflix组件之服务注册中心Eureka">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210311103015.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210311103039.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210311103159.png">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210322090830.webp">
+<meta property="og:image" content="https://gitee.com/CNRF/image/raw/master/img/20210322102023.png">
+<meta property="article:published_time" content="2021-03-11T10:27:00.000Z">
+<meta property="article:modified_time" content="2021-05-13T07:13:50.838Z">
+<meta property="article:author" content="CNRF">
+<meta property="article:tag" content="SpringCloud">
+<meta property="article:tag" content="SpringCloud Netflix">
+<meta property="article:tag" content="Eureka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/CNRF/image/raw/master/img/20210311103015.png">
+
+<link rel="canonical" href="https://cnrfwang.top/posts/20a22afd/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SpringCloud Netflix（一）服务注册中心Eureka | 知白守黑，和光同尘</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+   <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">知白守黑，和光同尘</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">知白守黑，和光同尘</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签<span class="badge">31</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类<span class="badge">32</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档<span class="badge">80</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/CNRF" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener external nofollow noreferrer" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+  </a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://cnrfwang.top/posts/20a22afd/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar111.png">
+      <meta itemprop="name" content="CNRF">
+      <meta itemprop="description" content="知白守黑，和光同尘">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="知白守黑，和光同尘">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringCloud Netflix（一）服务注册中心Eureka
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-11 10:27:00" itemprop="dateCreated datePublished" datetime="2021-03-11T10:27:00Z">2021-03-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringCloud/" itemprop="url" rel="index"><span itemprop="name">SpringCloud</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SpringCloud-Netflix/" itemprop="url" rel="index"><span itemprop="name">SpringCloud Netflix</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Eureka/" itemprop="url" rel="index"><span itemprop="name">Eureka</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              <span>18k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              <span>16 分钟</span>
+            </span>
+            <div class="post-description">SpringCloud Netflix组件之服务注册中心Eureka</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/CNRF/NetflixStudy"> SpringCloud Netflix相关代码</a></p>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>springcloud是一个非常优秀的微服务框架，要管理众多的服务，就需要对这些服务进行治理，也就是我们说的<code>服务治理</code>,<code>服务治理</code>的作用就是在传统的rpc远程调用框架中，管理每个服务与每个服务之间的依赖关系，可以实现服务调用、负载均衡、服务容错、以及服务的注册与发现。<br> ​       <strong>如果微服务之间存在调用依赖，就需要得到目标服务的服务地址，也就是微服务治理的<code>服务发现</code>。要完成服务发现，就需要将服务信息存储到某个载体，载体本身即是微服务治理的<code>服务注册中心</code>，而存储到载体的动作即是<code>服务注册</code>。</strong><br> ​       springcloud支持的注册中心有<code>Eureka</code>、<code>Zookeeper</code>、<code>Consul</code>、<code>Nacos</code></p>
+<blockquote>
+<p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.jianshu.com/p/9b8a746e0d90">四个注册中心的比较</a></p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center"><strong>Nacos</strong></th>
+<th style="text-align:center"><strong>Eureka</strong></th>
+<th style="text-align:center"><strong>Consul</strong></th>
+<th style="text-align:center"><strong>Zookeeper</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">一致性协议</td>
+<td style="text-align:center">CP+AP</td>
+<td style="text-align:center">AP</td>
+<td style="text-align:center">CP</td>
+<td style="text-align:center">CP</td>
+</tr>
+<tr>
+<td style="text-align:center">健康检查</td>
+<td style="text-align:center">TCP/HTTP/MYSQL/Client Beat</td>
+<td style="text-align:center">Client Beat</td>
+<td style="text-align:center">TCP/HTTP/gRPC/Cmd</td>
+<td style="text-align:center">Keep Alive</td>
+</tr>
+<tr>
+<td style="text-align:center">负载均衡策略</td>
+<td style="text-align:center">权重/metadata/Selector</td>
+<td style="text-align:center">Ribbon</td>
+<td style="text-align:center">Fabio</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">雪崩保护</td>
+<td style="text-align:center">有</td>
+<td style="text-align:center">有</td>
+<td style="text-align:center">无</td>
+<td style="text-align:center">无</td>
+</tr>
+<tr>
+<td style="text-align:center">自动注销实例</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:center">不支持</td>
+</tr>
+<tr>
+<td style="text-align:center">访问协议</td>
+<td style="text-align:center">HTTP/DNS</td>
+<td style="text-align:center">HTTP/DNS</td>
+<td style="text-align:center">HTTP/DNS</td>
+<td style="text-align:center">TCP</td>
+</tr>
+<tr>
+<td style="text-align:center">监听支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+</tr>
+<tr>
+<td style="text-align:center">多数据中心</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+</tr>
+<tr>
+<td style="text-align:center">跨注册中心同步</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+</tr>
+<tr>
+<td style="text-align:center">SpringCloud集成</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+</tr>
+<tr>
+<td style="text-align:center">Dubbo集成</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:center">支持</td>
+</tr>
+<tr>
+<td style="text-align:center">K8S集成</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+<td style="text-align:center">支持</td>
+<td style="text-align:center">不支持</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="服务中心"><a href="#服务中心" class="headerlink" title="服务中心"></a>服务中心</h3><p>服务中心又称注册中心，管理各种服务功能包括服务的注册、发现、熔断、负载、降级等，比如dubbo admin后台的各种功能。</p>
+<p><strong>正常调用项目A请求项目B</strong></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210311103015.png" alt="image-20210311103015607"></p>
+<p><strong>有了服务中心之后，任何一个服务都不能直接去掉用，都需要通过服务中心来调用</strong></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210311103039.png" alt="image-20210311103039831"></p>
+<p><strong>项目A调用项目B，项目B在调用项目C</strong></p>
+<p>第一步，项目A首先从服务中心请求项目B服务器，然后项目B在从服务中心请求项目C服务。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210311103159.png" alt="image-20210311103159784"></p>
+<h2 id="Eureka"><a href="#Eureka" class="headerlink" title="Eureka"></a>Eureka</h2><p>Eureka 采用了 C-S 的设计架构。<strong>Eureka Server 作为服务注册功能的服务器，它是服务注册中心。而系统中的其他微服务，使用 Eureka 的客户端连接到 Eureka Server，并维持心跳连接</strong>。这样系统的维护人员就可以通过 Eureka Server 来监控系统中各个微服务是否正常运行。<strong>Spring Cloud 的一些其他模块（比如Zuul）就可以通过 Eureka Server 来发现系统中的其他微服务，并执行相关的逻辑。</strong></p>
+<p><strong>Eureka由两个组件组成：Eureka服务器和Eureka客户端。Eureka服务器用作服务注册服务器。Eureka客户端是一个java客户端</strong>，<font color=red>用来简化与服务器的交互、作为轮询负载均衡器，并提供服务的故障切换支持。 它提供基于流量、资源利用率以及出错状态的加权负载均衡。</font></p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210322090830.webp" alt="Eureka服务端客户端调用过程"></p>
+<h3 id="主要功能"><a href="#主要功能" class="headerlink" title="主要功能"></a>主要功能</h3><ul>
+<li><p>服务注册：客户端向eureka服务端注册自己的服务，服务端将信息存于多级缓存中。</p>
+</li>
+<li><p>服务续约：服务注册后，客户端会定时发送心跳包来保持可用性，避免被剔除。每30秒（eureka.instance.leaseRenewallIntervalInSeconds）发送一次心跳来进行服务续约。</p>
+</li>
+<li><p>服务同步:eureka服务端之间互相进行注册，构建server集群，不同Server之间会进行服务同步，用来保证服务信息的一致性</p>
+</li>
+<li><p>服务列表获取：客户端请求eureka server获取注册的服务清单，并缓存到客户端本地。默认间隔30秒。（eureka.client.registryFetchIntervalSeconds）</p>
+<blockquote>
+<p>fetchRegistry：true 当值为true时，会定期从eureka服务端获取列表，集群中的eureka服务端也会从其他的eureka节点中获取列表）</p>
+</blockquote>
+</li>
+<li><p>远程调用：服务调用方在获取到服务清单后，就可以根据自身的一个负载均衡策略找到一个服务url，并对他发起请求。</p>
+</li>
+<li><p>服务下线:客户端关闭或重启时，需告诉server端该服务已下线。服务端在收到请求后，就会把该服务状态置为下线（DOWN），并把该下线事件传播出去</p>
+</li>
+<li><p>服务剔除：如果客户端没有正常下线，需要有剔除机制，将不可用的服务删除掉。EurekaServer 在启动时会创建一个定时任务，默认60秒，从当前服务清单中把超时没有续约（默认90秒，eureka.instance.leaseExpirationDurationInSeconds）的服务剔除</p>
+</li>
+<li><p>自我保护：当短时间内，统计续约失败的比例，如果达到一定阈值，就会触发自我保护机制。在该机制下，Eureka Server不会剔除任何微服务。等到一分钟内最近续约个数大于一分钟内最小续约，再退出自我保护机制。自我保护开关(eureka.server.enable-self-preservation:false)</p>
+</li>
+</ul>
+<h3 id="Eureka保证AP"><a href="#Eureka保证AP" class="headerlink" title="Eureka保证AP"></a>Eureka保证AP</h3><ol>
+<li>如一个客户端因网络原因在一个eureka服务端无法获取服务列表时，可以从其他eureka服务端获取数据，即使与之前的eureka服务列表不一致；</li>
+<li>eureka服务端有同步机制，保证了服务列表的最终一致性（非强一致性）；</li>
+</ol>
+<h3 id="Eureka-Server三级缓存"><a href="#Eureka-Server三级缓存" class="headerlink" title="Eureka Server三级缓存"></a>Eureka Server三级缓存</h3><p>Eureka Server 存在三个变量：(<strong>registry、readWriteCacheMap、readOnlyCacheMap</strong>)保存服务注册信息，默认情况下定时任务每 30s 将 readWriteCacheMap 同步至 readOnlyCacheMap，每 60s 清理超过 90s 未续约的节点，Eureka Client 每 30s 从 readOnlyCacheMap 更新服务注册信息，而 UI 则从 registry 更新服务注册信息。</p>
+<p><img src="https://gitee.com/CNRF/image/raw/master/img/20210322102023.png" alt="image-20210322102023473"></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">缓存</th>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>registry</strong></td>
+<td style="text-align:center">ConcurrentHashMap</td>
+<td style="text-align:center"><strong>实时更新</strong>，类AbstractInstanceRegistry成员变量，UI端请求的是这里的服务注册信息</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>readWriteCacheMap</strong></td>
+<td style="text-align:center">Guava Cache/LoadingCache</td>
+<td style="text-align:center"><strong>实时更新</strong>，类ResponseCacheImpl成员变量，缓存时间180秒</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>readOnlyCacheMap</strong></td>
+<td style="text-align:center">ConcurrentHashMap</td>
+<td style="text-align:center"><strong>周期更新</strong>，类ResponseCacheImpl成员变量，默认每<strong>30s</strong>从readWriteCacheMap更新，Eureka client默认从这里更新服务注册信息，可配置直接从readWriteCacheMap更新</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="Eureka-常用配置"><a href="#Eureka-常用配置" class="headerlink" title="Eureka 常用配置"></a>Eureka 常用配置</h3><h4 id="Eureka-Server常用配置"><a href="#Eureka-Server常用配置" class="headerlink" title="Eureka Server常用配置"></a>Eureka Server常用配置</h4><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#服务端开启自我保护模式</span></span><br><span class="line"><span class="meta">eureka.server.enable-self-preservation</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#扫描失效服务的间隔时间（单位毫秒，默认是60*1000）即60秒</span></span><br><span class="line"><span class="meta">eureka.server.eviction-interval-timer-in-ms</span>= <span class="string">60000</span></span><br><span class="line"><span class="comment">#间隔多长时间，清除过期的 delta 数据</span></span><br><span class="line"><span class="meta">eureka.server.delta-retention-timer-interval-in-ms</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#请求频率限制器</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-burst-size</span>=<span class="string">10</span></span><br><span class="line"><span class="comment">#是否开启请求频率限制器</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-enabled</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#请求频率的平均值</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-full-fetch-average-rate</span>=<span class="string">100</span></span><br><span class="line"><span class="comment">#是否对标准的client进行频率请求限制。如果是false，则只对非标准client进行限制</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-throttle-standard-clients</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#注册服务、拉去服务列表数据的请求频率的平均值</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-registry-fetch-average-rate</span>=<span class="string">500</span></span><br><span class="line"><span class="comment">#设置信任的client list</span></span><br><span class="line"><span class="meta">eureka.server.rate-limiter-privileged-clients</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#在设置的时间范围类，期望与client续约的百分比。</span></span><br><span class="line"><span class="meta">eureka.server.renewal-percent-threshold</span>=<span class="string">0.85</span></span><br><span class="line"><span class="comment">#多长时间更新续约的阈值</span></span><br><span class="line"><span class="meta">eureka.server.renewal-threshold-update-interval-ms</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#对于缓存的注册数据，多长时间过期</span></span><br><span class="line"><span class="meta">eureka.server.response-cache-auto-expiration-in-seconds</span>=<span class="string">180</span></span><br><span class="line"><span class="comment">#多长时间更新一次缓存中的服务注册数据</span></span><br><span class="line"><span class="meta">eureka.server.response-cache-update-interval-ms</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#缓存增量数据的时间，以便在检索的时候不丢失信息</span></span><br><span class="line"><span class="meta">eureka.server.retention-time-in-m-s-in-delta-queue</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#当时间戳不一致的时候，是否进行同步</span></span><br><span class="line"><span class="meta">eureka.server.sync-when-timestamp-differs</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#是否采用只读缓存策略，只读策略对于缓存的数据不会过期。</span></span><br><span class="line"><span class="meta">eureka.server.use-read-only-response-cache</span>=<span class="string">true</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">################server node 与 node 之间关联的配置#####################33</span></span><br><span class="line"><span class="comment">#发送复制数据是否在request中，总是压缩</span></span><br><span class="line"><span class="meta">eureka.server.enable-replicated-request-compression</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#指示群集节点之间的复制是否应批处理以提高网络效率。</span></span><br><span class="line"><span class="meta">eureka.server.batch-replication</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#允许备份到备份池的最大复制事件数量。而这个备份池负责除状态更新的其他事件。可以根据内存大小，超时和复制流量，来设置此值得大小</span></span><br><span class="line"><span class="meta">eureka.server.max-elements-in-peer-replication-pool</span>=<span class="string">10000</span></span><br><span class="line"><span class="comment">#允许备份到状态备份池的最大复制事件数量</span></span><br><span class="line"><span class="meta">eureka.server.max-elements-in-status-replication-pool</span>=<span class="string">10000</span></span><br><span class="line"><span class="comment">#多个服务中心相互同步信息线程的最大空闲时间</span></span><br><span class="line"><span class="meta">eureka.server.max-idle-thread-age-in-minutes-for-peer-replication</span>=<span class="string">15</span></span><br><span class="line"><span class="comment">#状态同步线程的最大空闲时间</span></span><br><span class="line"><span class="meta">eureka.server.max-idle-thread-in-minutes-age-for-status-replication</span>=<span class="string">15</span></span><br><span class="line"><span class="comment">#服务注册中心各个instance相互复制数据的最大线程数量</span></span><br><span class="line"><span class="meta">eureka.server.max-threads-for-peer-replication</span>=<span class="string">20</span></span><br><span class="line"><span class="comment">#服务注册中心各个instance相互复制状态数据的最大线程数量</span></span><br><span class="line"><span class="meta">eureka.server.max-threads-for-status-replication</span>=<span class="string">1</span></span><br><span class="line"><span class="comment">#instance之间复制数据的通信时长</span></span><br><span class="line"><span class="meta">eureka.server.max-time-for-replication</span>=<span class="string">30000</span></span><br><span class="line"><span class="comment">#正常的对等服务instance最小数量。-1表示服务中心为单节点。</span></span><br><span class="line"><span class="meta">eureka.server.min-available-instances-for-peer-replication</span>=<span class="string">-1</span></span><br><span class="line"><span class="comment">#instance之间相互复制开启的最小线程数量</span></span><br><span class="line"><span class="meta">eureka.server.min-threads-for-peer-replication</span>=<span class="string">5</span></span><br><span class="line"><span class="comment">#instance之间用于状态复制，开启的最小线程数量</span></span><br><span class="line"><span class="meta">eureka.server.min-threads-for-status-replication</span>=<span class="string">1</span></span><br><span class="line"><span class="comment">#instance之间复制数据时可以重试的次数</span></span><br><span class="line"><span class="meta">eureka.server.number-of-replication-retries</span>=<span class="string">5</span></span><br><span class="line"><span class="comment">#eureka节点间间隔多长时间更新一次数据。默认10分钟。</span></span><br><span class="line"><span class="meta">eureka.server.peer-eureka-nodes-update-interval-ms</span>=<span class="string">600000</span></span><br><span class="line"><span class="comment">#eureka服务状态的相互更新的时间间隔。</span></span><br><span class="line"><span class="meta">eureka.server.peer-eureka-status-refresh-time-interval-ms</span>=<span class="string">0</span></span><br><span class="line"><span class="comment">#eureka对等节点间连接超时时间</span></span><br><span class="line"><span class="meta">eureka.server.peer-node-connect-timeout-ms</span>=<span class="string">200</span></span><br><span class="line"><span class="comment">#eureka对等节点连接后的空闲时间</span></span><br><span class="line"><span class="meta">eureka.server.peer-node-connection-idle-timeout-seconds</span>=<span class="string">30</span></span><br><span class="line"><span class="comment">#节点间的读数据连接超时时间</span></span><br><span class="line"><span class="meta">eureka.server.peer-node-read-timeout-ms</span>=<span class="string">200</span></span><br><span class="line"><span class="comment">#eureka server 节点间连接的总共最大数量</span></span><br><span class="line"><span class="meta">eureka.server.peer-node-total-connections</span>=<span class="string">1000</span></span><br><span class="line"><span class="comment">#eureka server 节点间连接的单机最大数量</span></span><br><span class="line"><span class="meta">eureka.server.peer-node-total-connections-per-host</span>=<span class="string">10</span></span><br><span class="line"><span class="comment">#在服务节点启动时，eureka尝试获取注册信息的次数</span></span><br><span class="line"><span class="meta">eureka.server.registry-sync-retries</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#在服务节点启动时，eureka多次尝试获取注册信息的间隔时间</span></span><br><span class="line"><span class="meta">eureka.server.registry-sync-retry-wait-ms</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#当eureka server启动的时候，不能从对等节点获取instance注册信息的情况，应等待多长时间。</span></span><br><span class="line"><span class="meta">eureka.server.wait-time-in-ms-when-sync-empty</span>=<span class="string">0</span></span><br></pre></td></tr></table></figure>
+<h4 id="Eureka-Client-常用配置"><a href="#Eureka-Client-常用配置" class="headerlink" title="Eureka Client 常用配置"></a>Eureka Client 常用配置</h4><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#该客户端是否可用</span></span><br><span class="line"><span class="meta">eureka.client.enabled</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#实例是否在eureka服务器上注册自己的信息以供其他服务发现，默认为true</span></span><br><span class="line"><span class="meta">eureka.client.register-with-eureka</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#此客户端是否获取eureka服务器注册表上的注册信息，默认为true</span></span><br><span class="line"><span class="meta">eureka.client.fetch-registry</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#是否过滤掉，非UP的实例。默认为true</span></span><br><span class="line"><span class="meta">eureka.client.filter-only-up-instances</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#与Eureka注册服务中心的通信zone和url地址</span></span><br><span class="line"><span class="meta">eureka.client.serviceUrl.defaultZone</span>=<span class="string">http://$&#123;eureka.instance.hostname&#125;:$&#123;server.port&#125;/eureka/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#client连接Eureka服务端后的空闲等待时间，默认为30 秒</span></span><br><span class="line"><span class="meta">eureka.client.eureka-connection-idle-timeout-seconds</span>=<span class="string">30</span></span><br><span class="line"><span class="comment">#client连接eureka服务端的连接超时时间，默认为5秒</span></span><br><span class="line"><span class="meta">eureka.client.eureka-server-connect-timeout-seconds</span>=<span class="string">5</span></span><br><span class="line"><span class="comment">#client对服务端的读超时时长</span></span><br><span class="line"><span class="meta">eureka.client.eureka-server-read-timeout-seconds</span>=<span class="string">8</span></span><br><span class="line"><span class="comment">#client连接all eureka服务端的总连接数，默认200</span></span><br><span class="line"><span class="meta">eureka.client.eureka-server-total-connections</span>=<span class="string">200</span></span><br><span class="line"><span class="comment">#client连接eureka服务端的单机连接数量，默认50</span></span><br><span class="line"><span class="meta">eureka.client.eureka-server-total-connections-per-host</span>=<span class="string">50</span></span><br><span class="line"><span class="comment">#执行程序指数回退刷新的相关属性，是重试延迟的最大倍数值，默认为10</span></span><br><span class="line"><span class="meta">eureka.client.cache-refresh-executor-exponential-back-off-bound</span>=<span class="string">10</span></span><br><span class="line"><span class="comment">#执行程序缓存刷新线程池的大小，默认为5</span></span><br><span class="line"><span class="meta">eureka.client.cache-refresh-executor-thread-pool-size</span>=<span class="string">2</span></span><br><span class="line"><span class="comment">#心跳执行程序回退相关的属性，是重试延迟的最大倍数值，默认为10</span></span><br><span class="line"><span class="meta">eureka.client.heartbeat-executor-exponential-back-off-bound</span>=<span class="string">10</span></span><br><span class="line"><span class="comment">#心跳执行程序线程池的大小,默认为5</span></span><br><span class="line"><span class="meta">eureka.client.heartbeat-executor-thread-pool-size</span>=<span class="string">5</span></span><br><span class="line"><span class="comment"># 询问Eureka服务url信息变化的频率（s），默认为300秒</span></span><br><span class="line"><span class="meta">eureka.client.eureka-service-url-poll-interval-seconds</span>=<span class="string">300</span></span><br><span class="line"><span class="comment">#最初复制实例信息到eureka服务器所需的时间（s），默认为40秒</span></span><br><span class="line"><span class="meta">eureka.client.initial-instance-info-replication-interval-seconds</span>=<span class="string">40</span></span><br><span class="line"><span class="comment">#间隔多长时间再次复制实例信息到eureka服务器，默认为30秒</span></span><br><span class="line"><span class="meta">eureka.client.instance-info-replication-interval-seconds</span>=<span class="string">30</span></span><br><span class="line"><span class="comment">#从eureka服务器注册表中获取注册信息的时间间隔（s），默认为30秒</span></span><br><span class="line"><span class="meta">eureka.client.registry-fetch-interval-seconds</span>=<span class="string">30</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取实例所在的地区。默认为us-east-1</span></span><br><span class="line"><span class="meta">eureka.client.region</span>=<span class="string">us-east-1</span></span><br><span class="line"><span class="comment">#实例是否使用同一zone里的eureka服务器，默认为true，理想状态下，eureka客户端与服务端是在同一zone下</span></span><br><span class="line"><span class="meta">eureka.client.prefer-same-zone-eureka</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 获取实例所在的地区下可用性的区域列表，用逗号隔开。（AWS）</span></span><br><span class="line"><span class="meta">eureka.client.availability-zones.china</span>=<span class="string">defaultZone,defaultZone1,defaultZone2</span></span><br><span class="line"><span class="comment">#eureka服务注册表信息里的以逗号隔开的地区名单，如果不这样返回这些地区名单，则客户端启动将会出错。默认为null</span></span><br><span class="line"><span class="meta">eureka.client.fetch-remote-regions-registry</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#服务器是否能够重定向客户端请求到备份服务器。 如果设置为false，服务器将直接处理请求，如果设置为true，它可能发送HTTP重定向到客户端。默认为false</span></span><br><span class="line"><span class="meta">eureka.client.allow-redirects</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#客户端数据接收</span></span><br><span class="line"><span class="meta">eureka.client.client-data-accept</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#增量信息是否可以提供给客户端看，默认为false</span></span><br><span class="line"><span class="meta">eureka.client.disable-delta</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#eureka服务器序列化/反序列化的信息中获取“_”符号的的替换字符串。默认为“__“</span></span><br><span class="line"><span class="meta">eureka.client.escape-char-replacement</span>=<span class="string">__</span></span><br><span class="line"><span class="comment">#eureka服务器序列化/反序列化的信息中获取“$”符号的替换字符串。默认为“_-”</span></span><br><span class="line"><span class="meta">eureka.client.dollar-replacement</span>=<span class="string">&quot;_-&quot;</span></span><br><span class="line"><span class="comment">#当服务端支持压缩的情况下，是否支持从服务端获取的信息进行压缩。默认为true</span></span><br><span class="line"><span class="meta">eureka.client.g-zip-content</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#是否记录eureka服务器和客户端之间在注册表的信息方面的差异，默认为false</span></span><br><span class="line"><span class="meta">eureka.client.log-delta-diff</span>=<span class="string">false</span></span><br><span class="line"><span class="comment"># 如果设置为true,客户端的状态更新将会点播更新到远程服务器上，默认为true</span></span><br><span class="line"><span class="meta">eureka.client.on-demand-update-status-change</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#此客户端只对一个单一的VIP注册表的信息感兴趣。默认为null</span></span><br><span class="line"><span class="meta">eureka.client.registry-refresh-single-vip-address</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#client是否在初始化阶段强行注册到服务中心，默认为false</span></span><br><span class="line"><span class="meta">eureka.client.should-enforce-registration-at-init</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#client在shutdown的时候是否显示的注销服务从服务中心，默认为true</span></span><br><span class="line"><span class="meta">eureka.client.should-unregister-on-shutdown</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+<h4 id="Eureka-Instance-常用配置"><a href="#Eureka-Instance-常用配置" class="headerlink" title="Eureka Instance 常用配置"></a>Eureka Instance 常用配置</h4><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#服务注册中心实例的主机名</span></span><br><span class="line"><span class="meta">eureka.instance.hostname</span>=<span class="string">localhost</span></span><br><span class="line"><span class="comment">#注册在Eureka服务中的应用组名</span></span><br><span class="line"><span class="meta">eureka.instance.app-group-name</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#注册在的Eureka服务中的应用名称</span></span><br><span class="line"><span class="meta">eureka.instance.appname</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#该实例注册到服务中心的唯一ID</span></span><br><span class="line"><span class="meta">eureka.instance.instance-id</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#该实例的IP地址</span></span><br><span class="line"><span class="meta">eureka.instance.ip-address</span>=<span class="string"></span></span><br><span class="line"><span class="comment">#该实例，相较于hostname是否优先使用IP</span></span><br><span class="line"><span class="meta">eureka.instance.prefer-ip-address</span>=<span class="string">false</span></span><br></pre></td></tr></table></figure>
+<h2 id="Springboot整合Eureka"><a href="#Springboot整合Eureka" class="headerlink" title="Springboot整合Eureka"></a>Springboot整合Eureka</h2><h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><h4 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.build.sourceEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.build.sourceEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.reporting.outputEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.reporting.outputEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring-boot.version</span>&gt;</span>2.3.7.RELEASE<span class="tag">&lt;/<span class="name">spring-boot.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring-cloud.version</span>&gt;</span>Hoxton.SR9<span class="tag">&lt;/<span class="name">spring-cloud.version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-cloud.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-boot.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.8.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.1.17.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.example.eurekaserver.EurekaServerApplication<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">id</span>&gt;</span>repackage<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>repackage<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h4><h5 id="修改系统host文件"><a href="#修改系统host文件" class="headerlink" title="修改系统host文件"></a>修改系统host文件</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#集群部署在单机的情况下，使用ip会导致eureka无法注册，此时只能使用域名</span><br><span class="line">C:\Windows\System32\drivers\etc</span><br><span class="line">#修改内容</span><br><span class="line">127.0.0.1  eureka-7901</span><br><span class="line">127.0.0.1  eureka-7902</span><br><span class="line">127.0.0.1  eureka-7903</span><br></pre></td></tr></table></figure>
+<h5 id="修改yml文件"><a href="#修改yml文件" class="headerlink" title="修改yml文件"></a>修改yml文件</h5><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">cloud-eureka</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="attr">prefer-ip-address:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">  <span class="comment">#    #配置禁止自己当做服务注册</span></span><br><span class="line">  <span class="comment">#    register-with-eureka: true</span></span><br><span class="line">  <span class="comment">#    fetch-registry: true</span></span><br><span class="line">  <span class="attr">server:</span></span><br><span class="line">    <span class="comment"># 自我保护看自己情况</span></span><br><span class="line">    <span class="attr">enable-self-preservation:</span> <span class="literal">true</span></span><br><span class="line">    <span class="comment"># 续约阈值，和自我保护相关</span></span><br><span class="line">    <span class="attr">renewal-percent-threshold:</span> <span class="number">0.85</span></span><br><span class="line">    <span class="comment"># server剔除过期服务的时间间隔</span></span><br><span class="line">    <span class="attr">eviction-interval-timer-in-ms:</span> <span class="number">1000</span></span><br><span class="line">    <span class="comment"># 是否开启readOnly读缓存</span></span><br><span class="line">    <span class="attr">use-read-only-response-cache:</span> <span class="literal">true</span></span><br><span class="line">    <span class="comment"># 关闭 readOnly</span></span><br><span class="line">    <span class="attr">response-cache-update-interval-ms:</span> <span class="number">1000</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="comment">#单点</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="number">7900</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">7900</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="comment">#配置是否将自已注册到EurekaServer</span></span><br><span class="line">    <span class="attr">register-with-eureka:</span> <span class="literal">false</span></span><br><span class="line">    <span class="comment">#是否从EurekaServer获取注册信息，单点无所谓，集群设置为true，配合Ribbon使用负载均衡</span></span><br><span class="line">    <span class="attr">fetch-registry:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="comment">#集群大于3个官方建议最好要配置上所有eureka的地址（最好是打乱顺序，服务会默认注册到第一个配置ip上）</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://localhost:7900/eureka/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#三个环境配置（类似于三个配置文件）</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="number">7901</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">7901</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="comment">#多个服务启动在单个机器需要配置 host文件</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">eureka-7901</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="comment">#配置是否将自已注册到EurekaServer</span></span><br><span class="line">    <span class="attr">register-with-eureka:</span> <span class="literal">true</span></span><br><span class="line">    <span class="comment">#是否从EurekaServer获取注册信息，单点无所谓，集群设置为true，配合Ribbon使用负载均衡</span></span><br><span class="line">    <span class="attr">fetch-registry:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="comment">#集群大于3个官方建议最好要配置上所有eureka的地址（最好是打乱顺序，服务会默认注册到第一个配置ip上）</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://eureka-7901:7901/eureka/,http://eureka-7902:7902/eureka/,http://eureka-7903:7903/eureka/</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="number">7902</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">7902</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">eureka-7902</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">register-with-eureka:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">fetch-registry:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://eureka-7901:7901/eureka/,http://eureka-7902:7902/eureka/,http://eureka-7903:7903/eureka/</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="number">7903</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">7903</span></span><br><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="attr">hostname:</span> <span class="string">eureka-7903</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">register-with-eureka:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">fetch-registry:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://eureka-7901:7901/eureka/,http://eureka-7902:7902/eureka/,http://eureka-7903:7903/eureka/</span></span><br></pre></td></tr></table></figure>
+<h4 id="注解添加"><a href="#注解添加" class="headerlink" title="注解添加"></a>注解添加</h4><p>在启动类上添加<code>@EnableEurekaServer</code>注解即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;</span><br><span class="line"></span><br><span class="line"><span class="meta">@EnableEurekaServer</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EurekaServerApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(EurekaServerApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><h4 id="添加依赖-1"><a href="#添加依赖-1" class="headerlink" title="添加依赖"></a>添加依赖</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.build.sourceEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.build.sourceEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.reporting.outputEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.reporting.outputEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring-boot.version</span>&gt;</span>2.3.7.RELEASE<span class="tag">&lt;/<span class="name">spring-boot.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">spring-cloud.version</span>&gt;</span>Hoxton.SR9<span class="tag">&lt;/<span class="name">spring-cloud.version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.junit.vintage<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit-vintage-engine<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-cloud.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;spring-boot.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.8.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">source</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">target</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.7.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.example.eurekaconsumer.EurekaConsumerApplication<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">id</span>&gt;</span>repackage<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>repackage<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="配置文件-1"><a href="#配置文件-1" class="headerlink" title="配置文件"></a>配置文件</h4><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">eureka:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">service-url:</span></span><br><span class="line">      <span class="comment">#配置注册地址</span></span><br><span class="line">      <span class="attr">defaultZone:</span> <span class="string">http://localhost:7900/eureka/</span></span><br><span class="line">    <span class="attr">registry-fetch-interval-seconds:</span> <span class="number">30</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">instance:</span></span><br><span class="line">    <span class="attr">lease-renewal-interval-in-seconds:</span> <span class="number">30</span></span><br><span class="line"><span class="comment">#appliication.name最好写上，这个是注册到eureka时注册的用户组，同时后期使用feign远程通过调用时需要</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">application:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">api-provider</span></span><br><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">level:</span></span><br><span class="line">    <span class="attr">root:</span> <span class="string">info</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span></span><br><span class="line">    <span class="attr">active:</span> <span class="number">9110</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">9110</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="number">9111</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">9111</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">profiles:</span> <span class="number">9112</span></span><br><span class="line"><span class="attr">server:</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">9112</span></span><br></pre></td></tr></table></figure>
+<h4 id="添加注解"><a href="#添加注解" class="headerlink" title="添加注解"></a>添加注解</h4><p>在Eureka新版本中不需要添加<code>@EnableEurekaClient</code>注解，只要在配置文件中配置即可，老版本需要添加注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.boot.SpringApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.cloud.client.loadbalancer.LoadBalanced;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.client.RestTemplate;</span><br><span class="line"></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EurekaConsumerApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(EurekaConsumerApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+      
+  <div class="popular-posts-header">相关文章推荐</div>
+  <ul class="popular-posts">
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\3a4d3014\" rel="bookmark">SpringCloud Netflix（二） Eureka集群搭建及参数调优</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\1ccc87bb\" rel="bookmark">SpringCloud Netflix（七）  链路追踪（Sleuth，zipkin）</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\6240f896\" rel="bookmark">SpringCloud Netflix（八） 健康检查 SpringCloud Admin</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\d5ae937f\" rel="bookmark">SpringCloud Netflix（五）  服务容错（ Hystrix）</a></div>
+    </li>
+    <li class="popular-posts-item">
+      <div class="popular-posts-title"><a href="\posts\22f7b258\" rel="bookmark">SpringCloud Netflix（六）  服务网关（Zuul）</a></div>
+    </li>
+  </ul>
+<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>CNRF
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cnrfwang.top/posts/20a22afd/" title="SpringCloud Netflix（一）服务注册中心Eureka">https://cnrfwang.top/posts/20a22afd/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+               <a href="/tags/SpringCloud/" rel="tag"><i class="fa fa-tag"></i> SpringCloud</a>
+               <a href="/tags/SpringCloud-Netflix/" rel="tag"><i class="fa fa-tag"></i> SpringCloud Netflix</a>
+               <a href="/tags/Eureka/" rel="tag"><i class="fa fa-tag"></i> Eureka</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/posts/10516028/" rel="prev" title="SpringCloud的常用组件">
+      <i class="fa fa-chevron-left"></i> SpringCloud的常用组件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/posts/d2eae622/" rel="next" title="MySQL的事务">
+      MySQL的事务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">背景介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E4%B8%AD%E5%BF%83"><span class="nav-number">1.1.</span> <span class="nav-text">服务中心</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Eureka"><span class="nav-number">2.</span> <span class="nav-text">Eureka</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD"><span class="nav-number">2.1.</span> <span class="nav-text">主要功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Eureka%E4%BF%9D%E8%AF%81AP"><span class="nav-number">2.2.</span> <span class="nav-text">Eureka保证AP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Eureka-Server%E4%B8%89%E7%BA%A7%E7%BC%93%E5%AD%98"><span class="nav-number">2.3.</span> <span class="nav-text">Eureka Server三级缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Eureka-%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.</span> <span class="nav-text">Eureka 常用配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Eureka-Server%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.1.</span> <span class="nav-text">Eureka Server常用配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Eureka-Client-%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.2.</span> <span class="nav-text">Eureka Client 常用配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Eureka-Instance-%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.3.</span> <span class="nav-text">Eureka Instance 常用配置</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Springboot%E6%95%B4%E5%90%88Eureka"><span class="nav-number">3.</span> <span class="nav-text">Springboot整合Eureka</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">3.1.</span> <span class="nav-text">服务端</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="nav-number">3.1.1.</span> <span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">3.1.2.</span> <span class="nav-text">配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E7%B3%BB%E7%BB%9Fhost%E6%96%87%E4%BB%B6"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">修改系统host文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9yml%E6%96%87%E4%BB%B6"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">修改yml文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A8%E8%A7%A3%E6%B7%BB%E5%8A%A0"><span class="nav-number">3.1.3.</span> <span class="nav-text">注解添加</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">3.2.</span> <span class="nav-text">客户端</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E6%B3%A8%E8%A7%A3"><span class="nav-number">3.2.3.</span> <span class="nav-text">添加注解</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="CNRF"
+      src="/images/avatar111.png">
+  <p class="site-author-name" itemprop="name">CNRF</p>
+  <div class="site-description" itemprop="description">知白守黑，和光同尘</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">80</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/CNRF" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;CNRF" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:King1172666241@gmail.com" title="E-Mail → mailto:King1172666241@gmail.com" rel="noopener external nofollow noreferrer" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+<!--近期文章版块 began-->
+
+    <div class="links-of-blogroll motion-element links-of-blogroll-block">
+      <div class="links-of-blogroll-title">
+        <!-- modify icon to fire by szw -->
+        <i class="fa fa-history fa-" aria-hidden="true"></i>
+        近期文章
+      </div>
+      <ul class="links-of-blogroll-list">
+        
+        
+          <li>
+            <a href="/posts/1ccc87bb/" title="SpringCloud Netflix（七）  链路追踪（Sleuth，zipkin）" target="_blank">SpringCloud Netflix（七）  链路追踪（Sleuth，zipkin）</a>
+          </li>
+        
+          <li>
+            <a href="/posts/6240f896/" title="SpringCloud Netflix（八） 健康检查 SpringCloud Admin" target="_blank">SpringCloud Netflix（八） 健康检查 SpringCloud Admin</a>
+          </li>
+        
+          <li>
+            <a href="/posts/d5ae937f/" title="SpringCloud Netflix（五）  服务容错（ Hystrix）" target="_blank">SpringCloud Netflix（五）  服务容错（ Hystrix）</a>
+          </li>
+        
+          <li>
+            <a href="/posts/22f7b258/" title="SpringCloud Netflix（六）  服务网关（Zuul）" target="_blank">SpringCloud Netflix（六）  服务网关（Zuul）</a>
+          </li>
+        
+          <li>
+            <a href="/posts/a716b72/" title="RocketMQ高级功能" target="_blank">RocketMQ高级功能</a>
+          </li>
+        
+      </ul>
+    </div>
+
+<!--近期文章版块 end-->
+      <!--新增163播放器-->
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=756579097&auto=0&height=32"></iframe>
+
+    </div>
+
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">CNRF</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">375k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:41</span>
+</div>
+  <div class="powered-by">
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+            <span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+            <script>
+            var now = new Date();
+            function createtime() {
+                var grt= new Date("04/13/2019 12:00:00");//此处修改你的建站时间或者网站上线时间
+                now.setTime(now.getTime()+250);
+                days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+                hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+                if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+                mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+                seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+                snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+                document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+                document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+            }
+            setInterval("createtime()",250);
+            </script>
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+
+<script type="text/javascript" src="/js/fold_action.js"></script>
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
+
+<!--崩溃欺骗-->
+<script type="text/javascript" src="/js/src/crash_cheat.js"></script>
